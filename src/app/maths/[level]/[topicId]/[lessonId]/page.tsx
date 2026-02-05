@@ -27,23 +27,24 @@ export default async function LessonPage({
     .eq("id", params.lessonId)
     .maybeSingle<LessonRow>();
 
-  // TEMP DEBUG: show what Supabase is actually returning instead of silently redirecting
+  // DEBUG: show what's happening instead of silently redirecting
   if (error || !lesson) {
     return (
       <main className="p-6 space-y-3 max-w-3xl">
+        <div className="rounded-md border p-2 text-xs">
+          DEBUG LESSON PAGE HIT ✅ (if you can see this, routing is correct) <br />
+          lessonId: {params.lessonId} <br />
+          topicId: {params.topicId} <br />
+          level: {params.level}
+        </div>
+
         <h1 className="text-2xl font-bold">Lesson not available</h1>
         <p className="text-sm text-gray-600">
-          Supabase didn’t return the lesson row. This usually means the ID is wrong
-          or Row Level Security blocked it.
+          Supabase didn’t return the lesson row. Usually wrong ID or RLS blocked it.
         </p>
 
         <div className="rounded-md border p-3 text-sm">
-          <div><b>lessonId</b>: {params.lessonId}</div>
-          <div><b>topicId</b>: {params.topicId}</div>
-          <div><b>level</b>: {params.level}</div>
-          <div className="mt-2">
-            <b>error</b>: {error ? error.message : "null"}
-          </div>
+          <b>Error:</b> {error ? error.message : "null (no row returned)"}
         </div>
 
         <a className="underline text-sm" href={`/maths/${params.level}/${params.topicId}`}>
@@ -56,10 +57,16 @@ export default async function LessonPage({
   if (!lesson.published) {
     return (
       <main className="p-6 space-y-3 max-w-3xl">
+        <div className="rounded-md border p-2 text-xs">
+          DEBUG LESSON PAGE HIT ✅ <br />
+          lessonId: {params.lessonId}
+        </div>
+
         <h1 className="text-2xl font-bold">Lesson is not published</h1>
         <p className="text-sm text-gray-600">
-          Admin needs to mark this lesson as published before students can view it.
+          Admin must mark this lesson as published before students can view it.
         </p>
+
         <a className="underline text-sm" href={`/maths/${params.level}/${params.topicId}`}>
           Back to topic
         </a>
@@ -69,6 +76,13 @@ export default async function LessonPage({
 
   return (
     <main className="p-6 space-y-4 max-w-3xl">
+      <div className="rounded-md border p-2 text-xs">
+        DEBUG LESSON PAGE HIT ✅ <br />
+        lessonId: {params.lessonId} <br />
+        topicId: {params.topicId} <br />
+        level: {params.level}
+      </div>
+
       <h1 className="text-2xl font-bold">{lesson.title}</h1>
 
       <article className="prose max-w-none">
