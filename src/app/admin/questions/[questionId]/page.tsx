@@ -73,14 +73,23 @@ export default async function AdminQuestionEditPage({
       : { data: [] as OptionRow[] };
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Edit Question</h1>
-      <QuestionEditForm
-        initialQuestion={question}
-        initialOptions={options ?? []}
-        topics={topics ?? []}
-        lessons={lessons ?? []}
-      />
+    <main className="space-y-8">
+      <div>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Questions
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight mt-2">
+          Edit Question
+        </h1>
+      </div>
+      <section className="apple-card p-6">
+        <QuestionEditForm
+          initialQuestion={question}
+          initialOptions={options ?? []}
+          topics={topics ?? []}
+          lessons={lessons ?? []}
+        />
+      </section>
     </main>
   );
 }

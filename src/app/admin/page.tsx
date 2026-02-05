@@ -5,27 +5,40 @@ export default async function AdminPage() {
   await requireAdmin();
 
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Admin</h1>
-      <p className="text-sm text-gray-500">Create and manage Maths content.</p>
+    <main className="space-y-8">
+      <div>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Admin
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight mt-2">
+          Content control
+        </h1>
+        <p className="apple-subtle mt-2">
+          Create and manage Maths content, users and billing.
+        </p>
+      </div>
 
-      <div className="flex gap-3">
-        <Link className="rounded-md border px-3 py-2" href="/admin/topics">
-          Manage Topics
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/topics">
+          <div className="font-semibold">Manage Topics</div>
+          <div className="apple-subtle mt-1">Levels, topics and ordering.</div>
         </Link>
-        <Link className="rounded-md border px-3 py-2" href="/admin/lessons">
-          Manage Lessons
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/lessons">
+          <div className="font-semibold">Manage Lessons</div>
+          <div className="apple-subtle mt-1">Create, publish and edit lessons.</div>
         </Link>
-        <Link className="rounded-md border px-3 py-2" href="/admin/questions">
-          Manage Questions
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/questions">
+          <div className="font-semibold">Manage Questions</div>
+          <div className="apple-subtle mt-1">MCQs and short answers.</div>
         </Link>
-        <Link className="rounded-md border px-3 py-2" href="/admin/users">
-          Manage Users
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/users">
+          <div className="font-semibold">Manage Users</div>
+          <div className="apple-subtle mt-1">Overrides and access control.</div>
         </Link>
-        <Link className="rounded-md border px-3 py-2" href="/admin/billing">
-          Billing Audit
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/billing">
+          <div className="font-semibold">Billing Audit</div>
+          <div className="apple-subtle mt-1">Stripe status + resync tools.</div>
         </Link>
-
       </div>
     </main>
   );

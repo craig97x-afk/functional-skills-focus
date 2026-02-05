@@ -30,17 +30,10 @@ export async function proxy(req: NextRequest) {
     }
   );
 
-  const { data: authData, error: authErr } = await supabase.auth.getUser();
-  if (authErr) {
-    console.error("[proxy] auth error", authErr.message);
-  }
+  const { data: authData } = await supabase.auth.getUser();
   const {
     data: { session },
-    error: sessionErr,
   } = await supabase.auth.getSession();
-  if (sessionErr) {
-    console.error("[proxy] session error", sessionErr.message);
-  }
   const user = session?.user ?? authData.user;
 
   if (!user) {
@@ -68,15 +61,11 @@ export async function proxy(req: NextRequest) {
         )
       : supabase;
 
-  const { data: profile, error: profileErr } = await authedClient
+  const { data: profile } = await authedClient
     .from("profiles")
     .select("role, is_subscribed, access_override")
     .eq("id", user.id)
     .maybeSingle();
-
-  if (profileErr) {
-    console.error("[proxy] profile error", profileErr.message);
-  }
 
   // Admin always allowed
   if (profile?.role === "admin") return res;

@@ -37,6 +37,12 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const fieldClass =
+    "mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10";
+  const textareaClass = `${fieldClass} min-h-[90px]`;
+  const textareaSmallClass = `${fieldClass} min-h-[70px]`;
+  const panelClass = "rounded-2xl border border-black/5 bg-white/70 p-4 space-y-2";
+
   const topicLessons = lessons.filter((l) => l.topic_id === topicId);
 
   async function createQuestion() {
@@ -100,34 +106,34 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm">Topic</span>
+          <span className="text-sm text-slate-600">Topic</span>
           <select
-            className="mt-1 w-full rounded-md border p-2"
-          value={topicId}
-          onChange={(e) => {
-            setTopicId(e.target.value);
-            setLessonId("");
-          }}
-        >
-          {topics.map((t) => {
-            const code = t.level?.code;
-            return (
-              <option key={t.id} value={t.id}>
-                {code ? `[${code}] ` : ""}
-                {t.title}
-              </option>
+            className={fieldClass}
+            value={topicId}
+            onChange={(e) => {
+              setTopicId(e.target.value);
+              setLessonId("");
+            }}
+          >
+            {topics.map((t) => {
+              const code = t.level?.code;
+              return (
+                <option key={t.id} value={t.id}>
+                  {code ? `[${code}] ` : ""}
+                  {t.title}
+                </option>
               );
             })}
           </select>
         </label>
 
         <label className="block">
-          <span className="text-sm">Lesson (optional)</span>
+          <span className="text-sm text-slate-600">Lesson (optional)</span>
           <select
-            className="mt-1 w-full rounded-md border p-2"
+            className={fieldClass}
             value={lessonId}
             onChange={(e) => setLessonId(e.target.value)}
           >
@@ -143,9 +149,9 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm">Type</span>
+          <span className="text-sm text-slate-600">Type</span>
           <select
-            className="mt-1 w-full rounded-md border p-2"
+            className={fieldClass}
             value={type}
             onChange={(e) => setType(e.target.value as "mcq" | "short")}
           >
@@ -155,46 +161,76 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
         </label>
 
         <label className="flex items-center gap-2 mt-6">
-          <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
-          <span className="text-sm">Published</span>
+          <input
+            type="checkbox"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+          />
+          <span className="text-sm text-slate-600">Published</span>
         </label>
       </div>
 
       <label className="block">
-        <span className="text-sm">Prompt</span>
+        <span className="text-sm text-slate-600">Prompt</span>
         <textarea
-          className="mt-1 w-full rounded-md border p-2 min-h-[90px]"
+          className={textareaClass}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
       </label>
 
       <label className="block">
-        <span className="text-sm">Hint (optional)</span>
-        <input className="mt-1 w-full rounded-md border p-2" value={hint} onChange={(e) => setHint(e.target.value)} />
+        <span className="text-sm text-slate-600">Hint (optional)</span>
+        <input
+          className={fieldClass}
+          value={hint}
+          onChange={(e) => setHint(e.target.value)}
+        />
       </label>
 
       <label className="block">
-        <span className="text-sm">Solution explainer (optional)</span>
+        <span className="text-sm text-slate-600">Solution explainer (optional)</span>
         <textarea
-          className="mt-1 w-full rounded-md border p-2 min-h-[70px]"
+          className={textareaSmallClass}
           value={solution}
           onChange={(e) => setSolution(e.target.value)}
         />
       </label>
 
       {type === "mcq" ? (
-        <div className="rounded-md border p-3 space-y-2">
+        <div className={panelClass}>
           <div className="text-sm font-semibold">Options</div>
-          <input className="w-full rounded-md border p-2" placeholder="A" value={optA} onChange={(e) => setOptA(e.target.value)} />
-          <input className="w-full rounded-md border p-2" placeholder="B" value={optB} onChange={(e) => setOptB(e.target.value)} />
-          <input className="w-full rounded-md border p-2" placeholder="C" value={optC} onChange={(e) => setOptC(e.target.value)} />
-          <input className="w-full rounded-md border p-2" placeholder="D" value={optD} onChange={(e) => setOptD(e.target.value)} />
+          <input
+            className={fieldClass}
+            placeholder="A"
+            value={optA}
+            onChange={(e) => setOptA(e.target.value)}
+          />
+          <input
+            className={fieldClass}
+            placeholder="B"
+            value={optB}
+            onChange={(e) => setOptB(e.target.value)}
+          />
+          <input
+            className={fieldClass}
+            placeholder="C"
+            value={optC}
+            onChange={(e) => setOptC(e.target.value)}
+          />
+          <input
+            className={fieldClass}
+            placeholder="D"
+            value={optD}
+            onChange={(e) => setOptD(e.target.value)}
+          />
 
           <label className="block">
-            <span className="text-sm">Correct option index (0=A, 1=B, 2=C, 3=D)</span>
+            <span className="text-sm text-slate-600">
+              Correct option index (0=A, 1=B, 2=C, 3=D)
+            </span>
             <input
-              className="mt-1 w-full rounded-md border p-2"
+              className={fieldClass}
               type="number"
               value={correctIndex}
               onChange={(e) => setCorrectIndex(Number(e.target.value))}
@@ -202,23 +238,29 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
           </label>
         </div>
       ) : (
-        <div className="rounded-md border p-3 space-y-2">
+        <div className={panelClass}>
           <div className="text-sm font-semibold">Short answer</div>
           <input
-            className="w-full rounded-md border p-2"
+            className={fieldClass}
             placeholder="Correct answer (exact match for v1)"
             value={shortAnswer}
             onChange={(e) => setShortAnswer(e.target.value)}
           />
-          <p className="text-xs text-gray-500">v1 uses exact match. We’ll add tolerant marking (spaces/commas/units) next.</p>
+          <p className="text-xs text-slate-500">
+            v1 uses exact match. We’ll add tolerant marking (spaces/commas/units) next.
+          </p>
         </div>
       )}
 
-      <button className="rounded-md border px-3 py-2" onClick={createQuestion} disabled={loading || !topicId || !prompt}>
+      <button
+        className="apple-button"
+        onClick={createQuestion}
+        disabled={loading || !topicId || !prompt}
+      >
         {loading ? "Creating..." : "Create question"}
       </button>
 
-      {msg && <p className="text-sm">{msg}</p>}
+      {msg && <p className="text-sm text-slate-600">{msg}</p>}
     </div>
   );
 }

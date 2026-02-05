@@ -62,6 +62,12 @@ export default function QuestionEditForm({
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const fieldClass =
+    "mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10";
+  const textareaClass = `${fieldClass} min-h-[90px]`;
+  const textareaSmallClass = `${fieldClass} min-h-[70px]`;
+  const panelClass = "rounded-2xl border border-black/5 bg-white/70 p-4 space-y-3";
+
   const [options, setOptions] = useState<OptionForm[]>(
     initialQuestion.type === "mcq" && initialOptions.length > 0
       ? initialOptions.map((o) => ({ label: o.label, is_correct: o.is_correct }))
@@ -197,12 +203,12 @@ export default function QuestionEditForm({
   }
 
   return (
-    <div className="rounded-lg border p-4 space-y-4">
+    <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm">Topic</span>
+          <span className="text-sm text-slate-600">Topic</span>
           <select
-            className="mt-1 w-full rounded-md border p-2"
+            className={fieldClass}
             value={topicId}
             onChange={(e) => {
               setTopicId(e.target.value);
@@ -222,9 +228,9 @@ export default function QuestionEditForm({
         </label>
 
         <label className="block">
-          <span className="text-sm">Lesson (optional)</span>
+          <span className="text-sm text-slate-600">Lesson (optional)</span>
           <select
-            className="mt-1 w-full rounded-md border p-2"
+            className={fieldClass}
             value={lessonId}
             onChange={(e) => setLessonId(e.target.value)}
           >
@@ -240,9 +246,9 @@ export default function QuestionEditForm({
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm">Type</span>
+          <span className="text-sm text-slate-600">Type</span>
           <input
-            className="mt-1 w-full rounded-md border p-2 bg-gray-900/40"
+            className="mt-1 w-full rounded-xl border border-black/10 bg-slate-100/80 px-3 py-2 text-sm text-slate-600"
             value={initialQuestion.type.toUpperCase()}
             readOnly
           />
@@ -254,39 +260,39 @@ export default function QuestionEditForm({
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
           />
-          <span className="text-sm">Published</span>
+          <span className="text-sm text-slate-600">Published</span>
         </label>
       </div>
 
       <label className="block">
-        <span className="text-sm">Prompt</span>
+        <span className="text-sm text-slate-600">Prompt</span>
         <textarea
-          className="mt-1 w-full rounded-md border p-2 min-h-[90px]"
+          className={textareaClass}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
         />
       </label>
 
       <label className="block">
-        <span className="text-sm">Hint (optional)</span>
+        <span className="text-sm text-slate-600">Hint (optional)</span>
         <input
-          className="mt-1 w-full rounded-md border p-2"
+          className={fieldClass}
           value={hint}
           onChange={(e) => setHint(e.target.value)}
         />
       </label>
 
       <label className="block">
-        <span className="text-sm">Solution explainer (optional)</span>
+        <span className="text-sm text-slate-600">Solution explainer (optional)</span>
         <textarea
-          className="mt-1 w-full rounded-md border p-2 min-h-[70px]"
+          className={textareaSmallClass}
           value={solution}
           onChange={(e) => setSolution(e.target.value)}
         />
       </label>
 
       {initialQuestion.type === "mcq" ? (
-        <div className="rounded-md border p-3 space-y-3">
+        <div className={panelClass}>
           <div className="text-sm font-semibold">Options</div>
           <div className="space-y-2">
             {options.map((o, idx) => (
@@ -298,13 +304,13 @@ export default function QuestionEditForm({
                   onChange={() => markCorrect(idx)}
                 />
                 <input
-                  className="flex-1 rounded-md border p-2"
+                  className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
                   placeholder={`Option ${idx + 1}`}
                   value={o.label}
                   onChange={(e) => updateOptionLabel(idx, e.target.value)}
                 />
                 <button
-                  className="rounded-md border px-2 py-1 text-xs"
+                  className="apple-pill px-3 py-1.5 text-xs"
                   onClick={() => removeOption(idx)}
                   type="button"
                 >
@@ -314,7 +320,7 @@ export default function QuestionEditForm({
             ))}
           </div>
           <button
-            className="rounded-md border px-3 py-2 text-sm"
+            className="apple-pill px-4 py-2 text-sm"
             onClick={addOption}
             type="button"
           >
@@ -322,21 +328,23 @@ export default function QuestionEditForm({
           </button>
         </div>
       ) : (
-        <div className="rounded-md border p-3 text-xs text-gray-500">
+        <div className={panelClass}>
+          <div className="text-sm text-slate-500">
           Short-answer questions are self-check for now. Update the solution explainer above.
+          </div>
         </div>
       )}
 
       <div className="flex flex-wrap gap-2">
         <button
-          className="rounded-md border px-3 py-2"
+          className="apple-button"
           onClick={save}
           disabled={loading || !topicId || !prompt}
         >
           {loading ? "Saving..." : "Save changes"}
         </button>
         <button
-          className="rounded-md border px-3 py-2 text-red-600"
+          className="apple-pill text-red-600 border-red-200/60"
           onClick={deleteQuestion}
           disabled={loading}
         >
@@ -344,7 +352,7 @@ export default function QuestionEditForm({
         </button>
       </div>
 
-      {msg && <p className="text-sm">{msg}</p>}
+      {msg && <p className="text-sm text-slate-600">{msg}</p>}
     </div>
   );
 }

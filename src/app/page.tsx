@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
@@ -20,59 +21,74 @@ export default async function HomePage() {
   );
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-
-      <div className="rounded-lg border p-4 space-y-2">
-        <div className="text-sm text-gray-400">Role</div>
-        <div className="font-medium">{role}</div>
-
-        <div className="text-sm text-gray-400 mt-3">Access</div>
-        <div className="font-medium">
+    <main className="space-y-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            Dashboard
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight mt-2">
+            Welcome back
+          </h1>
+          <p className="apple-subtle mt-2">
+            Pick up where you left off or jump into practice.
+          </p>
+        </div>
+        <div className="apple-pill">
           {hasAccess ? "Full access" : "Limited access"}
         </div>
-
-        {!hasAccess && (
-          <div className="text-sm text-gray-500">
-            Practice, progress, and mastery require a subscription.
-          </div>
-        )}
       </div>
 
-      <div className="flex gap-3 flex-wrap">
-        <a href="/maths" className="rounded-md border px-4 py-2">
-          Go to Maths
-        </a>
+      <div className="grid gap-6 md:grid-cols-2">
+        <section className="apple-card p-6 space-y-3">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Account
+          </div>
+          <div className="text-lg font-semibold">{role}</div>
+          <div className="apple-subtle">
+            {hasAccess
+              ? "You have access to lessons, practice, progress and mastery."
+              : "Practice, progress, and mastery require a subscription."}
+          </div>
+          <Link href="/account" className="apple-pill mt-2 inline-flex">
+            Manage account
+          </Link>
+        </section>
 
-        <a href="/account" className="rounded-md border px-4 py-2">
-          Account
-        </a>
-
-        {hasAccess ? (
-          <>
-            <a href="/progress" className="rounded-md border px-4 py-2">
-              Progress
-            </a>
-            <a href="/mastery" className="rounded-md border px-4 py-2">
-              Mastery
-            </a>
-          </>
-        ) : (
-          <a href="/pricing" className="rounded-md border px-4 py-2">
-            Subscribe
-          </a>
-        )}
-
-        {role === "admin" && (
-          <>
-            <a href="/admin" className="rounded-md border px-4 py-2">
-              Admin Panel
-            </a>
-            <a href="/admin/users" className="rounded-md border px-4 py-2">
-              Users
-            </a>
-          </>
-        )}
+        <section className="apple-card p-6 space-y-4">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Quick actions
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/maths" className="apple-button">
+              Go to Maths
+            </Link>
+            {hasAccess ? (
+              <>
+                <Link href="/progress" className="apple-pill">
+                  Progress
+                </Link>
+                <Link href="/mastery" className="apple-pill">
+                  Mastery
+                </Link>
+              </>
+            ) : (
+              <Link href="/pricing" className="apple-pill">
+                Subscribe
+              </Link>
+            )}
+            {role === "admin" && (
+              <>
+                <Link href="/admin" className="apple-pill">
+                  Admin Panel
+                </Link>
+                <Link href="/admin/users" className="apple-pill">
+                  Users
+                </Link>
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );

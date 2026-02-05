@@ -63,14 +63,14 @@ export default function QuestionRowActions({
     <div className="flex flex-col items-end gap-2">
       <div className="flex gap-2">
         <button
-          className="rounded-md border px-2 py-1 text-xs"
+          className="apple-pill px-3 py-1.5 text-xs"
           onClick={togglePublished}
           disabled={loading}
         >
           {published ? "Unpublish" : "Publish"}
         </button>
         <button
-          className="rounded-md border px-2 py-1 text-xs text-red-600"
+          className="apple-pill px-3 py-1.5 text-xs text-red-600 border-red-200/60"
           onClick={deleteQuestion}
           disabled={loading}
         >

@@ -57,14 +57,14 @@ export default function LessonRowActions({
     <div className="flex flex-col items-end gap-2">
       <div className="flex gap-2">
         <button
-          className="rounded-md border px-2 py-1 text-xs"
+          className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-black/5"
           onClick={togglePublished}
           disabled={loading}
         >
           {published ? "Unpublish" : "Publish"}
         </button>
         <button
-          className="rounded-md border px-2 py-1 text-xs text-red-600"
+          className="rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
           onClick={deleteLesson}
           disabled={loading}
         >
