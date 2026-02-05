@@ -29,19 +29,34 @@ export default async function proxy(req: NextRequest) {
     }
   );
 
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  if (authErr) {
+    console.error("[proxy] auth error", authErr.message);
+  }
+  const user = authData.user;
 
   if (!user) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileErr } = await supabase
     .from("profiles")
     .select("role, is_subscribed, access_override")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (profileErr) {
+    console.error("[proxy] profile error", profileErr.message);
+  } else {
+    console.log("[proxy] profile", {
+      userId: user.id,
+      role: profile?.role,
+      is_subscribed: profile?.is_subscribed,
+      access_override: profile?.access_override,
+      path: url.pathname,
+    });
+  }
 
   // Admin always allowed
   if (profile?.role === "admin") return res;
