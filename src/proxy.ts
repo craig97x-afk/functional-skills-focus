@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 // Next.js proxy (replacement for deprecated middleware) to gate premium routes.
 export async function proxy(req: NextRequest) {
@@ -33,14 +34,41 @@ export async function proxy(req: NextRequest) {
   if (authErr) {
     console.error("[proxy] auth error", authErr.message);
   }
-  const user = authData.user;
+  const {
+    data: { session },
+    error: sessionErr,
+  } = await supabase.auth.getSession();
+  if (sessionErr) {
+    console.error("[proxy] session error", sessionErr.message);
+  }
+  const user = session?.user ?? authData.user;
 
   if (!user) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  const { data: profile, error: profileErr } = await supabase
+  const authedClient =
+    session?.access_token
+      ? createSupabaseClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
+            },
+            global: {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            },
+          }
+        )
+      : supabase;
+
+  const { data: profile, error: profileErr } = await authedClient
     .from("profiles")
     .select("role, is_subscribed, access_override")
     .eq("id", user.id)
