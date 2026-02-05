@@ -2,11 +2,11 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import LessonForm from "./lesson-form";
 
-type Topic = {
+type TopicRow = {
   id: string;
   title: string;
   sort_order: number;
-  levels?: { code: string }[];
+  levels: { code: string }[];
 };
 
 type LessonRow = {
@@ -26,15 +26,25 @@ export default async function AdminLessonsPage() {
     .select("id, title, sort_order, levels(code)")
     .order("sort_order");
 
-  // 👇 make TypeScript calm down
-  const topics = (rawTopics ?? []) as unknown as Topic[];
+  const topics: TopicRow[] = (rawTopics ?? []).map((t: any) => ({
+    id: t.id,
+    title: t.title,
+    sort_order: t.sort_order,
+    levels: t.levels ?? [],
+  }));
 
   const { data: rawLessons } = await supabase
     .from("lessons")
     .select("id, title, sort_order, published, topics(title)")
     .order("sort_order");
 
-  const lessons = (rawLessons ?? []) as unknown as LessonRow[];
+  const lessons: LessonRow[] = (rawLessons ?? []).map((l: any) => ({
+    id: l.id,
+    title: l.title,
+    sort_order: l.sort_order,
+    published: l.published,
+    topics: l.topics ?? null,
+  }));
 
   return (
     <main className="p-6 space-y-6">

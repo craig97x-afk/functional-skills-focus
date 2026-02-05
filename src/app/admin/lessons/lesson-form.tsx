@@ -7,8 +7,9 @@ type Topic = {
   id: string;
   title: string;
   sort_order: number;
-  level?: { code: string };
+  levels?: { code: string }[];
 };
+
 
 export default function LessonForm({ topics }: { topics: Topic[] }) {
   const supabase = useMemo(() => createClient(), []);
@@ -47,7 +48,7 @@ export default function LessonForm({ topics }: { topics: Topic[] }) {
           onChange={(e) => setTopicId(e.target.value)}
         >
           {topics.map((t) => {
-            const code = t.level?.code;
+            const code = t.levels?.[0]?.code;
             return (
               <option key={t.id} value={t.id}>
                 {code ? `[${code}] ` : ""}
