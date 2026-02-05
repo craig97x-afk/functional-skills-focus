@@ -18,16 +18,39 @@ type Question = {
 };
 
 export default function LessonQuestions({ questions }: { questions: Question[] }) {
+  const [index, setIndex] = useState(0);
+
+  if (questions.length === 0) return null;
+
+  const q = questions[index];
+
   return (
     <div className="space-y-4">
-      {questions.map((q, idx) => (
-        <QuestionCard key={q.id} q={q} idx={idx} />
-      ))}
+      <QuestionCard
+        key={q.id}
+        q={q}
+        idx={index}
+        total={questions.length}
+        onNext={() => setIndex((i) => Math.min(i + 1, questions.length - 1))}
+        onPrev={() => setIndex((i) => Math.max(i - 1, 0))}
+      />
     </div>
   );
 }
 
-function QuestionCard({ q, idx }: { q: Question; idx: number }) {
+function QuestionCard({
+  q,
+  idx,
+  total,
+  onNext,
+  onPrev,
+}: {
+  q: Question;
+  idx: number;
+  total: number;
+  onNext: () => void;
+  onPrev: () => void;
+}) {
   const [selectedOpt, setSelectedOpt] = useState<string>("");
   const [shortAnswer, setShortAnswer] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -36,50 +59,31 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
 
   const correctOptionId = useMemo(() => {
     const opts = q.question_options ?? [];
-    const correct = opts.find((o) => o.is_correct);
-    return correct?.id ?? "";
+    return opts.find((o) => o.is_correct)?.id ?? "";
   }, [q.question_options]);
 
-  function checkAnswer() {
+  async function checkAnswer() {
     if (submitted) return;
 
+    let ok: boolean | null = null;
+
     if (q.type === "mcq") {
-      const ok = selectedOpt.length > 0 && selectedOpt === correctOptionId;
-
-      setSubmitted(true);
-      setIsCorrect(ok);
-      if (!ok) setShowHint(true);
-
-      // ✅ DEBUG: log status + response body
-      fetch("/api/practice/attempt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questionId: q.id, isCorrect: ok }),
-      })
-        .then(async (res) => {
-          const text = await res.text();
-          console.log("attempt status:", res.status, "body:", text);
-        })
-        .catch((err) => console.log("attempt fetch error:", err));
-
-      return;
+      ok = selectedOpt.length > 0 && selectedOpt === correctOptionId;
     }
 
-    // short-answer v1: can't auto-mark yet. We'll still record an attempt.
     setSubmitted(true);
-    setIsCorrect(null);
-    setShowHint(true);
+    setIsCorrect(ok);
+    if (ok === false) setShowHint(true);
 
+    // save attempt
     fetch("/api/practice/attempt", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ questionId: q.id, isCorrect: false }),
-    })
-      .then(async (res) => {
-        const text = await res.text();
-        console.log("attempt status:", res.status, "body:", text);
-      })
-      .catch((err) => console.log("attempt fetch error:", err));
+      body: JSON.stringify({
+        questionId: q.id,
+        isCorrect: ok,
+      }),
+    }).catch(() => {});
   }
 
   function reset() {
@@ -92,7 +96,9 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
 
   return (
     <div className="rounded-lg border p-4 space-y-3">
-      <div className="text-sm text-gray-400">Q{idx + 1}</div>
+      <div className="text-sm text-gray-400">
+        Question {idx + 1} of {total}
+      </div>
 
       <div className="font-medium whitespace-pre-wrap">{q.prompt}</div>
 
@@ -108,26 +114,18 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
                 onChange={() => setSelectedOpt(o.id)}
                 disabled={submitted}
               />
-              <span className="whitespace-pre-wrap">{o.label}</span>
+              <span>{o.label}</span>
             </label>
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
-          <label className="block text-sm">
-            Your answer
-            <input
-              className="mt-1 w-full rounded-md border p-2 bg-transparent"
-              value={shortAnswer}
-              onChange={(e) => setShortAnswer(e.target.value)}
-              disabled={submitted}
-              placeholder="Type your answer..."
-            />
-          </label>
-          <p className="text-xs text-gray-500">
-            Short-answer marking is “v1 self-check” right now (we’ll add real marking next).
-          </p>
-        </div>
+        <input
+          className="w-full rounded-md border p-2 bg-transparent"
+          value={shortAnswer}
+          onChange={(e) => setShortAnswer(e.target.value)}
+          disabled={submitted}
+          placeholder="Type your answer..."
+        />
       )}
 
       <div className="flex gap-2 flex-wrap">
@@ -148,34 +146,46 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
             className="rounded-md border px-3 py-2 text-sm"
             onClick={() => setShowHint((s) => !s)}
           >
-            {showHint ? "Hide hint" : "Show hint"}
+            Hint
           </button>
         )}
       </div>
 
       {submitted && q.type === "mcq" && (
-        <div className="text-sm">
-          {isCorrect ? (
-            <span className="font-semibold">✅ Correct</span>
-          ) : (
-            <span className="font-semibold">❌ Incorrect</span>
-          )}
+        <div className="text-sm font-semibold">
+          {isCorrect ? "Correct" : "Incorrect"}
         </div>
       )}
 
       {showHint && q.hint && (
         <div className="rounded-md border p-3 text-sm">
-          <div className="text-xs text-gray-400 mb-1">Hint</div>
-          <div className="whitespace-pre-wrap">{q.hint}</div>
+          {q.hint}
         </div>
       )}
 
       {submitted && q.solution_explainer && (
         <div className="rounded-md border p-3 text-sm">
-          <div className="text-xs text-gray-400 mb-1">Explanation</div>
-          <div className="whitespace-pre-wrap">{q.solution_explainer}</div>
+          {q.solution_explainer}
         </div>
       )}
+
+      <div className="flex gap-2 pt-2">
+        <button
+          className="rounded-md border px-3 py-2 text-sm"
+          onClick={onPrev}
+          disabled={idx === 0}
+        >
+          Previous
+        </button>
+
+        <button
+          className="rounded-md border px-3 py-2 text-sm"
+          onClick={onNext}
+          disabled={idx === total - 1}
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
