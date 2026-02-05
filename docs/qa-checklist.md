@@ -9,6 +9,8 @@
 - Checkout success
 - Webhook delivery 200
 - `profiles.is_subscribed = true`
+- `profiles.stripe_status` reflects active/trialing
+- `profiles.stripe_status_updated_at` updates on webhook/resync
 - Premium routes accessible
 
 ## Student (override)
@@ -22,4 +24,3 @@
 - Can edit/delete topics/lessons/questions
 - Can toggle user override
 - Billing audit page loads and resync works
-

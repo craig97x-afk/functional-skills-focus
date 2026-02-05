@@ -13,6 +13,21 @@ function band(score: number) {
   return "Beginner";
 }
 
+function confidence(total: number) {
+  if (total >= 15) return "High";
+  if (total >= 8) return "Medium";
+  if (total >= 1) return "Low";
+  return "No data";
+}
+
+function bandClasses(label: string, total: number) {
+  if (total === 0) return { badge: "bg-gray-800 text-gray-300", bar: "bg-gray-700" };
+  if (label === "Strong") return { badge: "bg-emerald-900 text-emerald-200", bar: "bg-emerald-400" };
+  if (label === "Solid") return { badge: "bg-sky-900 text-sky-200", bar: "bg-sky-400" };
+  if (label === "Building") return { badge: "bg-amber-900 text-amber-200", bar: "bg-amber-400" };
+  return { badge: "bg-rose-900 text-rose-200", bar: "bg-rose-400" };
+}
+
 export default async function MasteryPage() {
   const session = await getUser();
   if (!session) redirect("/login");
@@ -63,12 +78,15 @@ export default async function MasteryPage() {
     const total = arr.length;
     const correct = arr.filter((x) => x.is_correct === true).length;
     const score = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const bandLabel = total === 0 ? "No data" : band(score);
+    const confidenceLabel = confidence(total);
     return {
       topicId: t.id,
       title: t.title,
       score,
       total,
-      band: total === 0 ? "No data" : band(score),
+      band: bandLabel,
+      confidence: confidenceLabel,
     };
   });
 
@@ -80,21 +98,29 @@ export default async function MasteryPage() {
       </p>
 
       <div className="space-y-3">
-        {rows.map((r) => (
-          <div key={r.topicId} className="rounded-lg border p-4 space-y-2">
+        {rows.map((r) => {
+          const classes = bandClasses(r.band, r.total);
+          const scoreLabel = r.total === 0 ? "-" : `${r.score}%`;
+
+          return (
+            <div key={r.topicId} className="rounded-lg border p-4 space-y-2">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-semibold">{r.title}</div>
-                <div className="text-xs text-gray-400">
-                  {r.band} · {r.total}/20 attempts used
+                <div className="flex flex-wrap items-center gap-2 text-xs text-gray-400">
+                  <span className={`rounded-full px-2 py-0.5 ${classes.badge}`}>
+                    {r.band}
+                  </span>
+                  <span>{r.total}/20 attempts used</span>
+                  <span>Confidence: {r.confidence}</span>
                 </div>
               </div>
-              <div className="text-sm font-semibold">{r.total === 0 ? "-" : `${r.score}%`}</div>
+              <div className="text-sm font-semibold">{scoreLabel}</div>
             </div>
 
             <div className="h-2 w-full rounded bg-gray-800 overflow-hidden">
               <div
-                className="h-2 bg-white"
+                className={`h-2 ${classes.bar}`}
                 style={{ width: `${r.total === 0 ? 0 : r.score}%` }}
               />
             </div>
@@ -108,7 +134,8 @@ export default async function MasteryPage() {
               </a>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </main>
   );

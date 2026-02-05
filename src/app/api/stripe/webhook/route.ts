@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
     await supabase.from("profiles").update({
       is_subscribed: isActive(sub.status),
       stripe_subscription_id: sub.id,
+      stripe_status: sub.status,
+      stripe_status_updated_at: new Date().toISOString(),
     }).eq("stripe_customer_id", customerId);
   }
 

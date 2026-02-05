@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { stripe } from "@/lib/stripe";
 
 const supabaseAdmin = createAdminClient(
-  process.env.SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
@@ -45,7 +45,11 @@ export async function POST(req: Request) {
 
   const { error: updateErr } = await supabaseAdmin
     .from("profiles")
-    .update({ is_subscribed: isSubscribed })
+    .update({
+      is_subscribed: isSubscribed,
+      stripe_status: subscription.status,
+      stripe_status_updated_at: new Date().toISOString(),
+    })
     .eq("id", userId);
 
   if (updateErr) {
