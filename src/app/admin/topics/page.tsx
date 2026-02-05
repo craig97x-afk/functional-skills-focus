@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import TopicForm from "./topic-form";
@@ -30,9 +31,15 @@ export default async function AdminTopicsPage() {
               <div>
                 <div className="font-medium">{t.title}</div>
                 <div className="text-xs text-gray-500">
-                  Level: {t.level?.code ?? "?"} · Subject: {t.subject?.slug ?? "?"} · Order: {t.sort_order}
+                  Level: {t.level?.code ?? "?"} · Subject: {t.subject?.slug ?? "?"} · Order:{" "}
+                  {t.sort_order}
                 </div>
                 {t.description ? <div className="text-sm mt-1">{t.description}</div> : null}
+              </div>
+              <div className="shrink-0">
+                <Link className="text-sm underline" href={`/admin/topics/${t.id}`}>
+                  Edit
+                </Link>
               </div>
             </div>
           ))}

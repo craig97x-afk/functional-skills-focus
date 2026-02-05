@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import LessonForm from "./lesson-form";
@@ -70,6 +71,11 @@ export default async function AdminLessonsPage() {
                   Topic: {l.topics?.title ?? "?"} · Order: {l.sort_order} ·{" "}
                   {l.published ? "Published" : "Draft"}
                 </div>
+              </div>
+              <div className="shrink-0">
+                <Link className="text-sm underline" href={`/admin/lessons/${l.id}`}>
+                  Edit
+                </Link>
               </div>
             </div>
           ))}

@@ -24,6 +24,8 @@ export default function PracticeRunner({
   topicTitle: string;
   questions: Question[];
 }) {
+  const [activeQuestions, setActiveQuestions] = useState<Question[]>(questions);
+  const [mode, setMode] = useState<"all" | "wrong">("all");
   const [i, setI] = useState(0);
   const [selectedOpt, setSelectedOpt] = useState<string>("");
   const [shortAnswer, setShortAnswer] = useState("");
@@ -34,7 +36,8 @@ export default function PracticeRunner({
   const [done, setDone] = useState(false);
   const [wrongIds, setWrongIds] = useState<string[]>([]);
 
-  const q = questions[i];
+  const q = activeQuestions[i];
+  const scorableTotal = activeQuestions.filter((qq) => qq.type === "mcq").length;
 
   const correctOptionId = useMemo(() => {
     if (!q) return "";
@@ -51,7 +54,17 @@ export default function PracticeRunner({
     setShowHint(false);
   }
 
-  async function saveAttempt(questionId: string, ok: boolean) {
+  function resetSession(nextQuestions: Question[], nextMode: "all" | "wrong") {
+    setActiveQuestions(nextQuestions);
+    setMode(nextMode);
+    setI(0);
+    setDone(false);
+    setCorrectCount(0);
+    setWrongIds([]);
+    resetForNext();
+  }
+
+  async function saveAttempt(questionId: string, ok: boolean | null) {
     try {
       const res = await fetch("/api/practice/attempt", {
         method: "POST",
@@ -59,8 +72,6 @@ export default function PracticeRunner({
         body: JSON.stringify({ questionId, isCorrect: ok }),
       });
 
-      // keep it quiet, but if you're debugging:
-      // const txt = await res.text(); console.log(res.status, txt);
       void res;
     } catch {
       // ignore for v1
@@ -81,16 +92,16 @@ export default function PracticeRunner({
       return;
     }
 
-    // Short answer: v1 records attempt as false (we'll add marking later)
+    // Short answer: v1 records attempt as null (self-check)
     setSubmitted(true);
     setIsCorrect(null);
     setShowHint(true);
     setWrongIds((w) => (w.includes(q.id) ? w : [...w, q.id]));
-    void saveAttempt(q.id, false);
+    void saveAttempt(q.id, null);
   }
 
   function next() {
-    if (i + 1 >= questions.length) {
+    if (i + 1 >= activeQuestions.length) {
       setDone(true);
       return;
     }
@@ -105,20 +116,14 @@ export default function PracticeRunner({
   }
 
   function retryWrong() {
-    const wrong = questions.filter((qq) => wrongIds.includes(qq.id));
+    const wrong = activeQuestions.filter((qq) => wrongIds.includes(qq.id));
     if (wrong.length === 0) return;
+    resetSession(wrong, "wrong");
+  }
 
-    // restart session with wrong-only set
-    setI(0);
-    setDone(false);
-    setCorrectCount(0);
-    setWrongIds([]);
-    resetForNext();
-
-    // hack: replace questions in-place by reloading page with query param (simple v1)
-    const url = new URL(window.location.href);
-    url.searchParams.set("mode", "wrong");
-    window.location.href = url.toString();
+  function restartAll() {
+    if (questions.length === 0) return;
+    resetSession(questions, "all");
   }
 
   if (!q) {
@@ -130,16 +135,27 @@ export default function PracticeRunner({
   }
 
   if (done) {
-    const total = questions.length;
-    const score = Math.round((correctCount / total) * 100);
+    const total = activeQuestions.length;
+    const score =
+      scorableTotal > 0 ? Math.round((correctCount / scorableTotal) * 100) : null;
+    const wrongQuestions = activeQuestions.filter((qq) => wrongIds.includes(qq.id));
 
     return (
-      <div className="rounded-lg border p-4 space-y-3">
-        <div className="text-sm text-gray-400">Practice complete</div>
+      <div className="rounded-lg border p-4 space-y-4">
+        <div className="text-sm text-gray-400">
+          {mode === "wrong" ? "Retry wrong answers complete" : "Practice complete"}
+        </div>
         <div className="text-xl font-bold">{topicTitle}</div>
 
         <div className="text-sm">
-          Score: <span className="font-semibold">{correctCount}/{total}</span> ({score}%)
+          Score:{" "}
+          {scorableTotal > 0 ? (
+            <span className="font-semibold">
+              {correctCount}/{scorableTotal} ({score}%)
+            </span>
+          ) : (
+            <span className="font-semibold">N/A</span>
+          )}
         </div>
 
         <div className="flex gap-2 flex-wrap">
@@ -149,15 +165,37 @@ export default function PracticeRunner({
           <a className="rounded-md border px-3 py-2 text-sm" href="/mastery">
             View mastery
           </a>
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => window.location.reload()}>
-            Practice again
+          <button
+            className="rounded-md border px-3 py-2 text-sm"
+            onClick={restartAll}
+          >
+            Practice full set
+          </button>
+          <button
+            className="rounded-md border px-3 py-2 text-sm"
+            onClick={retryWrong}
+            disabled={wrongIds.length === 0}
+          >
+            Retry wrong
           </button>
         </div>
 
-        {wrongIds.length > 0 && (
-          <p className="text-xs text-gray-500">
-            You got {wrongIds.length} wrong. (We’ll add a “retry wrong” mode properly next.)
-          </p>
+        {wrongQuestions.length > 0 && (
+          <div className="rounded-md border p-3 space-y-2">
+            <div className="text-xs text-gray-400">Review wrong answers</div>
+            <ul className="space-y-2 text-sm">
+              {wrongQuestions.map((w) => (
+                <li key={w.id} className="space-y-1">
+                  <div className="font-medium whitespace-pre-wrap">{w.prompt}</div>
+                  {w.solution_explainer && (
+                    <div className="text-xs text-gray-400 whitespace-pre-wrap">
+                      {w.solution_explainer}
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     );
@@ -167,10 +205,12 @@ export default function PracticeRunner({
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm text-gray-400">
         <div>
-          {topicTitle} · Q{i + 1}/{questions.length}
+          {topicTitle} · Q{i + 1}/{activeQuestions.length}
+          {mode === "wrong" ? " · retry wrong" : ""}
         </div>
         <div>
           Correct: {correctCount}
+          {scorableTotal > 0 ? `/${scorableTotal}` : ""}
         </div>
       </div>
 
@@ -220,7 +260,11 @@ export default function PracticeRunner({
             Check answer
           </button>
 
-          <button className="rounded-md border px-3 py-2 text-sm" onClick={() => setShowHint((s) => !s)} disabled={!q.hint}>
+          <button
+            className="rounded-md border px-3 py-2 text-sm"
+            onClick={() => setShowHint((s) => !s)}
+            disabled={!q.hint}
+          >
             {showHint ? "Hide hint" : "Show hint"}
           </button>
 
@@ -241,6 +285,10 @@ export default function PracticeRunner({
               <span className="font-semibold">❌ Incorrect</span>
             )}
           </div>
+        )}
+
+        {submitted && q.type === "short" && (
+          <div className="text-sm font-semibold">Self-check your answer</div>
         )}
 
         {showHint && q.hint && (

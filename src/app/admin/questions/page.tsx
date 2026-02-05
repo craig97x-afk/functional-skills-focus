@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import QuestionForm from "./question-form";
@@ -56,14 +57,21 @@ export default async function AdminQuestionsPage() {
 
         <div className="space-y-2">
           {(questions ?? []).map((q) => (
-            <div key={q.id} className="rounded-md border p-3">
-              <div className="font-medium">{q.prompt}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                Type: {q.type.toUpperCase()} · {q.published ? "Published" : "Draft"}
-                {" · "}
-                Topic: {q.topics?.title ?? "?"}
-                {" · "}
-                Lesson: {q.lessons?.title ?? "None"}
+            <div key={q.id} className="flex items-start justify-between rounded-md border p-3">
+              <div>
+                <div className="font-medium">{q.prompt}</div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Type: {q.type.toUpperCase()} · {q.published ? "Published" : "Draft"}
+                  {" · "}
+                  Topic: {q.topics?.title ?? "?"}
+                  {" · "}
+                  Lesson: {q.lessons?.title ?? "None"}
+                </div>
+              </div>
+              <div className="shrink-0">
+                <Link className="text-sm underline" href={`/admin/questions/${q.id}`}>
+                  Edit
+                </Link>
               </div>
             </div>
           ))}
