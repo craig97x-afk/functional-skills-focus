@@ -3,6 +3,7 @@ import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import LessonQuestions from "./lesson-questions";
 
 type LessonRow = {
   id: string;
@@ -49,7 +50,6 @@ export default async function LessonPage({
     redirect(`/maths/${level}/${topicId}`);
   }
 
-  // ✅ Pull questions linked to THIS lesson and published
   const { data: questionsRaw } = await supabase
     .from("questions")
     .select(
@@ -85,7 +85,9 @@ export default async function LessonPage({
 
       <article className="prose max-w-none">
         {lesson.body ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.body}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {lesson.body}
+          </ReactMarkdown>
         ) : (
           <p>No content yet.</p>
         )}
@@ -99,28 +101,7 @@ export default async function LessonPage({
             No published questions linked to this lesson yet.
           </p>
         ) : (
-          <div className="space-y-3">
-            {questions.map((q, idx) => (
-              <div key={q.id} className="rounded-lg border p-4 space-y-2">
-                <div className="text-sm text-gray-500">Q{idx + 1}</div>
-                <div className="font-medium whitespace-pre-wrap">{q.prompt}</div>
-
-                {q.type === "mcq" && (q.question_options ?? []).length > 0 && (
-                  <ul className="list-disc pl-5 text-sm">
-                    {(q.question_options ?? []).map((o) => (
-                      <li key={o.id}>{o.label}</li>
-                    ))}
-                  </ul>
-                )}
-
-                {q.hint && (
-                  <div className="text-xs text-gray-500">
-                    Hint available
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+          <LessonQuestions questions={questions} />
         )}
       </section>
     </main>
