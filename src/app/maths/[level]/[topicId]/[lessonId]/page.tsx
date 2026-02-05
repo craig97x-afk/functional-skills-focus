@@ -11,6 +11,22 @@ type LessonRow = {
   published: boolean;
 };
 
+type QuestionOptionRow = {
+  id: string;
+  label: string;
+  is_correct: boolean;
+};
+
+type QuestionRow = {
+  id: string;
+  type: "mcq" | "short";
+  prompt: string;
+  hint: string | null;
+  solution_explainer: string | null;
+  published: boolean;
+  question_options: QuestionOptionRow[] | null;
+};
+
 export default async function LessonPage({
   params,
 }: {
@@ -29,24 +45,84 @@ export default async function LessonPage({
     .eq("id", lessonId)
     .maybeSingle<LessonRow>();
 
-  // If lesson missing/unpublished, go back to the topic page (and DO NOT use params.* here)
   if (!lesson || !lesson.published) {
     redirect(`/maths/${level}/${topicId}`);
   }
 
+  // ✅ Pull questions linked to THIS lesson and published
+  const { data: questionsRaw } = await supabase
+    .from("questions")
+    .select(
+      `
+      id,
+      type,
+      prompt,
+      hint,
+      solution_explainer,
+      published,
+      question_options (
+        id,
+        label,
+        is_correct
+      )
+    `
+    )
+    .eq("lesson_id", lessonId)
+    .eq("published", true)
+    .order("created_at");
+
+  const questions = (questionsRaw ?? []) as QuestionRow[];
+
   return (
-    <main className="p-6 space-y-4 max-w-3xl">
+    <main className="p-6 space-y-6 max-w-3xl">
+      <div>
+        <a className="text-sm underline" href={`/maths/${level}/${topicId}`}>
+          ← Back to topic
+        </a>
+      </div>
+
       <h1 className="text-2xl font-bold">{lesson.title}</h1>
 
       <article className="prose max-w-none">
         {lesson.body ? (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {lesson.body}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{lesson.body}</ReactMarkdown>
         ) : (
           <p>No content yet.</p>
         )}
       </article>
+
+      <section className="space-y-3">
+        <h2 className="text-xl font-semibold">Questions</h2>
+
+        {questions.length === 0 ? (
+          <p className="text-sm text-gray-600">
+            No published questions linked to this lesson yet.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {questions.map((q, idx) => (
+              <div key={q.id} className="rounded-lg border p-4 space-y-2">
+                <div className="text-sm text-gray-500">Q{idx + 1}</div>
+                <div className="font-medium whitespace-pre-wrap">{q.prompt}</div>
+
+                {q.type === "mcq" && (q.question_options ?? []).length > 0 && (
+                  <ul className="list-disc pl-5 text-sm">
+                    {(q.question_options ?? []).map((o) => (
+                      <li key={o.id}>{o.label}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {q.hint && (
+                  <div className="text-xs text-gray-500">
+                    Hint available
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
