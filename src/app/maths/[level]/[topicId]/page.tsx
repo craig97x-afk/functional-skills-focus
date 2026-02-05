@@ -5,8 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 export default async function TopicLessonsPage({
   params,
 }: {
-  params: { level: string; topicId: string };
+  params: Promise<{ level: string; topicId: string }>;
 }) {
+  const { level, topicId } = await params;
+
   const session = await getUser();
   if (!session) redirect("/login");
 
@@ -15,23 +17,24 @@ export default async function TopicLessonsPage({
   const { data: topic } = await supabase
     .from("topics")
     .select("title")
-    .eq("id", params.topicId)
+    .eq("id", topicId)
     .single();
 
-  if (!topic) redirect(`/maths/${params.level}`);
+  if (!topic) redirect(`/maths/${level}`);
 
   const { data: lessons } = await supabase
     .from("lessons")
     .select("id, title, sort_order")
-    .eq("topic_id", params.topicId)
+    .eq("topic_id", topicId)
     .eq("published", true)
     .order("sort_order");
 
   return (
     <main className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">{topic.title}</h1>
+
       <a
-        href={`/practice/${params.topicId}`}
+        href={`/practice/${topicId}`}
         className="inline-block rounded-md border px-3 py-2"
       >
         Practice questions
@@ -41,7 +44,7 @@ export default async function TopicLessonsPage({
         {(lessons ?? []).map((l) => (
           <a
             key={l.id}
-            href={`/maths/${params.level}/${params.topicId}/${l.id}`}
+            href={`/maths/${level}/${topicId}/${l.id}`}
             className="block rounded-md border p-3 hover:bg-gray-50"
           >
             {l.title}
@@ -49,7 +52,9 @@ export default async function TopicLessonsPage({
         ))}
 
         {(!lessons || lessons.length === 0) && (
-          <p className="text-sm text-gray-500">No lessons published yet.</p>
+          <p className="text-sm text-gray-500">
+            No lessons published yet.
+          </p>
         )}
       </div>
     </main>
