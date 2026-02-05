@@ -1,71 +1,70 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { stripe } from "@/lib/stripe";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
 
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
 
-export async function POST(req: Request) {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+function isActive(status?: string | null) {
+  return status === "active" || status === "trialing";
+}
+
+export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
-  const body = await req.text();
+  if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });
 
-  if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+  const rawBody = await req.text();
 
   let event: Stripe.Event;
-
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = stripe.webhooks.constructEvent(
+      rawBody,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
   } catch (err: any) {
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
-  // handle checkout completion (gives us the user_id)
+  const supabase = await createClient();
+
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
+    const s = event.data.object as Stripe.Checkout.Session;
 
-    const userId = session.metadata?.user_id;
-    const customerId = typeof session.customer === "string" ? session.customer : null;
-    const subscriptionId = typeof session.subscription === "string" ? session.subscription : null;
+    const userId =
+      (s.client_reference_id as string | null) ||
+      (s.metadata?.user_id as string | undefined);
 
-    if (userId) {
-      await supabaseAdmin.from("subscriptions").upsert({
-        user_id: userId,
+    const customerId =
+      typeof s.customer === "string" ? s.customer : s.customer?.id;
+
+    const subId =
+      typeof s.subscription === "string"
+        ? s.subscription
+        : s.subscription?.id;
+
+    if (userId && customerId) {
+      await supabase.from("profiles").update({
         stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        status: "active",
-        price_id: process.env.STRIPE_PRICE_ID!,
-        updated_at: new Date().toISOString(),
-      });
+        stripe_subscription_id: subId ?? null,
+      }).eq("id", userId);
     }
   }
 
-  // handle subscription status updates
   if (
+    event.type === "customer.subscription.created" ||
     event.type === "customer.subscription.updated" ||
-    event.type === "customer.subscription.deleted" ||
-    event.type === "customer.subscription.created"
+    event.type === "customer.subscription.deleted"
   ) {
     const sub = event.data.object as Stripe.Subscription;
+    const customerId =
+      typeof sub.customer === "string" ? sub.customer : sub.customer.id;
 
-    const subscriptionId = sub.id;
-    const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
-
-    const status = sub.status;
-    const currentPeriodEnd = (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000).toISOString() : null;
-
-    // find matching user row by stripe ids
-    await supabaseAdmin
-      .from("subscriptions")
-      .update({
-        status,
-        current_period_end: currentPeriodEnd,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("stripe_subscription_id", subscriptionId)
-      .eq("stripe_customer_id", customerId);
+    await supabase.from("profiles").update({
+      is_subscribed: isActive(sub.status),
+      stripe_subscription_id: sub.id,
+    }).eq("stripe_customer_id", customerId);
   }
 
   return NextResponse.json({ received: true });

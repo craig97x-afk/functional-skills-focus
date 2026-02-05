@@ -1,23 +1,41 @@
-import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { getUser } from "@/lib/auth/get-user";
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+import { createClient } from "@/lib/supabase/server";
 
-export async function POST(req: Request) {
-  const session = await getUser();
-  if (!session) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+export const runtime = "nodejs";
 
-  const { origin } = new URL(req.url);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const checkout = await stripe.checkout.sessions.create({
+export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) {
+    return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+  }
+
+  const origin = req.headers.get("origin") ?? "http://localhost:3000";
+
+  const session = await stripe.checkout.sessions.create({
     mode: "subscription",
-    customer_email: session.user.email ?? undefined,
-    line_items: [{ price: process.env.STRIPE_PRICE_ID!, quantity: 1 }],
+    payment_method_types: ["card"],
+
+    line_items: [
+      {
+        price: process.env.STRIPE_PRICE_ID!, // ← your price_...
+        quantity: 1,
+      },
+    ],
+
     success_url: `${origin}/billing/success`,
     cancel_url: `${origin}/pricing`,
+
+    client_reference_id: user.id,
     metadata: {
-      user_id: session.user.id,
+      user_id: user.id,
     },
   });
 
-  return NextResponse.json({ url: checkout.url });
+  return NextResponse.json({ url: session.url });
 }

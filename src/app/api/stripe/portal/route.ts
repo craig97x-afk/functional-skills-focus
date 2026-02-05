@@ -1,36 +1,33 @@
-import { NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
-import { getUser } from "@/lib/auth/get-user";
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
 
-export async function POST(req: Request) {
-  const session = await getUser();
-  if (!session) {
-    return NextResponse.json({ error: "Not logged in" }, { status: 401 });
-  }
+export const runtime = "nodejs";
 
-  // Admins don't need billing
-  if (session.profile?.role === "admin") {
-    return NextResponse.json({ error: "Admins do not have subscriptions" }, { status: 400 });
-  }
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+export async function POST(req: NextRequest) {
   const supabase = await createClient();
 
-  const { data: sub } = await supabase
-    .from("subscriptions")
+  const { data } = await supabase.auth.getUser();
+  const user = data.user;
+  if (!user) return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+
+  const { data: profile } = await supabase
+    .from("profiles")
     .select("stripe_customer_id")
-    .eq("user_id", session.user.id)
+    .eq("id", user.id)
     .single();
 
-  if (!sub?.stripe_customer_id) {
-    return NextResponse.json({ error: "No subscription found" }, { status: 400 });
+  if (!profile?.stripe_customer_id) {
+    return NextResponse.json({ error: "No Stripe customer" }, { status: 400 });
   }
 
-  const { origin } = new URL(req.url);
+  const origin = req.headers.get("origin") ?? "http://localhost:3000";
 
   const portal = await stripe.billingPortal.sessions.create({
-    customer: sub.stripe_customer_id,
-    return_url: `${origin}/dashboard`,
+    customer: profile.stripe_customer_id,
+    return_url: `${origin}/account`,
   });
 
   return NextResponse.json({ url: portal.url });
