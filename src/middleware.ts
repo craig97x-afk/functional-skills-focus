@@ -38,18 +38,22 @@ export async function middleware(req: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("is_subscribed, role")
+    .select("role, is_subscribed, access_override")
     .eq("id", user.id)
     .maybeSingle();
 
+  // Admin always allowed
   if (profile?.role === "admin") return res;
 
-  if (!profile?.is_subscribed) {
-    url.pathname = "/pricing";
-    return NextResponse.redirect(url);
-  }
+  // Manual override allowed
+  if (profile?.access_override) return res;
 
-  return res;
+  // Paid users allowed
+  if (profile?.is_subscribed) return res;
+
+  // Everyone else gets pricing
+  url.pathname = "/pricing";
+  return NextResponse.redirect(url);
 }
 
 export const config = {
