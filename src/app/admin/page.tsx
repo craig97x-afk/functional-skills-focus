@@ -22,6 +22,9 @@ export default async function AdminPage() {
         <Link className="rounded-md border px-3 py-2" href="/admin/users">
           Manage Users
         </Link>
+        <Link className="rounded-md border px-3 py-2" href="/admin/billing">
+          Billing Audit
+        </Link>
 
       </div>
     </main>
