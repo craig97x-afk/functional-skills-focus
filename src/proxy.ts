@@ -76,14 +76,6 @@ export async function proxy(req: NextRequest) {
 
   if (profileErr) {
     console.error("[proxy] profile error", profileErr.message);
-  } else {
-    console.log("[proxy] profile", {
-      userId: user.id,
-      role: profile?.role,
-      is_subscribed: profile?.is_subscribed,
-      access_override: profile?.access_override,
-      path: url.pathname,
-    });
   }
 
   // Admin always allowed
