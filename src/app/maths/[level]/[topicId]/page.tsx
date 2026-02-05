@@ -1,57 +1,70 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import PracticeRunner from "./practice-runner";
 
-export default async function TopicLessonsPage({
+type OptionRow = {
+  id: string;
+  label: string;
+  is_correct: boolean;
+};
+
+type QuestionRow = {
+  id: string;
+  type: "mcq" | "short";
+  prompt: string;
+  hint: string | null;
+  solution_explainer: string | null;
+  published: boolean;
+  question_options: OptionRow[] | null;
+};
+
+export default async function PracticeTopicPage({
   params,
 }: {
-  params: { level: string; topicId: string };
+  params: { topicId: string };
 }) {
   const session = await getUser();
   if (!session) redirect("/login");
 
   const supabase = await createClient();
 
-  const { data: topic } = await supabase
-    .from("topics")
-    .select("title")
-    .eq("id", params.topicId)
-    .single();
-
-  if (!topic) redirect(`/maths/${params.level}`);
-
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("id, title, sort_order")
+  const { data: questionsRaw } = await supabase
+    .from("questions")
+    .select(
+      `
+      id,
+      type,
+      prompt,
+      hint,
+      solution_explainer,
+      published,
+      question_options (
+        id,
+        label,
+        is_correct
+      )
+    `
+    )
     .eq("topic_id", params.topicId)
     .eq("published", true)
-    .order("sort_order");
+    .order("created_at", { ascending: true });
+
+  const questions = ((questionsRaw ?? []) as unknown as QuestionRow[]).filter(
+    (q) => q.published
+  );
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{topic.title}</h1>
-      <a
-        href={`/practice/${params.topicId}`}
-        className="inline-block rounded-md border px-3 py-2"
-      >
-        Practice questions
-      </a>
+    <main className="p-6 space-y-4 max-w-3xl">
+      <h1 className="text-2xl font-bold">Practice</h1>
 
-      <div className="space-y-2">
-        {(lessons ?? []).map((l) => (
-          <a
-            key={l.id}
-            href={`/maths/${params.level}/${params.topicId}/${l.id}`}
-            className="block rounded-md border p-3 hover:bg-gray-50"
-          >
-            {l.title}
-          </a>
-        ))}
-
-        {(!lessons || lessons.length === 0) && (
-          <p className="text-sm text-gray-500">No lessons published yet.</p>
-        )}
-      </div>
+      {questions.length === 0 ? (
+        <p className="text-sm text-gray-600">
+          No published questions for this topic yet.
+        </p>
+      ) : (
+        <PracticeRunner questions={questions} />
+      )}
     </main>
   );
 }
