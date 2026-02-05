@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 type Option = {
   id: string;
   label: string;
-  is_correct?: boolean; // may be present from server select
+  is_correct?: boolean;
 };
 
 type Question = {
@@ -45,17 +45,39 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
 
     if (q.type === "mcq") {
       const ok = selectedOpt.length > 0 && selectedOpt === correctOptionId;
+
       setSubmitted(true);
       setIsCorrect(ok);
       if (!ok) setShowHint(true);
+
+      // ✅ save attempt (fire-and-forget)
+      fetch("/api/practice/attempt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          questionId: q.id,
+          isCorrect: ok,
+        }),
+      }).catch(() => {});
+
       return;
     }
 
-    // short-answer v1: we can only do "self-check" unless you store an answer field.
-    // For now: mark submitted and reveal explanation/hint.
+    // short-answer v1: can't auto-mark yet. We'll record as an attempt anyway.
     setSubmitted(true);
     setIsCorrect(null);
     setShowHint(true);
+
+    // ✅ record attempt as "unknown/false" for now (pick one)
+    // If you want: change isCorrect to null later when DB supports it.
+    fetch("/api/practice/attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questionId: q.id,
+        isCorrect: false,
+      }),
+    }).catch(() => {});
   }
 
   function reset() {

@@ -1,21 +1,25 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getUser } from "@/lib/auth/get-user";
+import { createClient } from "@/lib/supabase/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const session = await getUser();
   if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
-  const { questionId, isCorrect } = await req.json();
+  const body = await req.json().catch(() => null);
+
+  const questionId = body?.questionId as string | undefined;
+  const isCorrect = body?.isCorrect as boolean | undefined;
 
   if (!questionId || typeof isCorrect !== "boolean") {
-    return NextResponse.json({ error: "Bad payload" }, { status: 400 });
+    return NextResponse.json({ error: "Missing questionId or isCorrect" }, { status: 400 });
   }
 
   const supabase = await createClient();
 
+  // Insert attempt
   const { error } = await supabase.from("practice_attempts").insert({
     user_id: session.user.id,
     question_id: questionId,
