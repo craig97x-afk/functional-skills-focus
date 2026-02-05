@@ -3,7 +3,7 @@ import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 
 type TopicRow = { id: string; title: string; sort_order: number };
-type AttemptRow = { question_id: string; is_correct: boolean; created_at: string };
+type AttemptRow = { question_id: string; is_correct: boolean | null; created_at: string };
 type QuestionRow = { id: string; topic_id: string };
 
 function band(score: number) {
@@ -29,10 +29,12 @@ export default async function MasteryPage() {
   const { data: attemptsRaw } = await supabase
     .from("practice_attempts")
     .select("question_id, is_correct, created_at")
+    .eq("user_id", session.user.id)
     .order("created_at", { ascending: false });
 
   const attempts = (attemptsRaw ?? []) as AttemptRow[];
-  const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
+  const scoredAttempts = attempts.filter((a) => a.is_correct !== null);
+  const questionIds = Array.from(new Set(scoredAttempts.map((a) => a.question_id)));
 
   const { data: questionsRaw } =
     questionIds.length > 0
@@ -46,7 +48,7 @@ export default async function MasteryPage() {
 
   // take last 20 attempts per topic
   const perTopicAttempts = new Map<string, AttemptRow[]>();
-  for (const a of attempts) {
+  for (const a of scoredAttempts) {
     const topicId = qToTopic.get(a.question_id);
     if (!topicId) continue;
     const arr = perTopicAttempts.get(topicId) ?? [];
@@ -59,7 +61,7 @@ export default async function MasteryPage() {
   const rows = topics.map((t) => {
     const arr = perTopicAttempts.get(t.id) ?? [];
     const total = arr.length;
-    const correct = arr.filter((x) => x.is_correct).length;
+    const correct = arr.filter((x) => x.is_correct === true).length;
     const score = total > 0 ? Math.round((correct / total) * 100) : 0;
     return {
       topicId: t.id,

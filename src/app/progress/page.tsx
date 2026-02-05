@@ -3,7 +3,7 @@ import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 
 type TopicRow = { id: string; title: string; sort_order: number };
-type AttemptRow = { question_id: string; is_correct: boolean; created_at: string };
+type AttemptRow = { question_id: string; is_correct: boolean | null; created_at: string };
 type QuestionRow = { id: string; topic_id: string };
 
 export default async function ProgressPage() {
@@ -23,6 +23,7 @@ export default async function ProgressPage() {
   const { data: attemptsRaw, error: attemptsErr } = await supabase
     .from("practice_attempts")
     .select("question_id, is_correct, created_at")
+    .eq("user_id", session.user.id)
     .order("created_at", { ascending: false });
 
   if (attemptsErr) {
@@ -35,7 +36,8 @@ export default async function ProgressPage() {
   }
 
   const attempts = (attemptsRaw ?? []) as AttemptRow[];
-  const questionIds = Array.from(new Set(attempts.map((a) => a.question_id)));
+  const scoredAttempts = attempts.filter((a) => a.is_correct !== null);
+  const questionIds = Array.from(new Set(scoredAttempts.map((a) => a.question_id)));
 
   // Map question_id -> topic_id
   const { data: questionsRaw } =
@@ -54,13 +56,13 @@ export default async function ProgressPage() {
     { attempts: number; correct: number; lastAttemptAt: string | null }
   >();
 
-  for (const a of attempts) {
+  for (const a of scoredAttempts) {
     const topicId = qToTopic.get(a.question_id);
     if (!topicId) continue;
 
     const s = stats.get(topicId) ?? { attempts: 0, correct: 0, lastAttemptAt: null };
     s.attempts += 1;
-    if (a.is_correct) s.correct += 1;
+    if (a.is_correct === true) s.correct += 1;
     if (!s.lastAttemptAt) s.lastAttemptAt = a.created_at; // attempts already sorted desc
     stats.set(topicId, s);
   }
