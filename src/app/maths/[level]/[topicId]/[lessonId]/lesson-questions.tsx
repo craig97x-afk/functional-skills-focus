@@ -49,7 +49,9 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
       setSubmitted(true);
       setIsCorrect(ok);
       if (!ok) setShowHint(true);
+    
 
+      
       // ✅ save attempt (fire-and-forget)
       fetch("/api/practice/attempt", {
         method: "POST",

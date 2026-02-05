@@ -9,7 +9,6 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-
   const questionId = body?.questionId as string | undefined;
   const isCorrect = body?.isCorrect as boolean | undefined;
 
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
 
   const supabase = await createClient();
 
-  // Insert attempt
   const { error } = await supabase.from("practice_attempts").insert({
     user_id: session.user.id,
     question_id: questionId,
