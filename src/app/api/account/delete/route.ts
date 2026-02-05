@@ -23,22 +23,21 @@ export async function POST() {
   // Cancel Stripe subscription if present
   try {
     const supabase = await createClient();
-    const { data: sub } = await supabase
-      .from("subscriptions")
+    const { data: profile } = await supabase
+      .from("profiles")
       .select("stripe_subscription_id")
-      .eq("user_id", userId)
+      .eq("id", userId)
       .single();
 
-    if (sub?.stripe_subscription_id) {
-      await stripe.subscriptions.cancel(sub.stripe_subscription_id);
+    if (profile?.stripe_subscription_id) {
+      await stripe.subscriptions.cancel(profile.stripe_subscription_id);
     }
   } catch {
     // don't block deletion if Stripe cancel fails
   }
 
   // Delete related rows (most will cascade, but be explicit)
-  await supabaseAdmin.from("attempts").delete().eq("user_id", userId);
-  await supabaseAdmin.from("subscriptions").delete().eq("user_id", userId);
+  await supabaseAdmin.from("practice_attempts").delete().eq("user_id", userId);
   await supabaseAdmin.from("profiles").delete().eq("id", userId);
 
   // Delete Auth user (this is the actual account)

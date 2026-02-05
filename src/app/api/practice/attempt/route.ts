@@ -11,10 +11,13 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   const questionId = body?.questionId as string | undefined;
-  const isCorrect = body?.isCorrect as boolean | undefined;
+  const isCorrect = body?.isCorrect as boolean | null | undefined;
 
-  if (!questionId || typeof isCorrect !== "boolean") {
-    return NextResponse.json({ error: "Missing questionId or isCorrect" }, { status: 400 });
+  if (!questionId || (isCorrect !== true && isCorrect !== false && isCorrect !== null)) {
+    return NextResponse.json(
+      { error: "Missing questionId or isCorrect (boolean or null)" },
+      { status: 400 }
+    );
   }
 
   const { error } = await supabase.from("practice_attempts").insert({

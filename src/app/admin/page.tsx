@@ -19,6 +19,9 @@ export default async function AdminPage() {
         <Link className="rounded-md border px-3 py-2" href="/admin/questions">
           Manage Questions
         </Link>
+        <Link className="rounded-md border px-3 py-2" href="/admin/users">
+          Manage Users
+        </Link>
 
       </div>
     </main>

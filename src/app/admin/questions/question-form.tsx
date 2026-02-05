@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 type Topic = {
   id: string;
   title: string;
-  levels?: { code: string }[];
+  level?: { code: string } | null;
 };
 
 type Lesson = {
@@ -106,19 +106,19 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
           <span className="text-sm">Topic</span>
           <select
             className="mt-1 w-full rounded-md border p-2"
-            value={topicId}
-            onChange={(e) => {
-              setTopicId(e.target.value);
-              setLessonId("");
-            }}
-          >
-            {topics.map((t) => {
-              const code = t.levels?.[0]?.code;
-              return (
-                <option key={t.id} value={t.id}>
-                  {code ? `[${code}] ` : ""}
-                  {t.title}
-                </option>
+          value={topicId}
+          onChange={(e) => {
+            setTopicId(e.target.value);
+            setLessonId("");
+          }}
+        >
+          {topics.map((t) => {
+            const code = t.level?.code;
+            return (
+              <option key={t.id} value={t.id}>
+                {code ? `[${code}] ` : ""}
+                {t.title}
+              </option>
               );
             })}
           </select>

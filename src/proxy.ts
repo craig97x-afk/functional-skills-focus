@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(req: NextRequest) {
+// Next.js proxy (replacement for deprecated middleware) to gate premium routes.
+export default async function middleware(req: NextRequest) {
   const url = req.nextUrl;
 
   const protectedPrefixes = ["/practice", "/progress", "/mastery"];

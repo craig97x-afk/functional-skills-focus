@@ -5,7 +5,7 @@ import QuestionForm from "./question-form";
 type Topic = {
   id: string;
   title: string;
-  level: { code: string };
+  level: { code: string } | null;
 };
 
 type Lesson = {
