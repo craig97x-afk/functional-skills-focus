@@ -2,19 +2,34 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import LessonForm from "./lesson-form";
 
+type Topic = {
+  id: string;
+  title: string;
+  sort_order: number;
+  level: { code: string };
+};
+
+type LessonRow = {
+  id: string;
+  title: string;
+  sort_order: number;
+  published: boolean;
+  topics: { title: string } | null;
+};
+
 export default async function AdminLessonsPage() {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { data: topics } = await supabase
+  const { data: topics } = (await supabase
     .from("topics")
-    .select("id, title, sort_order, levels(code)")
-    .order("sort_order");
+    .select("id, title, sort_order, level:level_id(code)")
+    .order("sort_order")) as { data: Topic[] | null };
 
-  const { data: lessons } = await supabase
+  const { data: lessons } = (await supabase
     .from("lessons")
     .select("id, title, sort_order, published, topics(title)")
-    .order("sort_order");
+    .order("sort_order")) as { data: LessonRow[] | null };
 
   return (
     <main className="p-6 space-y-6">
@@ -27,19 +42,27 @@ export default async function AdminLessonsPage() {
 
       <section className="rounded-lg border p-4">
         <h2 className="font-semibold mb-3">Existing lessons</h2>
+
         <div className="space-y-2">
-          {(lessons ?? []).map((l: any) => (
-            <div key={l.id} className="flex items-start justify-between rounded-md border p-3">
+          {(lessons ?? []).map((l) => (
+            <div
+              key={l.id}
+              className="flex items-start justify-between rounded-md border p-3"
+            >
               <div>
                 <div className="font-medium">{l.title}</div>
                 <div className="text-xs text-gray-500">
-                  Topic: {l.topics?.title ?? "?"} · Order: {l.sort_order} · {l.published ? "Published" : "Draft"}
+                  Topic: {l.topics?.title ?? "?"} · Order: {l.sort_order} ·{" "}
+                  {l.published ? "Published" : "Draft"}
                 </div>
               </div>
             </div>
           ))}
+
           {(!lessons || lessons.length === 0) && (
-            <div className="text-sm text-gray-500">No lessons yet. Create your first one above.</div>
+            <div className="text-sm text-gray-500">
+              No lessons yet. Create your first one above.
+            </div>
           )}
         </div>
       </section>

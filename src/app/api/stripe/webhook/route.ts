@@ -54,7 +54,7 @@ export async function POST(req: Request) {
     const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
 
     const status = sub.status;
-    const currentPeriodEnd = new Date(sub.current_period_end * 1000).toISOString();
+    const currentPeriodEnd = (sub as any).current_period_end ? new Date((sub as any).current_period_end * 1000).toISOString() : null;
 
     // find matching user row by stripe ids
     await supabaseAdmin

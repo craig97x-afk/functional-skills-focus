@@ -10,7 +10,7 @@ export default async function AdminTopicsPage() {
   const { data: levels } = await supabase.from("levels").select("*").order("sort_order");
   const { data: topics } = await supabase
     .from("topics")
-    .select("id, title, description, sort_order, levels(code), subjects(slug)")
+    .select("id, title, description, sort_order, level:level_id(code), subject:subject_id(slug)")
     .order("sort_order");
 
   return (
@@ -30,7 +30,7 @@ export default async function AdminTopicsPage() {
               <div>
                 <div className="font-medium">{t.title}</div>
                 <div className="text-xs text-gray-500">
-                  Level: {t.levels?.code ?? "?"} · Subject: {t.subjects?.slug ?? "?"} · Order: {t.sort_order}
+                  Level: {t.level?.code ?? "?"} · Subject: {t.subject?.slug ?? "?"} · Order: {t.sort_order}
                 </div>
                 {t.description ? <div className="text-sm mt-1">{t.description}</div> : null}
               </div>

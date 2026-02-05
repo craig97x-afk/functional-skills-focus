@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Topic = { id: string; title: string; levels?: { code: string } };
+type Topic = { id: string; title: string; level?: { code: string } };
 type Lesson = { id: string; title: string; topic_id: string; published: boolean };
 
 export default function QuestionForm({ topics, lessons }: { topics: Topic[]; lessons: Lesson[] }) {
@@ -95,7 +95,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
           <select className="mt-1 w-full rounded-md border p-2" value={topicId} onChange={(e) => { setTopicId(e.target.value); setLessonId(""); }}>
             {topics.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.levels?.code ? `[${t.levels.code}] ` : ""}{t.title}
+                {t.level?.code ? `[${t.level.code}] ` : ""}{t.title}
               </option>
             ))}
           </select>
