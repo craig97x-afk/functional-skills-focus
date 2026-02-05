@@ -6,7 +6,7 @@ type Topic = {
   id: string;
   title: string;
   sort_order: number;
-  level: { code: string };
+  levels?: { code: string }[];
 };
 
 type LessonRow = {
@@ -21,15 +21,20 @@ export default async function AdminLessonsPage() {
   await requireAdmin();
   const supabase = await createClient();
 
-  const { data: topics } = (await supabase
+  const { data: rawTopics } = await supabase
     .from("topics")
-    .select("id, title, sort_order, level:level_id(code)")
-    .order("sort_order")) as { data: Topic[] | null };
+    .select("id, title, sort_order, levels(code)")
+    .order("sort_order");
 
-  const { data: lessons } = (await supabase
+  // 👇 make TypeScript calm down
+  const topics = (rawTopics ?? []) as unknown as Topic[];
+
+  const { data: rawLessons } = await supabase
     .from("lessons")
     .select("id, title, sort_order, published, topics(title)")
-    .order("sort_order")) as { data: LessonRow[] | null };
+    .order("sort_order");
+
+  const lessons = (rawLessons ?? []) as unknown as LessonRow[];
 
   return (
     <main className="p-6 space-y-6">
@@ -37,14 +42,14 @@ export default async function AdminLessonsPage() {
 
       <section className="rounded-lg border p-4">
         <h2 className="font-semibold mb-3">Create a new lesson</h2>
-        <LessonForm topics={topics ?? []} />
+        <LessonForm topics={topics} />
       </section>
 
       <section className="rounded-lg border p-4">
         <h2 className="font-semibold mb-3">Existing lessons</h2>
 
         <div className="space-y-2">
-          {(lessons ?? []).map((l) => (
+          {lessons.map((l) => (
             <div
               key={l.id}
               className="flex items-start justify-between rounded-md border p-3"
@@ -59,7 +64,7 @@ export default async function AdminLessonsPage() {
             </div>
           ))}
 
-          {(!lessons || lessons.length === 0) && (
+          {lessons.length === 0 && (
             <div className="text-sm text-gray-500">
               No lessons yet. Create your first one above.
             </div>
