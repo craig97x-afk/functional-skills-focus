@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const { data } = await supabase.auth.getUser();
   const user = data.user;
   if (!user) {
-    return NextResponse.json({ error: "Not logged in" }, { status: 401 });
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   const origin = req.headers.get("origin") ?? "http://localhost:3000";
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     line_items: [
       {
-        price: process.env.STRIPE_PRICE_ID!, // ← your price_...
+        price: process.env.STRIPE_PRICE_ID!,
         quantity: 1,
       },
     ],
@@ -32,10 +32,9 @@ export async function POST(req: NextRequest) {
     cancel_url: `${origin}/pricing`,
 
     client_reference_id: user.id,
-    metadata: {
-      user_id: user.id,
-    },
+    metadata: { user_id: user.id },
   });
 
-  return NextResponse.json({ url: session.url });
+  // ✅ redirect straight to Stripe
+  return NextResponse.redirect(session.url!, { status: 303 });
 }
