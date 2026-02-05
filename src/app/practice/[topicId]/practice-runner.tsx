@@ -17,12 +17,62 @@ type QuestionRow = {
   question_options: OptionRow[] | null;
 };
 
-function normalize(s: string) {
-  return s.trim().toLowerCase();
+function normalizeText(s: string) {
+  return s
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'");
+}
+
+// Very light “unit stripping” so "12 cm" matches "12"
+function stripUnits(s: string) {
+  return s.replace(/[a-z%£$]+/gi, "").trim();
+}
+
+// Parse fraction like "3/4" -> 0.75
+function parseFraction(s: string): number | null {
+  const m = s.match(/^\s*(-?\d+)\s*\/\s*(-?\d+)\s*$/);
+  if (!m) return null;
+  const num = Number(m[1]);
+  const den = Number(m[2]);
+  if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) return null;
+  return num / den;
+}
+
+function parseNumberLoose(s: string): number | null {
+  const cleaned = stripUnits(s)
+    .replace(/,/g, "") // "1,000" -> "1000"
+    .trim();
+
+  if (!cleaned) return null;
+
+  // fraction?
+  const frac = parseFraction(cleaned);
+  if (frac !== null) return frac;
+
+  // normal number?
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function nearlyEqual(a: number, b: number) {
+  // tolerate tiny float differences
+  const diff = Math.abs(a - b);
+  return diff <= 1e-9 || diff <= Math.max(Math.abs(a), Math.abs(b)) * 1e-9;
+}
+
+// Extract expected short answer if teacher stored "Correct answer: X" in solution_explainer
+function extractExpected(solutionExplainer: string | null) {
+  const txt = solutionExplainer ?? "";
+  const m = txt.match(/Correct answer:\s*(.+)$/i);
+  return (m?.[1] ?? "").trim();
 }
 
 export default function PracticeRunner({ questions }: { questions: QuestionRow[] }) {
   const [index, setIndex] = useState(0);
+
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
 
@@ -43,11 +93,7 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
 
   const correctOption = useMemo(() => options.find((o) => o.is_correct), [options]);
 
-  const shortAnswerExpected = useMemo(() => {
-    const txt = q.solution_explainer ?? "";
-    const m = txt.match(/Correct answer:\s*(.+)$/i);
-    return m?.[1]?.trim() ?? "";
-  }, [q.solution_explainer]);
+  const expectedShort = useMemo(() => extractExpected(q.solution_explainer), [q.solution_explainer]);
 
   function resetForQuestion() {
     setShowHint(false);
@@ -59,27 +105,58 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
   }
 
   function submit() {
-    if (submitted) return;
+  if (submitted) return;
 
-    if (q.type === "mcq") {
-      const picked = options.find((o) => o.id === selectedOpt);
-      const ok = Boolean(picked?.is_correct);
-      setSubmitted(true);
-      setIsCorrect(ok);
-      if (ok) setCorrectCount((c) => c + 1);
-      return;
-    }
-
-    const user = normalize(shortAnswer);
-    const expected = normalize(shortAnswerExpected);
-
-    let ok = false;
-    if (expected.length > 0) ok = user === expected;
-    else ok = user.length > 0;
+  if (q.type === "mcq") {
+    const picked = options.find((o) => o.id === selectedOpt);
+    const ok = Boolean(picked?.is_correct);
 
     setSubmitted(true);
     setIsCorrect(ok);
     if (ok) setCorrectCount((c) => c + 1);
+    if (!ok) setShowHint(true);
+
+    // fire-and-forget save
+    fetch("/api/practice/attempt", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        questionId: q.id,
+        isCorrect: ok,
+      }),
+    }).catch(() => {});
+
+    return;
+  } 
+
+    // SHORT ANSWER: tolerant marking
+    const userRaw = shortAnswer;
+    const expectedRaw = expectedShort;
+
+    let ok = false;
+
+    // If teacher provided expected answer, try numeric match first
+    if (expectedRaw.trim().length > 0) {
+      const userNum = parseNumberLoose(userRaw);
+      const expNum = parseNumberLoose(expectedRaw);
+
+      if (userNum !== null && expNum !== null) {
+        ok = nearlyEqual(userNum, expNum);
+      } else {
+        // fallback to normalized text match
+        const u = normalizeText(stripUnits(userRaw)).replace(/,/g, "");
+        const e = normalizeText(stripUnits(expectedRaw)).replace(/,/g, "");
+        ok = u === e;
+      }
+    } else {
+      // no expected answer stored: accept non-empty for v1
+      ok = userRaw.trim().length > 0;
+    }
+
+    setSubmitted(true);
+    setIsCorrect(ok);
+    if (ok) setCorrectCount((c) => c + 1);
+    if (!ok) setShowHint(true);
   }
 
   function retry() {
@@ -121,6 +198,7 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
           <div className="space-y-2">
             {options.map((o, idx) => {
               const chosen = selectedOpt === o.id;
+
               const border =
                 submitted && chosen
                   ? o.is_correct
@@ -151,7 +229,13 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
               value={shortAnswer}
               onChange={(e) => setShortAnswer(e.target.value)}
               disabled={submitted}
+              placeholder="Type your answer..."
             />
+            {expectedShort ? (
+              <p className="mt-1 text-xs text-gray-500">Marking: tolerant (numbers, fractions, spaces, units).</p>
+            ) : (
+              <p className="mt-1 text-xs text-gray-500">Teacher hasn’t set an exact answer yet.</p>
+            )}
           </label>
         )}
 
@@ -169,7 +253,15 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
             onClick={() => setShowHint((v) => !v)}
             disabled={!q.hint}
           >
-            Hint
+            {showHint ? "Hide hint" : "Show hint"}
+          </button>
+
+          <button
+            className="rounded-md border px-3 py-2"
+            onClick={() => setShowSolution((v) => !v)}
+            disabled={!q.solution_explainer}
+          >
+            {showSolution ? "Hide explanation" : "Show explanation"}
           </button>
 
           {submitted && isCorrect === false && (
@@ -196,13 +288,27 @@ export default function PracticeRunner({ questions }: { questions: QuestionRow[]
         {showHint && q.hint && (
           <div className="rounded-md border p-3 text-sm">
             <div className="font-medium mb-1">Hint</div>
-            {q.hint}
+            <div className="whitespace-pre-wrap">{q.hint}</div>
           </div>
         )}
 
         {submitted && isCorrect !== null && (
           <div className="text-sm">
-            {isCorrect ? "Correct" : "Incorrect"}
+            {isCorrect ? (
+              <span className="font-medium text-green-700">Correct.</span>
+            ) : (
+              <span className="font-medium text-red-700">
+                Incorrect
+                {q.type === "mcq" && correctOption?.label ? ` (Answer: ${correctOption.label})` : "."}
+              </span>
+            )}
+          </div>
+        )}
+
+        {showSolution && q.solution_explainer && (
+          <div className="rounded-md border p-3 text-sm">
+            <div className="font-medium mb-1">Explanation</div>
+            <div className="whitespace-pre-wrap">{q.solution_explainer}</div>
           </div>
         )}
       </div>
