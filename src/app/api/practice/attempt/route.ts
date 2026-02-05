@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
-  const session = await getUser();
-  if (!session) {
+  const supabase = await createClient();
+
+  const { data: authData, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !authData.user) {
     return NextResponse.json({ error: "Unauthenticated" }, { status: 401 });
   }
 
@@ -16,10 +17,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing questionId or isCorrect" }, { status: 400 });
   }
 
-  const supabase = await createClient();
-
   const { error } = await supabase.from("practice_attempts").insert({
-    user_id: session.user.id,
+    user_id: authData.user.id,
     question_id: questionId,
     is_correct: isCorrect,
   });

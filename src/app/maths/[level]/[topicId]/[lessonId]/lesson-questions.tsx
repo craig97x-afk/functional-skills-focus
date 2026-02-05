@@ -49,37 +49,37 @@ function QuestionCard({ q, idx }: { q: Question; idx: number }) {
       setSubmitted(true);
       setIsCorrect(ok);
       if (!ok) setShowHint(true);
-    
 
-      
-      // ✅ save attempt (fire-and-forget)
+      // ✅ DEBUG: log status + response body
       fetch("/api/practice/attempt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          questionId: q.id,
-          isCorrect: ok,
-        }),
-      }).catch(() => {});
+        body: JSON.stringify({ questionId: q.id, isCorrect: ok }),
+      })
+        .then(async (res) => {
+          const text = await res.text();
+          console.log("attempt status:", res.status, "body:", text);
+        })
+        .catch((err) => console.log("attempt fetch error:", err));
 
       return;
     }
 
-    // short-answer v1: can't auto-mark yet. We'll record as an attempt anyway.
+    // short-answer v1: can't auto-mark yet. We'll still record an attempt.
     setSubmitted(true);
     setIsCorrect(null);
     setShowHint(true);
 
-    // ✅ record attempt as "unknown/false" for now (pick one)
-    // If you want: change isCorrect to null later when DB supports it.
     fetch("/api/practice/attempt", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        questionId: q.id,
-        isCorrect: false,
-      }),
-    }).catch(() => {});
+      body: JSON.stringify({ questionId: q.id, isCorrect: false }),
+    })
+      .then(async (res) => {
+        const text = await res.text();
+        console.log("attempt status:", res.status, "body:", text);
+      })
+      .catch((err) => console.log("attempt fetch error:", err));
   }
 
   function reset() {
