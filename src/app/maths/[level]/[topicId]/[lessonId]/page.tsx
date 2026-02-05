@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type LessonRow = {
   title: string;
@@ -34,9 +36,9 @@ export default async function LessonPage({
 
       <article className="prose max-w-none">
         {lesson.body ? (
-          lesson.body.split("\n").map((p: string, i: number) =>
-            p.trim().length ? <p key={i}>{p}</p> : null
-          )
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {lesson.body}
+          </ReactMarkdown>
         ) : (
           <p>No content yet.</p>
         )}
