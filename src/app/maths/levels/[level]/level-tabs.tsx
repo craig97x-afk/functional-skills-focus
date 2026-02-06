@@ -60,9 +60,9 @@ export default function LevelTabs({ categories }: { categories: Category[] }) {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-5">
         {activeCategory.topics.map((topic) => (
-          <article key={topic} className="apple-card p-5 space-y-4">
+          <article key={topic} className="apple-card p-5 space-y-4 w-full">
             <div className="text-lg font-semibold">{topic}</div>
             <div className="grid gap-2">
               {workbookTemplates.map((workbook) => (
