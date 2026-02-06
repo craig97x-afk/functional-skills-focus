@@ -72,7 +72,7 @@ export default async function AdminQuestionsPage({
   return (
     <main className="space-y-8">
       <div>
-        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+        <div className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
           Questions
         </div>
         <h1 className="text-3xl font-semibold tracking-tight mt-2">
@@ -88,12 +88,12 @@ export default async function AdminQuestionsPage({
       <section className="apple-card p-6">
         <h2 className="font-semibold mb-4">Existing questions</h2>
         <form className="flex flex-wrap items-end gap-2 mb-4" method="get">
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-[color:var(--muted-foreground)]">
             Status
             <select
               name="status"
               defaultValue={status}
-              className="ml-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm"
+              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
             >
               <option value="all">All</option>
               <option value="published">Published</option>
@@ -101,12 +101,12 @@ export default async function AdminQuestionsPage({
             </select>
           </label>
 
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-[color:var(--muted-foreground)]">
             Type
             <select
               name="type"
               defaultValue={typeFilter}
-              className="ml-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm"
+              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
             >
               <option value="all">All</option>
               <option value="mcq">MCQ</option>
@@ -114,12 +114,12 @@ export default async function AdminQuestionsPage({
             </select>
           </label>
 
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-[color:var(--muted-foreground)]">
             Topic
             <select
               name="topic"
               defaultValue={topicFilter}
-              className="ml-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm"
+              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
             >
               <option value="all">All topics</option>
               {(topics ?? []).map((t) => (
@@ -140,13 +140,10 @@ export default async function AdminQuestionsPage({
 
         <div className="space-y-2">
           {(questions ?? []).map((q) => (
-            <div
-              key={q.id}
-              className="flex items-start justify-between rounded-2xl border border-black/5 bg-white/80 p-4"
-            >
+            <div key={q.id} className="apple-card flex items-start justify-between p-4">
               <div>
                 <div className="font-medium">{q.prompt}</div>
-                <div className="text-xs text-slate-500 mt-1">
+                <div className="text-xs text-[color:var(--muted-foreground)] mt-1">
                   Type: {q.type.toUpperCase()} · {q.published ? "Published" : "Draft"}
                   {" · "}
                   Topic: {q.topics?.title ?? "?"}
@@ -156,7 +153,7 @@ export default async function AdminQuestionsPage({
               </div>
               <div className="shrink-0 flex flex-col items-end gap-2">
                 <Link
-                  className="text-sm text-slate-600 hover:text-slate-900"
+                  className="text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
                   href={`/admin/questions/${q.id}`}
                 >
                   Edit
@@ -171,7 +168,7 @@ export default async function AdminQuestionsPage({
           ))}
 
           {(!questions || questions.length === 0) && (
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-[color:var(--muted-foreground)]">
               No questions yet. Create your first one above.
             </div>
           )}

@@ -38,10 +38,11 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
   const [loading, setLoading] = useState(false);
 
   const fieldClass =
-    "mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10";
+    "mt-1 w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]/25";
   const textareaClass = `${fieldClass} min-h-[90px]`;
   const textareaSmallClass = `${fieldClass} min-h-[70px]`;
-  const panelClass = "rounded-2xl border border-black/5 bg-white/70 p-4 space-y-2";
+  const panelClass =
+    "rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 space-y-2";
 
   const topicLessons = lessons.filter((l) => l.topic_id === topicId);
 
@@ -109,7 +110,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm text-slate-600">Topic</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Topic</span>
           <select
             className={fieldClass}
             value={topicId}
@@ -131,7 +132,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
         </label>
 
         <label className="block">
-          <span className="text-sm text-slate-600">Lesson (optional)</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Lesson (optional)</span>
           <select
             className={fieldClass}
             value={lessonId}
@@ -149,7 +150,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm text-slate-600">Type</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Type</span>
           <select
             className={fieldClass}
             value={type}
@@ -166,12 +167,12 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
           />
-          <span className="text-sm text-slate-600">Published</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Published</span>
         </label>
       </div>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Prompt</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">Prompt</span>
         <textarea
           className={textareaClass}
           value={prompt}
@@ -180,7 +181,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
       </label>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Hint (optional)</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">Hint (optional)</span>
         <input
           className={fieldClass}
           value={hint}
@@ -189,7 +190,9 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
       </label>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Solution explainer (optional)</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">
+          Solution explainer (optional)
+        </span>
         <textarea
           className={textareaSmallClass}
           value={solution}
@@ -226,7 +229,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
           />
 
           <label className="block">
-            <span className="text-sm text-slate-600">
+            <span className="text-sm text-[color:var(--muted-foreground)]">
               Correct option index (0=A, 1=B, 2=C, 3=D)
             </span>
             <input
@@ -246,7 +249,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
             value={shortAnswer}
             onChange={(e) => setShortAnswer(e.target.value)}
           />
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[color:var(--muted-foreground)]">
             v1 uses exact match. We’ll add tolerant marking (spaces/commas/units) next.
           </p>
         </div>
@@ -260,7 +263,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
         {loading ? "Creating..." : "Create question"}
       </button>
 
-      {msg && <p className="text-sm text-slate-600">{msg}</p>}
+      {msg && <p className="text-sm text-[color:var(--muted-foreground)]">{msg}</p>}
     </div>
   );
 }

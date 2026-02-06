@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 
 export default function LoginPage() {
   const supabase = createClient();
@@ -9,6 +10,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const fieldClass =
+    "mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 " +
+    "bg-[color:var(--surface-muted)] text-[color:var(--foreground)] border-[color:var(--border)]";
 
   async function signUp() {
     setLoading(true);
@@ -52,59 +57,68 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto max-w-md p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Sign in</h1>
+    <main className="mx-auto max-w-lg px-6 py-12">
+      <section className="apple-card p-8 space-y-6">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            Account
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight mt-2">
+            Sign in
+          </h1>
+        </div>
 
-      <label className="block">
-        <span className="text-sm">Email</span>
-        <input
-          className="mt-1 w-full rounded-md border p-2"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          autoComplete="email"
-        />
-      </label>
+        <label className="block">
+          <span className="text-sm text-slate-600">Email</span>
+          <input
+            className={fieldClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            autoComplete="email"
+          />
+        </label>
 
-      <label className="block">
-        <span className="text-sm">Password</span>
-        <input
-          className="mt-1 w-full rounded-md border p-2"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          autoComplete="current-password"
-        />
-      </label>
+        <label className="block">
+          <span className="text-sm text-slate-600">Password</span>
+          <input
+            className={fieldClass}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            autoComplete="current-password"
+          />
+        </label>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          className="rounded-md border px-3 py-2"
-          onClick={signIn}
-          disabled={loading || !email || !password}
-        >
-          {loading ? "Working..." : "Sign in"}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            className="apple-button"
+            onClick={signIn}
+            disabled={loading || !email || !password}
+          >
+            {loading ? "Working..." : "Sign in"}
+          </button>
 
-        <button
-          className="rounded-md border px-3 py-2"
-          onClick={signUp}
-          disabled={loading || !email || password.length < 8}
-          title="Password must be at least 8 characters"
-        >
-          Create account
-        </button>
+          <button
+            className="apple-pill"
+            onClick={signUp}
+            disabled={loading || !email || password.length < 8}
+            title="Password must be at least 8 characters"
+          >
+            Create account
+          </button>
 
-        <a href="/forgot-password" className="text-sm underline">
-          Forgot password?
-        </a>
-      </div>
+          <Link href="/forgot-password" className="text-sm text-slate-600 hover:text-slate-900">
+            Forgot password?
+          </Link>
+        </div>
 
-      {msg && <p className="text-sm">{msg}</p>}
+        {msg && <p className="text-sm text-slate-600">{msg}</p>}
 
-      <p className="text-xs text-gray-500">
-        Creating an account may require email verification before you can sign in.
-      </p>
+        <p className="text-xs text-slate-500">
+          Creating an account may require email verification before you can sign in.
+        </p>
+      </section>
     </main>
   );
 }

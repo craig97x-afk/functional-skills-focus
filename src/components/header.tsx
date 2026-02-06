@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import ThemeToggle from "@/components/theme-toggle";
 
 export default async function Header() {
   const session = await getUser();
@@ -11,15 +12,12 @@ export default async function Header() {
     await supabase.auth.signOut();
   }
 
-  const navItem =
-    "rounded-full px-3 py-2 text-sm font-medium text-slate-700 hover:bg-black/5 transition";
-  const navPill =
-    "rounded-full border border-black/10 bg-white/70 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-black/5 transition";
-  const navPrimary =
-    "rounded-full bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 transition";
+  const navItem = "apple-nav";
+  const navPill = "apple-nav-pill";
+  const navPrimary = "apple-nav-primary";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur">
+    <header className="apple-header sticky top-0 z-50">
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
         <Link href="/" className="text-lg font-semibold tracking-tight">
           Functional Skills Focus
@@ -61,6 +59,8 @@ export default async function Header() {
               Account
             </Link>
           )}
+
+          <ThemeToggle />
 
           {!session ? (
             <Link href="/login" className={navPrimary}>

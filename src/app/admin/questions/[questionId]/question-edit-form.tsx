@@ -63,10 +63,11 @@ export default function QuestionEditForm({
   const [loading, setLoading] = useState(false);
 
   const fieldClass =
-    "mt-1 w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10";
+    "mt-1 w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]/25";
   const textareaClass = `${fieldClass} min-h-[90px]`;
   const textareaSmallClass = `${fieldClass} min-h-[70px]`;
-  const panelClass = "rounded-2xl border border-black/5 bg-white/70 p-4 space-y-3";
+  const panelClass =
+    "rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 space-y-3";
 
   const [options, setOptions] = useState<OptionForm[]>(
     initialQuestion.type === "mcq" && initialOptions.length > 0
@@ -206,7 +207,7 @@ export default function QuestionEditForm({
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm text-slate-600">Topic</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Topic</span>
           <select
             className={fieldClass}
             value={topicId}
@@ -228,7 +229,7 @@ export default function QuestionEditForm({
         </label>
 
         <label className="block">
-          <span className="text-sm text-slate-600">Lesson (optional)</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Lesson (optional)</span>
           <select
             className={fieldClass}
             value={lessonId}
@@ -246,9 +247,9 @@ export default function QuestionEditForm({
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm text-slate-600">Type</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Type</span>
           <input
-            className="mt-1 w-full rounded-xl border border-black/10 bg-slate-100/80 px-3 py-2 text-sm text-slate-600"
+            className="mt-1 w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--muted-foreground)]"
             value={initialQuestion.type.toUpperCase()}
             readOnly
           />
@@ -260,12 +261,12 @@ export default function QuestionEditForm({
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
           />
-          <span className="text-sm text-slate-600">Published</span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">Published</span>
         </label>
       </div>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Prompt</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">Prompt</span>
         <textarea
           className={textareaClass}
           value={prompt}
@@ -274,7 +275,7 @@ export default function QuestionEditForm({
       </label>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Hint (optional)</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">Hint (optional)</span>
         <input
           className={fieldClass}
           value={hint}
@@ -283,7 +284,9 @@ export default function QuestionEditForm({
       </label>
 
       <label className="block">
-        <span className="text-sm text-slate-600">Solution explainer (optional)</span>
+        <span className="text-sm text-[color:var(--muted-foreground)]">
+          Solution explainer (optional)
+        </span>
         <textarea
           className={textareaSmallClass}
           value={solution}
@@ -304,7 +307,7 @@ export default function QuestionEditForm({
                   onChange={() => markCorrect(idx)}
                 />
                 <input
-                  className="flex-1 rounded-xl border border-black/10 bg-white px-3 py-2 text-sm"
+                  className="flex-1 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-sm text-[color:var(--foreground)] placeholder:text-[color:var(--muted-foreground)]"
                   placeholder={`Option ${idx + 1}`}
                   value={o.label}
                   onChange={(e) => updateOptionLabel(idx, e.target.value)}
@@ -329,8 +332,8 @@ export default function QuestionEditForm({
         </div>
       ) : (
         <div className={panelClass}>
-          <div className="text-sm text-slate-500">
-          Short-answer questions are self-check for now. Update the solution explainer above.
+          <div className="text-sm text-[color:var(--muted-foreground)]">
+            Short-answer questions are self-check for now. Update the solution explainer above.
           </div>
         </div>
       )}
@@ -352,7 +355,7 @@ export default function QuestionEditForm({
         </button>
       </div>
 
-      {msg && <p className="text-sm text-slate-600">{msg}</p>}
+      {msg && <p className="text-sm text-[color:var(--muted-foreground)]">{msg}</p>}
     </div>
   );
 }

@@ -75,7 +75,7 @@ export default async function AdminQuestionEditPage({
   return (
     <main className="space-y-8">
       <div>
-        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+        <div className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
           Questions
         </div>
         <h1 className="text-3xl font-semibold tracking-tight mt-2">
