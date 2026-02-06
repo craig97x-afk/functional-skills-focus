@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
-import ExamCountdownForm from "@/app/account/exam-countdown-form";
+import ExamCountdownManager from "@/app/account/exam-countdown-manager";
 
 export default async function AccountPage() {
   const session = await getUser();
@@ -15,11 +15,18 @@ export default async function AccountPage() {
     .eq("id", session.user.id)
     .maybeSingle();
 
-  const { data: userSettings } = await supabase
-    .from("user_settings")
-    .select("exam_date, show_exam_countdown")
+  const { data: examsRaw } = await supabase
+    .from("user_exams")
+    .select("id, exam_name, exam_date, show_on_dashboard")
     .eq("user_id", session.user.id)
-    .maybeSingle();
+    .order("exam_date", { ascending: true });
+
+  const exams = (examsRaw ?? []) as {
+    id: string;
+    exam_name: string;
+    exam_date: string;
+    show_on_dashboard: boolean;
+  }[];
 
   return (
     <main className="space-y-8 max-w-2xl">
@@ -74,16 +81,13 @@ export default async function AccountPage() {
           <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
             Exam countdown
           </div>
-          <h2 className="text-lg font-semibold mt-2">Exam date</h2>
+          <h2 className="text-lg font-semibold mt-2">Exam dates</h2>
           <p className="apple-subtle mt-2">
-            Add your exam date and choose whether to show the countdown on your
-            dashboard.
+            Add multiple exams, name them, and choose which countdowns to show
+            on your dashboard.
           </p>
         </div>
-        <ExamCountdownForm
-          initialDate={userSettings?.exam_date ?? null}
-          initialShow={userSettings?.show_exam_countdown ?? false}
-        />
+        <ExamCountdownManager initialExams={exams} />
       </section>
 
       <div className="flex gap-2 flex-wrap">

@@ -15,39 +15,69 @@ export default async function HomePage() {
     .eq("id", session.user.id)
     .maybeSingle();
 
-  const { data: userSettings } = await supabase
-    .from("user_settings")
-    .select("exam_date, show_exam_countdown")
+  const { data: examsRaw } = await supabase
+    .from("user_exams")
+    .select("id, exam_name, exam_date, show_on_dashboard")
     .eq("user_id", session.user.id)
-    .maybeSingle();
+    .order("exam_date", { ascending: true });
+
+  const exams = (examsRaw ?? []) as {
+    id: string;
+    exam_name: string;
+    exam_date: string;
+    show_on_dashboard: boolean;
+  }[];
 
   const role = profile?.role ?? "student";
   const hasAccess = Boolean(
     role === "admin" || profile?.is_subscribed || profile?.access_override
   );
 
-  const examDateRaw = userSettings?.exam_date ?? null;
-  const showCountdown = Boolean(userSettings?.show_exam_countdown && examDateRaw);
-  let daysLeft: number | null = null;
-  let examLabel: string | null = null;
+  const today = new Date();
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
 
-  if (examDateRaw) {
-    const examDate = new Date(`${examDateRaw}T00:00:00`);
-    const today = new Date();
-    const startOfToday = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
+  const visibleExams = exams.filter(
+    (exam) => exam.show_on_dashboard && exam.exam_date
+  );
+
+  const sortedExams = [...visibleExams].sort((a, b) => {
+    const aDate = new Date(`${a.exam_date}T00:00:00`).getTime();
+    const bDate = new Date(`${b.exam_date}T00:00:00`).getTime();
+    return aDate - bDate;
+  });
+
+  const upcomingExams = sortedExams.filter((exam) => {
+    const examDate = new Date(`${exam.exam_date}T00:00:00`).getTime();
+    return examDate >= startOfToday.getTime();
+  });
+
+  const nextExams = (upcomingExams.length ? upcomingExams : sortedExams).slice(
+    0,
+    3
+  );
+
+  const dayMs = 1000 * 60 * 60 * 24;
+  const examCards = nextExams.map((exam) => {
+    const examDate = new Date(`${exam.exam_date}T00:00:00`);
+    const diffDays = Math.round(
+      (examDate.getTime() - startOfToday.getTime()) / dayMs
     );
-    daysLeft = Math.ceil(
-      (examDate.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    examLabel = examDate.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  }
+    let label = `${diffDays} days`;
+    if (diffDays === 0) label = "Exam day";
+    if (diffDays === 1) label = "1 day";
+    if (diffDays < 0) label = "Passed";
+
+    return {
+      id: exam.id,
+      name: exam.exam_name,
+      date: exam.exam_date,
+      label,
+    };
+  });
 
   return (
     <main className="space-y-8">
@@ -136,24 +166,36 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {showCountdown && (
-          <section className="apple-card p-6 space-y-3">
-            <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-              Exam countdown
+        <section className="apple-card p-6 space-y-4">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Exam countdowns
+          </div>
+          {examCards.length > 0 ? (
+            <div className="space-y-3">
+              {examCards.map((exam) => (
+                <div
+                  key={exam.id}
+                  className="flex items-center justify-between rounded-xl border border-[color:var(--border)]/60 px-4 py-3"
+                >
+                  <div>
+                    <div className="font-semibold">{exam.name}</div>
+                    <div className="text-sm text-[color:var(--muted-foreground)]">
+                      {exam.date}
+                    </div>
+                  </div>
+                  <span className="apple-pill">{exam.label}</span>
+                </div>
+              ))}
             </div>
-            <div className="text-3xl font-semibold tracking-tight">
-              {daysLeft !== null && daysLeft > 0 && `${daysLeft} days`}
-              {daysLeft === 0 && "Exam day"}
-              {daysLeft !== null && daysLeft < 0 && "Exam passed"}
-            </div>
-            {examLabel && (
-              <div className="apple-subtle">Exam date: {examLabel}</div>
-            )}
-            <Link href="/account" className="apple-pill inline-flex">
-              Edit countdown
-            </Link>
-          </section>
-        )}
+          ) : (
+            <p className="apple-subtle">
+              Add exam dates in your account to see countdowns here.
+            </p>
+          )}
+          <Link href="/account" className="apple-pill inline-flex">
+            Manage countdowns
+          </Link>
+        </section>
       </div>
     </main>
   );

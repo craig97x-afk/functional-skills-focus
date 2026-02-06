@@ -40,11 +40,7 @@ export default async function LessonPage({
     redirect(`/maths/${level}/${topicId}`);
   }
 
-  const lessonBody = lesson.body
-    ? lesson.body.includes("\\n")
-      ? lesson.body.replace(/\\n/g, "\n\n")
-      : lesson.body
-    : null;
+  const lessonBody = lesson.body ? lesson.body.replace(/\\n/g, "\n\n") : null;
 
   return (
     <main className="space-y-8 max-w-3xl">
