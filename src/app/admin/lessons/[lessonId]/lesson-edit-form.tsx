@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import LessonWidgetBuilder from "../lesson-widget-builder";
 
 type Topic = {
   id: string;
@@ -105,13 +106,15 @@ export default function LessonEditForm({
       </label>
 
       <label className="block">
-        <span className="text-sm">Lesson content</span>
+        <span className="text-sm">Lesson content (markdown supported)</span>
         <textarea
           className="mt-1 w-full rounded-md border p-2 min-h-[140px]"
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
       </label>
+
+      <LessonWidgetBuilder body={body} onInsert={setBody} />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <label className="block">
