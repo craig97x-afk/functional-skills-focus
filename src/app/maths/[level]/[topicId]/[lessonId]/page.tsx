@@ -40,6 +40,12 @@ export default async function LessonPage({
     redirect(`/maths/${level}/${topicId}`);
   }
 
+  const lessonBody = lesson.body
+    ? lesson.body.includes("\\n")
+      ? lesson.body.replace(/\\n/g, "\n\n")
+      : lesson.body
+    : null;
+
   return (
     <main className="space-y-8 max-w-3xl">
       <Link className="apple-subtle inline-flex" href={`/maths/${level}/${topicId}`}>
@@ -68,7 +74,7 @@ export default async function LessonPage({
       </div>
 
       <article className="prose max-w-none">
-        {lesson.body ? (
+        {lessonBody ? (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -99,7 +105,7 @@ export default async function LessonPage({
               },
             }}
           >
-            {lesson.body}
+            {lessonBody}
           </ReactMarkdown>
         ) : (
           <p>No content yet.</p>
