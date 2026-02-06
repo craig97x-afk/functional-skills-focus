@@ -14,21 +14,33 @@ label: Half past ten`,
     description: "Horizontal bars with accent colors and labels.",
     block: `type: bar
 title: Fruit sold
-data: Apples=5, Bananas=3, Oranges=8`,
+data: Apples=5, Bananas=3, Oranges=8
+y_label: Units sold
+x_label: Fruit
+y_min: 0
+y_max: 10
+unit: 
+show_values: true`,
   },
   {
     title: "Line graph",
     description: "Smooth line with grid and highlight points.",
     block: `type: line
 title: Weekly temperatures
-data: Mon=12, Tue=15, Wed=13, Thu=18`,
+data: Mon=12, Tue=15, Wed=13, Thu=18
+y_label: °C
+x_label: Day
+y_min: 10
+y_max: 20
+unit: °`,
   },
   {
     title: "Pie chart",
     description: "Donut chart with legend for proportions.",
     block: `type: pie
 title: Class favourites
-data: Apples=4, Bananas=6, Oranges=3`,
+data: Apples=4, Bananas=6, Oranges=3
+unit:`,
   },
   {
     title: "Number line",

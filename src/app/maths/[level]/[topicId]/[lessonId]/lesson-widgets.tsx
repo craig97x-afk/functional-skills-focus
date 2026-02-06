@@ -11,6 +11,7 @@ const chartColors = [
 ];
 
 const chartGridColor = "rgba(148, 163, 184, 0.25)";
+const chartAxisColor = "rgba(148, 163, 184, 0.65)";
 
 function parseWidget(value: string): WidgetConfig {
   const config: WidgetConfig = {};
@@ -32,6 +33,13 @@ function toNumber(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+function toBoolean(value: string | undefined, fallback: boolean) {
+  if (!value) return fallback;
+  if (value.toLowerCase() === "true") return true;
+  if (value.toLowerCase() === "false") return false;
+  return fallback;
+}
+
 function parseDataPairs(data: string): { label: string; value: number }[] {
   return data
     .split(",")
@@ -45,6 +53,20 @@ function parseDataPairs(data: string): { label: string; value: number }[] {
         value: Number.isFinite(value) ? value : 0,
       };
     });
+}
+
+function buildTicks(minValue: number, maxValue: number, ticks = 5) {
+  if (ticks < 2) return [minValue, maxValue];
+  const span = maxValue - minValue || 1;
+  return Array.from({ length: ticks }, (_, index) => {
+    const ratio = index / (ticks - 1);
+    return minValue + ratio * span;
+  });
+}
+
+function formatValue(value: number, unit?: string) {
+  const rounded = Math.round(value * 100) / 100;
+  return unit ? `${rounded}${unit}` : `${rounded}`;
 }
 
 function ClockWidget({ time, label }: { time: string; label?: string }) {
@@ -127,9 +149,41 @@ function ClockWidget({ time, label }: { time: string; label?: string }) {
   );
 }
 
-function BarChartWidget({ title, data }: { title: string; data: string }) {
+function BarChartWidget({
+  title,
+  data,
+  yLabel,
+  xLabel,
+  yMin,
+  yMax,
+  unit,
+  showValues,
+}: {
+  title: string;
+  data: string;
+  yLabel?: string;
+  xLabel?: string;
+  yMin?: number;
+  yMax?: number;
+  unit?: string;
+  showValues?: boolean;
+}) {
   const items = parseDataPairs(data);
-  const maxValue = Math.max(...items.map((i) => i.value), 1);
+  const computedMax = Math.max(...items.map((i) => i.value), 1);
+  const computedMin = Math.min(...items.map((i) => i.value), 0);
+  const maxValue = Number.isFinite(yMax ?? NaN) ? (yMax as number) : computedMax;
+  const minValue = Number.isFinite(yMin ?? NaN) ? (yMin as number) : computedMin;
+  const ticks = buildTicks(minValue, maxValue, 5);
+  const showValueLabels = showValues ?? true;
+
+  const chart = {
+    width: 100,
+    height: 100,
+    padding: { top: 8, right: 6, bottom: 20, left: 14 },
+  };
+  const innerWidth = chart.width - chart.padding.left - chart.padding.right;
+  const innerHeight = chart.height - chart.padding.top - chart.padding.bottom;
+  const barWidth = items.length > 0 ? innerWidth / items.length - 2 : 8;
 
   return (
     <div className="apple-card p-5 space-y-4">
@@ -137,24 +191,114 @@ function BarChartWidget({ title, data }: { title: string; data: string }) {
         Bar chart
       </div>
       <div className="text-lg font-semibold">{title || "Bar chart"}</div>
-      <div className="space-y-3">
-        {items.map((item, index) => (
-          <div key={`${item.label}-${item.value}`} className="space-y-1">
-            <div className="flex items-center justify-between text-sm font-medium">
-              <span>{item.label}</span>
-              <span className="apple-subtle">{item.value}</span>
-            </div>
-            <div className="h-2 rounded-full bg-[color:var(--surface-muted)]">
-              <div
-                className="h-2 rounded-full"
-                style={{
-                  width: `${(item.value / maxValue) * 100}%`,
-                  background: chartColors[index % chartColors.length],
-                }}
-              />
-            </div>
-          </div>
-        ))}
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
+        <svg viewBox="0 0 100 100" className="h-48 w-full">
+          {ticks.map((tick, index) => {
+            const ratio = (tick - minValue) / (maxValue - minValue || 1);
+            const y = chart.padding.top + (1 - ratio) * innerHeight;
+            return (
+              <g key={`tick-${index}`}>
+                <line
+                  x1={chart.padding.left}
+                  x2={chart.width - chart.padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke={chartGridColor}
+                  strokeWidth="0.5"
+                />
+                <text
+                  x={chart.padding.left - 2}
+                  y={y + 3}
+                  textAnchor="end"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {formatValue(tick, unit)}
+                </text>
+              </g>
+            );
+          })}
+
+          <line
+            x1={chart.padding.left}
+            x2={chart.padding.left}
+            y1={chart.padding.top}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+          <line
+            x1={chart.padding.left}
+            x2={chart.width - chart.padding.right}
+            y1={chart.height - chart.padding.bottom}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+
+          {items.map((item, index) => {
+            const x = chart.padding.left + index * (barWidth + 2) + 1;
+            const ratio = (item.value - minValue) / (maxValue - minValue || 1);
+            const height = Math.max(1, ratio * innerHeight);
+            const y = chart.padding.top + innerHeight - height;
+            return (
+              <g key={`${item.label}-${index}`}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={Math.max(4, barWidth)}
+                  height={height}
+                  rx="1.5"
+                  fill={chartColors[index % chartColors.length]}
+                />
+                {showValueLabels && (
+                  <text
+                    x={x + Math.max(4, barWidth) / 2}
+                    y={y - 2}
+                    textAnchor="middle"
+                    className="fill-[color:var(--foreground)]"
+                    style={{ fontSize: "4px" }}
+                  >
+                    {formatValue(item.value, unit)}
+                  </text>
+                )}
+                <text
+                  x={x + Math.max(4, barWidth) / 2}
+                  y={chart.height - chart.padding.bottom + 6}
+                  textAnchor="middle"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {item.label}
+                </text>
+              </g>
+            );
+          })}
+
+          {yLabel && (
+            <text
+              x={6}
+              y={chart.padding.top + innerHeight / 2}
+              textAnchor="middle"
+              transform={`rotate(-90 6 ${chart.padding.top + innerHeight / 2})`}
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {yLabel}
+            </text>
+          )}
+          {xLabel && (
+            <text
+              x={chart.padding.left + innerWidth / 2}
+              y={chart.height - 2}
+              textAnchor="middle"
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {xLabel}
+            </text>
+          )}
+        </svg>
         {items.length === 0 && (
           <div className="text-sm text-[color:var(--muted-foreground)]">
             Add data like Apples=5, Bananas=3.
@@ -165,10 +309,29 @@ function BarChartWidget({ title, data }: { title: string; data: string }) {
   );
 }
 
-function LineChartWidget({ title, data }: { title: string; data: string }) {
+function LineChartWidget({
+  title,
+  data,
+  yLabel,
+  xLabel,
+  yMin,
+  yMax,
+  unit,
+}: {
+  title: string;
+  data: string;
+  yLabel?: string;
+  xLabel?: string;
+  yMin?: number;
+  yMax?: number;
+  unit?: string;
+}) {
   const items = parseDataPairs(data);
-  const maxValue = Math.max(...items.map((i) => i.value), 1);
-  const minValue = Math.min(...items.map((i) => i.value), 0);
+  const computedMax = Math.max(...items.map((i) => i.value), 1);
+  const computedMin = Math.min(...items.map((i) => i.value), 0);
+  const maxValue = Number.isFinite(yMax ?? NaN) ? (yMax as number) : computedMax;
+  const minValue = Number.isFinite(yMin ?? NaN) ? (yMin as number) : computedMin;
+  const ticks = buildTicks(minValue, maxValue, 5);
 
   if (items.length < 2) {
     return (
@@ -184,17 +347,22 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
     );
   }
 
+  const chart = {
+    width: 100,
+    height: 100,
+    padding: { top: 8, right: 8, bottom: 20, left: 14 },
+  };
+  const innerWidth = chart.width - chart.padding.left - chart.padding.right;
+  const innerHeight = chart.height - chart.padding.top - chart.padding.bottom;
+
   const points = items
     .map((item, index) => {
-      const x = (index / (items.length - 1)) * 100;
-      const y =
-        100 - ((item.value - minValue) / (maxValue - minValue || 1)) * 100;
+      const x = chart.padding.left + (index / (items.length - 1)) * innerWidth;
+      const ratio = (item.value - minValue) / (maxValue - minValue || 1);
+      const y = chart.padding.top + (1 - ratio) * innerHeight;
       return `${x},${y}`;
     })
     .join(" ");
-
-  const svgHeight = 100;
-  const padding = 8;
 
   return (
     <div className="apple-card p-5 space-y-4">
@@ -203,24 +371,55 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
       </div>
       <div className="text-lg font-semibold">{title || "Line graph"}</div>
       <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
-        <svg viewBox="0 0 100 100" className="h-36 w-full">
+        <svg viewBox="0 0 100 100" className="h-48 w-full">
           <defs>
             <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.25" />
               <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
-          {Array.from({ length: 5 }).map((_, index) => (
-            <line
-              key={index}
-              x1={padding}
-              x2={100 - padding}
-              y1={padding + (index * (svgHeight - padding * 2)) / 4}
-              y2={padding + (index * (svgHeight - padding * 2)) / 4}
-              stroke={chartGridColor}
-              strokeWidth="0.5"
-            />
-          ))}
+          {ticks.map((tick, index) => {
+            const ratio = (tick - minValue) / (maxValue - minValue || 1);
+            const y = chart.padding.top + (1 - ratio) * innerHeight;
+            return (
+              <g key={`tick-${index}`}>
+                <line
+                  x1={chart.padding.left}
+                  x2={chart.width - chart.padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke={chartGridColor}
+                  strokeWidth="0.5"
+                />
+                <text
+                  x={chart.padding.left - 2}
+                  y={y + 3}
+                  textAnchor="end"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {formatValue(tick, unit)}
+                </text>
+              </g>
+            );
+          })}
+
+          <line
+            x1={chart.padding.left}
+            x2={chart.padding.left}
+            y1={chart.padding.top}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+          <line
+            x1={chart.padding.left}
+            x2={chart.width - chart.padding.right}
+            y1={chart.height - chart.padding.bottom}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
           <polyline
             fill="none"
             stroke="var(--accent)"
@@ -230,13 +429,14 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
           <polyline
             fill="url(#lineFill)"
             stroke="none"
-            points={`${points} 100,100 0,100`}
+            points={`${points} ${chart.width - chart.padding.right},${
+              chart.height - chart.padding.bottom
+            } ${chart.padding.left},${chart.height - chart.padding.bottom}`}
           />
           {items.map((item, index) => {
-            const x = (index / (items.length - 1)) * 100;
-            const y =
-              100 -
-              ((item.value - minValue) / (maxValue - minValue || 1)) * 100;
+            const x = chart.padding.left + (index / (items.length - 1)) * innerWidth;
+            const ratio = (item.value - minValue) / (maxValue - minValue || 1);
+            const y = chart.padding.top + (1 - ratio) * innerHeight;
             return (
               <circle
                 key={`${item.label}-${index}`}
@@ -247,12 +447,50 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
               />
             );
           })}
+          {items.map((item, index) => {
+            const x = chart.padding.left + (index / (items.length - 1)) * innerWidth;
+            return (
+              <text
+                key={`${item.label}-label`}
+                x={x}
+                y={chart.height - chart.padding.bottom + 6}
+                textAnchor="middle"
+                className="fill-[color:var(--muted-foreground)]"
+                style={{ fontSize: "4px" }}
+              >
+                {item.label}
+              </text>
+            );
+          })}
+          {yLabel && (
+            <text
+              x={6}
+              y={chart.padding.top + innerHeight / 2}
+              textAnchor="middle"
+              transform={`rotate(-90 6 ${chart.padding.top + innerHeight / 2})`}
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {yLabel}
+            </text>
+          )}
+          {xLabel && (
+            <text
+              x={chart.padding.left + innerWidth / 2}
+              y={chart.height - 2}
+              textAnchor="middle"
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {xLabel}
+            </text>
+          )}
         </svg>
       </div>
       <div className="flex flex-wrap gap-3 text-sm text-[color:var(--muted-foreground)]">
         {items.map((item) => (
           <span key={item.label}>
-            {item.label}: {item.value}
+            {item.label}: {formatValue(item.value, unit)}
           </span>
         ))}
       </div>
@@ -260,7 +498,15 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
   );
 }
 
-function PieChartWidget({ title, data }: { title: string; data: string }) {
+function PieChartWidget({
+  title,
+  data,
+  unit,
+}: {
+  title: string;
+  data: string;
+  unit?: string;
+}) {
   const items = parseDataPairs(data);
   const total = items.reduce((sum, item) => sum + item.value, 0);
 
@@ -313,7 +559,12 @@ function PieChartWidget({ title, data }: { title: string; data: string }) {
                 }}
               />
               <span className="font-medium">{item.label}</span>
-              <span className="apple-subtle">{item.value}</span>
+              <span className="apple-subtle">
+                {formatValue(item.value, unit)}
+              </span>
+              <span className="apple-subtle">
+                {Math.round((item.value / total) * 100)}%
+              </span>
             </div>
           ))}
         </div>
@@ -519,19 +770,40 @@ export function WidgetBlock({ value }: { value: string }) {
 
   if (type === "bar") {
     return (
-      <BarChartWidget title={config.title ?? ""} data={config.data ?? ""} />
+      <BarChartWidget
+        title={config.title ?? ""}
+        data={config.data ?? ""}
+        yLabel={config.y_label ?? config.ylabel}
+        xLabel={config.x_label ?? config.xlabel}
+        yMin={toNumber(config.y_min ?? config.min, NaN)}
+        yMax={toNumber(config.y_max ?? config.max, NaN)}
+        unit={config.unit}
+        showValues={toBoolean(config.show_values, true)}
+      />
     );
   }
 
   if (type === "line") {
     return (
-      <LineChartWidget title={config.title ?? ""} data={config.data ?? ""} />
+      <LineChartWidget
+        title={config.title ?? ""}
+        data={config.data ?? ""}
+        yLabel={config.y_label ?? config.ylabel}
+        xLabel={config.x_label ?? config.xlabel}
+        yMin={toNumber(config.y_min ?? config.min, NaN)}
+        yMax={toNumber(config.y_max ?? config.max, NaN)}
+        unit={config.unit}
+      />
     );
   }
 
   if (type === "pie") {
     return (
-      <PieChartWidget title={config.title ?? ""} data={config.data ?? ""} />
+      <PieChartWidget
+        title={config.title ?? ""}
+        data={config.data ?? ""}
+        unit={config.unit}
+      />
     );
   }
 

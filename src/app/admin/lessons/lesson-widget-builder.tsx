@@ -20,10 +20,22 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
   const [clockLabel, setClockLabel] = useState("Half past ten");
   const [barTitle, setBarTitle] = useState("Fruit sold");
   const [barData, setBarData] = useState("Apples=5, Bananas=3, Oranges=8");
+  const [barYLabel, setBarYLabel] = useState("Units sold");
+  const [barXLabel, setBarXLabel] = useState("Fruit");
+  const [barUnit, setBarUnit] = useState("");
+  const [barYMin, setBarYMin] = useState("0");
+  const [barYMax, setBarYMax] = useState("10");
+  const [barShowValues, setBarShowValues] = useState(true);
   const [lineTitle, setLineTitle] = useState("Weekly temperatures");
   const [lineData, setLineData] = useState("Mon=12, Tue=15, Wed=13, Thu=18");
+  const [lineYLabel, setLineYLabel] = useState("°C");
+  const [lineXLabel, setLineXLabel] = useState("Day");
+  const [lineUnit, setLineUnit] = useState("°");
+  const [lineYMin, setLineYMin] = useState("10");
+  const [lineYMax, setLineYMax] = useState("20");
   const [pieTitle, setPieTitle] = useState("Class favourites");
   const [pieData, setPieData] = useState("Apples=4, Bananas=6, Oranges=3");
+  const [pieUnit, setPieUnit] = useState("");
   const [numberMin, setNumberMin] = useState("0");
   const [numberMax, setNumberMax] = useState("10");
   const [numberStep, setNumberStep] = useState("1");
@@ -51,18 +63,30 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
         "type: bar",
         `title: ${barTitle}`,
         `data: ${barData}`,
+        `y_label: ${barYLabel}`,
+        `x_label: ${barXLabel}`,
+        `y_min: ${barYMin}`,
+        `y_max: ${barYMax}`,
+        `unit: ${barUnit}`,
+        `show_values: ${barShowValues}`,
       ];
     } else if (type === "line") {
       lines = [
         "type: line",
         `title: ${lineTitle}`,
         `data: ${lineData}`,
+        `y_label: ${lineYLabel}`,
+        `x_label: ${lineXLabel}`,
+        `y_min: ${lineYMin}`,
+        `y_max: ${lineYMax}`,
+        `unit: ${lineUnit}`,
       ];
     } else if (type === "pie") {
       lines = [
         "type: pie",
         `title: ${pieTitle}`,
         `data: ${pieData}`,
+        `unit: ${pieUnit}`,
       ];
     } else if (type === "numberline") {
       lines = [
@@ -170,6 +194,54 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
               onChange={(e) => setBarData(e.target.value)}
             />
           </label>
+          <label className="block">
+            <span className="text-sm">Y-axis label</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={barYLabel}
+              onChange={(e) => setBarYLabel(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">X-axis label</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={barXLabel}
+              onChange={(e) => setBarXLabel(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Y min</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={barYMin}
+              onChange={(e) => setBarYMin(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Y max</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={barYMax}
+              onChange={(e) => setBarYMax(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Unit (optional)</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={barUnit}
+              onChange={(e) => setBarUnit(e.target.value)}
+            />
+          </label>
+          <label className="flex items-center gap-2 mt-6">
+            <input
+              type="checkbox"
+              checked={barShowValues}
+              onChange={(e) => setBarShowValues(e.target.checked)}
+            />
+            <span className="text-sm">Show value labels</span>
+          </label>
         </div>
       )}
 
@@ -191,6 +263,46 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
               onChange={(e) => setLineData(e.target.value)}
             />
           </label>
+          <label className="block">
+            <span className="text-sm">Y-axis label</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={lineYLabel}
+              onChange={(e) => setLineYLabel(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">X-axis label</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={lineXLabel}
+              onChange={(e) => setLineXLabel(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Y min</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={lineYMin}
+              onChange={(e) => setLineYMin(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Y max</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={lineYMax}
+              onChange={(e) => setLineYMax(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Unit (optional)</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={lineUnit}
+              onChange={(e) => setLineUnit(e.target.value)}
+            />
+          </label>
         </div>
       )}
 
@@ -210,6 +322,14 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
               className="mt-1 w-full rounded-md border p-2"
               value={pieData}
               onChange={(e) => setPieData(e.target.value)}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm">Unit (optional)</span>
+            <input
+              className="mt-1 w-full rounded-md border p-2"
+              value={pieUnit}
+              onChange={(e) => setPieUnit(e.target.value)}
             />
           </label>
         </div>
