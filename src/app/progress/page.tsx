@@ -20,6 +20,36 @@ export default async function ProgressPage() {
 
   const topics = (topicsRaw ?? []) as TopicRow[];
 
+  const { data: achievementsRaw } = await supabase
+    .from("user_achievements")
+    .select(
+      "earned_at, achievement:achievement_id (id, title, description, icon, points)"
+    )
+    .eq("user_id", session.user.id)
+    .order("earned_at", { ascending: false });
+
+  type AchievementInfo = {
+    id: string;
+    title: string;
+    description?: string | null;
+    icon?: string | null;
+    points?: number | null;
+  };
+
+  type RawAchievementRow = {
+    earned_at: string;
+    achievement: AchievementInfo | AchievementInfo[] | null;
+  };
+
+  const achievements = ((achievementsRaw ?? []) as RawAchievementRow[]).map(
+    (row) => ({
+      earned_at: row.earned_at,
+      achievement: Array.isArray(row.achievement)
+        ? row.achievement[0] ?? null
+        : row.achievement ?? null,
+    })
+  );
+
   // Pull attempts for THIS user only (RLS enforces it anyway)
   const { data: attemptsRaw, error: attemptsErr } = await supabase
     .from("practice_attempts")
@@ -81,6 +111,53 @@ export default async function ProgressPage() {
           </Link>
         </div>
       </div>
+
+      <section className="apple-card p-8 space-y-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Achievements
+          </div>
+          <h2 className="text-xl font-semibold mt-2">Latest badges</h2>
+          <p className="apple-subtle mt-2">
+            Keep building momentum. These badges reflect your recent progress.
+          </p>
+        </div>
+
+        {achievements.length === 0 ? (
+          <p className="text-sm text-[color:var(--muted-foreground)]">
+            No badges yet. Complete a practice question or add an exam to unlock
+            your first badge.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {achievements.map((row) => {
+              const badge = row.achievement;
+              if (!badge) return null;
+              return (
+                <div
+                  key={`${badge.id}-${row.earned_at}`}
+                  className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-6"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="text-4xl">{badge.icon ?? "🏅"}</div>
+                    <div>
+                      <div className="text-lg font-semibold">{badge.title}</div>
+                      {badge.description && (
+                        <div className="text-sm text-[color:var(--muted-foreground)]">
+                          {badge.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-4 text-xs text-[color:var(--muted-foreground)]">
+                    Earned {new Date(row.earned_at).toLocaleDateString()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       {attempts.length === 0 ? (
         <p className="text-sm text-gray-400">No attempts yet. Do some practice and come back.</p>
