@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/get-user";
+import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
-import PrintButton from "./print-button";
+import ProgressCommentEditor from "../../progress-comment-editor";
 
 type TopicRow = { id: string; title: string; sort_order: number };
 type AttemptRow = { question_id: string; is_correct: boolean | null; created_at: string };
@@ -13,11 +12,21 @@ function formatDate(value: string | null) {
   return new Date(value).toLocaleDateString();
 }
 
-export default async function ProgressReportPage() {
-  const session = await getUser();
-  if (!session) redirect("/login");
+export default async function AdminUserProgressPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}) {
+  await requireAdmin();
+  const { userId } = await params;
 
   const supabase = await createClient();
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, is_subscribed, access_override")
+    .eq("id", userId)
+    .maybeSingle();
 
   const { data: topicsRaw } = await supabase
     .from("topics")
@@ -26,20 +35,11 @@ export default async function ProgressReportPage() {
 
   const topics = (topicsRaw ?? []) as TopicRow[];
 
-  const { data: attemptsRaw, error: attemptsErr } = await supabase
+  const { data: attemptsRaw } = await supabase
     .from("practice_attempts")
     .select("question_id, is_correct, created_at")
-    .eq("user_id", session.user.id)
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
-
-  if (attemptsErr) {
-    return (
-      <main className="p-6 space-y-4">
-        <h1 className="text-2xl font-bold">Progress report</h1>
-        <p className="text-sm text-red-400">Failed to load attempts: {attemptsErr.message}</p>
-      </main>
-    );
-  }
 
   const attempts = (attemptsRaw ?? []) as AttemptRow[];
   const scoredAttempts = attempts.filter((a) => a.is_correct !== null);
@@ -73,33 +73,27 @@ export default async function ProgressReportPage() {
   const totalCorrect = scoredAttempts.filter((a) => a.is_correct === true).length;
   const overallAccuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
 
-  const mostActive = [...stats.entries()]
-    .sort((a, b) => b[1].attempts - a[1].attempts)
-    .slice(0, 3)
-    .map(([topicId, data]) => ({
-      topic: topics.find((t) => t.id === topicId)?.title ?? "Topic",
-      attempts: data.attempts,
-    }));
-
   const { data: latestComment } = await supabase
     .from("progress_comments")
-    .select("content, created_at")
-    .eq("user_id", session.user.id)
+    .select("id, content, created_at")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   return (
     <main className="p-6 space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 print-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
-          <Link className="apple-subtle inline-flex" href="/progress">
-            ← Back to progress
+          <Link className="apple-subtle inline-flex" href="/admin/users">
+            ← Back to users
           </Link>
-          <h1 className="text-3xl font-semibold tracking-tight">Progress report</h1>
-          <p className="apple-subtle">Snapshot of practice accuracy and topic activity.</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Student progress</h1>
+          <p className="apple-subtle">
+            User ID: {userId} · Role: {profile?.role ?? "student"} ·{" "}
+            {profile?.is_subscribed || profile?.access_override ? "Access" : "No access"}
+          </p>
         </div>
-        <PrintButton />
       </div>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -121,16 +115,29 @@ export default async function ProgressReportPage() {
       </section>
 
       <section className="apple-card p-6 space-y-4">
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Teacher comments
+        </div>
+        <ProgressCommentEditor
+          userId={userId}
+          commentId={latestComment?.id ?? null}
+          initialContent={latestComment?.content ?? ""}
+        />
+        {latestComment?.created_at && (
+          <div className="text-xs text-[color:var(--muted-foreground)]">
+            Last updated {formatDate(latestComment.created_at)}
+          </div>
+        )}
+      </section>
+
+      <section className="apple-card p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Topic breakdown</div>
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+              Topic breakdown
+            </div>
             <h2 className="text-xl font-semibold mt-2">Accuracy by topic</h2>
           </div>
-          {mostActive.length > 0 && (
-            <div className="text-sm text-[color:var(--muted-foreground)]">
-              Most active: {mostActive.map((item) => `${item.topic} (${item.attempts})`).join(", ")}
-            </div>
-          )}
         </div>
 
         <div className="rounded-lg border border-[color:var(--border)] overflow-hidden">
@@ -161,27 +168,6 @@ export default async function ProgressReportPage() {
             })}
           </div>
         </div>
-      </section>
-
-      <section className="apple-card p-6 space-y-3">
-        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Notes</div>
-        <h2 className="text-xl font-semibold">Teacher comments</h2>
-        {latestComment?.content ? (
-          <div className="space-y-2">
-            <p className="text-sm whitespace-pre-wrap">{latestComment.content}</p>
-            <div className="text-xs text-[color:var(--muted-foreground)]">
-              Updated {formatDate(latestComment.created_at)}
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className="apple-subtle">
-              This section is reserved for tutor feedback. Add insights about strengths,
-              gaps, and next steps when reviewing this report.
-            </p>
-            <div className="mt-4 h-28 rounded-xl border border-dashed border-[color:var(--border)]" />
-          </>
-        )}
       </section>
     </main>
   );

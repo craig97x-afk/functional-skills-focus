@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import ToggleOverrideButton from "./toggle-override-button";
@@ -37,21 +38,30 @@ export default async function AdminUsersPage() {
       <p className="text-sm text-gray-500">Toggle manual access override for support or testing.</p>
 
       <div className="rounded-lg border overflow-hidden">
-        <div className="grid grid-cols-5 gap-2 px-4 py-3 text-xs text-gray-500 border-b">
+        <div className="grid grid-cols-6 gap-2 px-4 py-3 text-xs text-gray-500 border-b">
           <div>ID</div>
           <div>Role</div>
           <div>Subscribed</div>
           <div>Override</div>
+          <div>Progress</div>
           <div>Actions</div>
         </div>
 
         <div className="divide-y">
           {rows.map((p) => (
-            <div key={p.id} className="grid grid-cols-5 gap-2 px-4 py-3 text-sm items-center">
+            <div key={p.id} className="grid grid-cols-6 gap-2 px-4 py-3 text-sm items-center">
               <div className="truncate" title={p.id}>{p.id}</div>
               <div>{p.role ?? "student"}</div>
               <div>{p.is_subscribed ? "Yes" : "No"}</div>
               <div>{p.access_override ? "Yes" : "No"}</div>
+              <div>
+                <Link
+                  className="text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
+                  href={`/admin/users/${p.id}/progress`}
+                >
+                  View
+                </Link>
+              </div>
               <div>
                 <ToggleOverrideButton userId={p.id} current={Boolean(p.access_override)} />
               </div>
