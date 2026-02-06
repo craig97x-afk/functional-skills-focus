@@ -62,6 +62,29 @@ export default function ExamCountdownManager({ initialExams }: Props) {
       return;
     }
 
+    try {
+      const { count } = await supabase
+        .from("user_exams")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", authData.user.id);
+
+      if (count === 1) {
+        await supabase
+          .from("user_achievements")
+          .upsert(
+            [
+              {
+                user_id: authData.user.id,
+                achievement_id: "first_exam",
+              },
+            ],
+            { onConflict: "user_id,achievement_id" }
+          );
+      }
+    } catch {
+      // Optional achievement tracking; ignore failures.
+    }
+
     setExams((prev) => sortByDate([...prev, data as ExamRow]));
     setExamName("");
     setExamDate("");

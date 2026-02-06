@@ -55,6 +55,55 @@ function parseDataPairs(data: string): { label: string; value: number }[] {
     });
 }
 
+function parsePointPairs(data: string): { x: number; y: number; label: string }[] {
+  return data
+    .split(",")
+    .map((pair) => pair.trim())
+    .filter(Boolean)
+    .map((pair, index) => {
+      const [left, right] = pair.split("|");
+      const x = Number(left);
+      const y = Number(right);
+      return {
+        x: Number.isFinite(x) ? x : index + 1,
+        y: Number.isFinite(y) ? y : 0,
+        label: `${left ?? index + 1}`,
+      };
+    });
+}
+
+function parseStackedPairs(
+  data: string
+): { label: string; values: number[] }[] {
+  return data
+    .split(",")
+    .map((pair) => pair.trim())
+    .filter(Boolean)
+    .map((pair) => {
+      const [labelRaw, valuesRaw] = pair.split("=");
+      const values = (valuesRaw ?? "")
+        .split("|")
+        .map((value) => Number(value.trim()))
+        .map((value) => (Number.isFinite(value) ? value : 0));
+      return { label: (labelRaw ?? "").trim() || "Item", values };
+    });
+}
+
+function parsePipeList(value: string): string[] {
+  return value
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseTableRows(value: string): string[][] {
+  return value
+    .split(";")
+    .map((row) => row.trim())
+    .filter(Boolean)
+    .map((row) => row.split("|").map((cell) => cell.trim()));
+}
+
 function buildTicks(minValue: number, maxValue: number, ticks = 5) {
   if (ticks < 2) return [minValue, maxValue];
   const span = maxValue - minValue || 1;
@@ -573,6 +622,395 @@ function PieChartWidget({
   );
 }
 
+function StackedBarWidget({
+  title,
+  data,
+  series,
+  yLabel,
+  xLabel,
+  unit,
+}: {
+  title: string;
+  data: string;
+  series?: string;
+  yLabel?: string;
+  xLabel?: string;
+  unit?: string;
+}) {
+  const items = parseStackedPairs(data);
+  const seriesLabels = series ? parsePipeList(series) : [];
+  const maxSegments = Math.max(0, ...items.map((item) => item.values.length));
+  const normalizedSeries = Array.from({ length: maxSegments }, (_, index) => {
+    return seriesLabels[index] ?? `Series ${index + 1}`;
+  });
+  const totals = items.map((item) =>
+    item.values.reduce((sum, value) => sum + value, 0)
+  );
+  const maxTotal = Math.max(...totals, 1);
+
+  const chart = {
+    width: 100,
+    height: 100,
+    padding: { top: 10, right: 8, bottom: 22, left: 14 },
+  };
+  const innerWidth = chart.width - chart.padding.left - chart.padding.right;
+  const innerHeight = chart.height - chart.padding.top - chart.padding.bottom;
+  const barWidth = items.length > 0 ? innerWidth / items.length - 3 : 10;
+
+  return (
+    <div className="apple-card p-5 space-y-4">
+      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        Stacked bar
+      </div>
+      <div className="text-lg font-semibold">{title || "Stacked bar chart"}</div>
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
+        <svg viewBox="0 0 100 100" className="h-48 w-full">
+          {buildTicks(0, maxTotal, 5).map((tick, index) => {
+            const ratio = tick / (maxTotal || 1);
+            const y = chart.padding.top + (1 - ratio) * innerHeight;
+            return (
+              <g key={`stacked-tick-${index}`}>
+                <line
+                  x1={chart.padding.left}
+                  x2={chart.width - chart.padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke={chartGridColor}
+                  strokeWidth="0.5"
+                />
+                <text
+                  x={chart.padding.left - 2}
+                  y={y + 3}
+                  textAnchor="end"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {formatValue(tick, unit)}
+                </text>
+              </g>
+            );
+          })}
+
+          <line
+            x1={chart.padding.left}
+            x2={chart.padding.left}
+            y1={chart.padding.top}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+          <line
+            x1={chart.padding.left}
+            x2={chart.width - chart.padding.right}
+            y1={chart.height - chart.padding.bottom}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+
+          {items.map((item, index) => {
+            const x = chart.padding.left + index * (barWidth + 3) + 1;
+            let yOffset = chart.padding.top + innerHeight;
+
+            return (
+              <g key={`${item.label}-${index}`}>
+                {item.values.map((value, segmentIndex) => {
+                  const height = Math.max(
+                    1,
+                    (value / (maxTotal || 1)) * innerHeight
+                  );
+                  yOffset -= height;
+                  return (
+                    <rect
+                      key={`${item.label}-${segmentIndex}`}
+                      x={x}
+                      y={yOffset}
+                      width={Math.max(4, barWidth)}
+                      height={height}
+                      rx="1.5"
+                      fill={chartColors[segmentIndex % chartColors.length]}
+                    />
+                  );
+                })}
+                <text
+                  x={x + Math.max(4, barWidth) / 2}
+                  y={chart.height - chart.padding.bottom + 6}
+                  textAnchor="middle"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {item.label}
+                </text>
+              </g>
+            );
+          })}
+
+          {yLabel && (
+            <text
+              x={6}
+              y={chart.padding.top + innerHeight / 2}
+              textAnchor="middle"
+              transform={`rotate(-90 6 ${chart.padding.top + innerHeight / 2})`}
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {yLabel}
+            </text>
+          )}
+          {xLabel && (
+            <text
+              x={chart.padding.left + innerWidth / 2}
+              y={chart.height - 2}
+              textAnchor="middle"
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {xLabel}
+            </text>
+          )}
+        </svg>
+        {items.length === 0 && (
+          <div className="text-sm text-[color:var(--muted-foreground)]">
+            Add data like Mon=3|2|1, Tue=4|1|3.
+          </div>
+        )}
+      </div>
+      {normalizedSeries.length > 0 && (
+        <div className="flex flex-wrap gap-3 text-sm text-[color:var(--muted-foreground)]">
+          {normalizedSeries.map((label, index) => (
+            <span key={label} className="inline-flex items-center gap-2">
+              <span
+                className="h-3 w-3 rounded-full"
+                style={{ background: chartColors[index % chartColors.length] }}
+              />
+              {label}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ScatterPlotWidget({
+  title,
+  data,
+  xLabel,
+  yLabel,
+  xMin,
+  xMax,
+  yMin,
+  yMax,
+  unit,
+}: {
+  title: string;
+  data: string;
+  xLabel?: string;
+  yLabel?: string;
+  xMin?: number;
+  xMax?: number;
+  yMin?: number;
+  yMax?: number;
+  unit?: string;
+}) {
+  const points = parsePointPairs(data);
+  const computedXMax = Math.max(...points.map((p) => p.x), 1);
+  const computedXMin = Math.min(...points.map((p) => p.x), 0);
+  const computedYMax = Math.max(...points.map((p) => p.y), 1);
+  const computedYMin = Math.min(...points.map((p) => p.y), 0);
+  const safeXMax = Number.isFinite(xMax ?? NaN) ? (xMax as number) : computedXMax;
+  const safeXMin = Number.isFinite(xMin ?? NaN) ? (xMin as number) : computedXMin;
+  const safeYMax = Number.isFinite(yMax ?? NaN) ? (yMax as number) : computedYMax;
+  const safeYMin = Number.isFinite(yMin ?? NaN) ? (yMin as number) : computedYMin;
+
+  const chart = {
+    width: 100,
+    height: 100,
+    padding: { top: 10, right: 8, bottom: 20, left: 14 },
+  };
+  const innerWidth = chart.width - chart.padding.left - chart.padding.right;
+  const innerHeight = chart.height - chart.padding.top - chart.padding.bottom;
+  const xTicks = buildTicks(safeXMin, safeXMax, 5);
+  const yTicks = buildTicks(safeYMin, safeYMax, 5);
+
+  return (
+    <div className="apple-card p-5 space-y-4">
+      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        Scatter plot
+      </div>
+      <div className="text-lg font-semibold">{title || "Scatter plot"}</div>
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
+        <svg viewBox="0 0 100 100" className="h-48 w-full">
+          {yTicks.map((tick, index) => {
+            const ratio = (tick - safeYMin) / (safeYMax - safeYMin || 1);
+            const y = chart.padding.top + (1 - ratio) * innerHeight;
+            return (
+              <g key={`scatter-y-${index}`}>
+                <line
+                  x1={chart.padding.left}
+                  x2={chart.width - chart.padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke={chartGridColor}
+                  strokeWidth="0.5"
+                />
+                <text
+                  x={chart.padding.left - 2}
+                  y={y + 3}
+                  textAnchor="end"
+                  className="fill-[color:var(--muted-foreground)]"
+                  style={{ fontSize: "4px" }}
+                >
+                  {formatValue(tick, unit)}
+                </text>
+              </g>
+            );
+          })}
+
+          {xTicks.map((tick, index) => {
+            const ratio = (tick - safeXMin) / (safeXMax - safeXMin || 1);
+            const x = chart.padding.left + ratio * innerWidth;
+            return (
+              <text
+                key={`scatter-x-${index}`}
+                x={x}
+                y={chart.height - chart.padding.bottom + 6}
+                textAnchor="middle"
+                className="fill-[color:var(--muted-foreground)]"
+                style={{ fontSize: "4px" }}
+              >
+                {formatValue(tick)}
+              </text>
+            );
+          })}
+
+          <line
+            x1={chart.padding.left}
+            x2={chart.padding.left}
+            y1={chart.padding.top}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+          <line
+            x1={chart.padding.left}
+            x2={chart.width - chart.padding.right}
+            y1={chart.height - chart.padding.bottom}
+            y2={chart.height - chart.padding.bottom}
+            stroke={chartAxisColor}
+            strokeWidth="0.7"
+          />
+
+          {points.map((point, index) => {
+            const xRatio = (point.x - safeXMin) / (safeXMax - safeXMin || 1);
+            const yRatio = (point.y - safeYMin) / (safeYMax - safeYMin || 1);
+            const x = chart.padding.left + xRatio * innerWidth;
+            const y = chart.padding.top + (1 - yRatio) * innerHeight;
+            return (
+              <circle
+                key={`${point.label}-${index}`}
+                cx={x}
+                cy={y}
+                r="3.2"
+                fill={chartColors[index % chartColors.length]}
+                stroke="var(--surface)"
+                strokeWidth="1"
+              />
+            );
+          })}
+
+          {yLabel && (
+            <text
+              x={6}
+              y={chart.padding.top + innerHeight / 2}
+              textAnchor="middle"
+              transform={`rotate(-90 6 ${chart.padding.top + innerHeight / 2})`}
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {yLabel}
+            </text>
+          )}
+          {xLabel && (
+            <text
+              x={chart.padding.left + innerWidth / 2}
+              y={chart.height - 2}
+              textAnchor="middle"
+              className="fill-[color:var(--muted-foreground)]"
+              style={{ fontSize: "4px" }}
+            >
+              {xLabel}
+            </text>
+          )}
+        </svg>
+        {points.length === 0 && (
+          <div className="text-sm text-[color:var(--muted-foreground)]">
+            Add data like 1|2, 2|3, 3|5.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TableWidget({
+  title,
+  headers,
+  rows,
+}: {
+  title: string;
+  headers: string;
+  rows: string;
+}) {
+  const headerCells = parsePipeList(headers);
+  const rowCells = parseTableRows(rows);
+
+  return (
+    <div className="apple-card p-5 space-y-4">
+      <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        Table
+      </div>
+      <div className="text-lg font-semibold">{title || "Data table"}</div>
+      <div className="overflow-x-auto rounded-2xl border border-[color:var(--border)]">
+        <table className="min-w-full text-sm">
+          {headerCells.length > 0 && (
+            <thead className="bg-[color:var(--surface-muted)] text-[color:var(--muted-foreground)]">
+              <tr>
+                {headerCells.map((header) => (
+                  <th key={header} className="px-4 py-2 text-left font-semibold">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+          )}
+          <tbody>
+            {rowCells.map((row, rowIndex) => (
+              <tr
+                key={`row-${rowIndex}`}
+                className="border-t border-[color:var(--border)]"
+              >
+                {row.map((cell, cellIndex) => (
+                  <td key={`${rowIndex}-${cellIndex}`} className="px-4 py-2">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            {rowCells.length === 0 && (
+              <tr>
+                <td className="px-4 py-3 text-[color:var(--muted-foreground)]">
+                  Add rows like Ava|12|A; Ben|9|B
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function NumberLineWidget({
   min,
   max,
@@ -807,6 +1245,45 @@ export function WidgetBlock({ value }: { value: string }) {
     );
   }
 
+  if (type === "stacked_bar") {
+    return (
+      <StackedBarWidget
+        title={config.title ?? ""}
+        data={config.data ?? ""}
+        series={config.series}
+        yLabel={config.y_label ?? config.ylabel}
+        xLabel={config.x_label ?? config.xlabel}
+        unit={config.unit}
+      />
+    );
+  }
+
+  if (type === "scatter") {
+    return (
+      <ScatterPlotWidget
+        title={config.title ?? ""}
+        data={config.data ?? ""}
+        xLabel={config.x_label ?? config.xlabel}
+        yLabel={config.y_label ?? config.ylabel}
+        xMin={toNumber(config.x_min, NaN)}
+        xMax={toNumber(config.x_max, NaN)}
+        yMin={toNumber(config.y_min, NaN)}
+        yMax={toNumber(config.y_max, NaN)}
+        unit={config.unit}
+      />
+    );
+  }
+
+  if (type === "table") {
+    return (
+      <TableWidget
+        title={config.title ?? ""}
+        headers={config.headers ?? ""}
+        rows={config.rows ?? ""}
+      />
+    );
+  }
+
   if (type === "numberline") {
     return (
       <NumberLineWidget
@@ -844,7 +1321,7 @@ export function WidgetBlock({ value }: { value: string }) {
     <div className="apple-card p-5">
       <div className="text-sm text-slate-500">
         Unknown widget type. Try: clock, bar, line, pie, numberline, fraction,
-        shape.
+        shape, stacked_bar, scatter, table.
       </div>
     </div>
   );

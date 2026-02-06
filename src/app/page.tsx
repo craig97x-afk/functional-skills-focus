@@ -136,6 +136,12 @@ export default async function HomePage() {
             <Link href="/guides" className="apple-pill">
               Guides
             </Link>
+            <Link href="/study-plan" className="apple-pill">
+              Study plan
+            </Link>
+            <Link href="/flashcards" className="apple-pill">
+              Flashcards
+            </Link>
             {hasAccess ? (
               <>
                 <Link href="/progress" className="apple-pill">

@@ -80,14 +80,36 @@ export default async function Header() {
                   <Link className="apple-nav-menu-item" href="/review">
                     Review mistakes
                   </Link>
+                  <Link className="apple-nav-menu-item" href="/progress/report">
+                    Progress report
+                  </Link>
+                </div>
+              </div>
+
+              <div className="apple-nav-group">
+                <button className={navItem} type="button">
+                  Tools
+                </button>
+                <div className="apple-nav-menu">
+                  <Link className="apple-nav-menu-item" href="/study-plan">
+                    Study plan
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/flashcards">
+                    Flashcards
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/guides">
+                    Guides
+                  </Link>
                 </div>
               </div>
             </>
           )}
 
-          <Link href="/guides" className={navItem}>
-            Guides
-          </Link>
+          {!session && (
+            <Link href="/guides" className={navItem}>
+              Guides
+            </Link>
+          )}
 
           {session && session.profile?.role !== "admin" && (
             <Link href="/pricing" className={navItem}>

@@ -322,3 +322,26 @@ html[data-theme="dark"] .apple-switch {
 .text-slate-900 {
   color: var(--foreground);
 }
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  header,
+  nav,
+  .print-hidden {
+    display: none !important;
+  }
+
+  .apple-card {
+    border: 1px solid #e2e8f0;
+    box-shadow: none !important;
+    background: #ffffff !important;
+  }
+}

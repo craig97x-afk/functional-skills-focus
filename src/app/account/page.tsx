@@ -28,6 +28,36 @@ export default async function AccountPage() {
     show_on_dashboard: boolean;
   }[];
 
+  const { data: achievementsRaw } = await supabase
+    .from("user_achievements")
+    .select(
+      "earned_at, achievement:achievement_id (id, title, description, icon, points)"
+    )
+    .eq("user_id", session.user.id)
+    .order("earned_at", { ascending: false });
+
+  type AchievementInfo = {
+    id: string;
+    title: string;
+    description?: string | null;
+    icon?: string | null;
+    points?: number | null;
+  };
+
+  type RawAchievementRow = {
+    earned_at: string;
+    achievement: AchievementInfo | AchievementInfo[] | null;
+  };
+
+  const achievements = ((achievementsRaw ?? []) as RawAchievementRow[]).map(
+    (row) => ({
+      earned_at: row.earned_at,
+      achievement: Array.isArray(row.achievement)
+        ? row.achievement[0] ?? null
+        : row.achievement ?? null,
+    })
+  );
+
   return (
     <main className="space-y-8 max-w-2xl">
       <div>
@@ -88,6 +118,53 @@ export default async function AccountPage() {
           </p>
         </div>
         <ExamCountdownManager initialExams={exams} />
+      </section>
+
+      <section className="apple-card p-6 space-y-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Achievements
+          </div>
+          <h2 className="text-lg font-semibold mt-2">Your badges</h2>
+          <p className="apple-subtle mt-2">
+            Earn badges as you complete practice questions and set exam goals.
+          </p>
+        </div>
+
+        {achievements.length === 0 ? (
+          <p className="text-sm text-[color:var(--muted-foreground)]">
+            No badges yet. Complete a practice question or add an exam to unlock
+            your first badge.
+          </p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {achievements.map((row) => {
+              const badge = row.achievement;
+              if (!badge) return null;
+              return (
+                <div
+                  key={`${badge.id}-${row.earned_at}`}
+                  className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{badge.icon ?? "🏅"}</div>
+                    <div>
+                      <div className="font-semibold">{badge.title}</div>
+                      {badge.description && (
+                        <div className="text-sm text-[color:var(--muted-foreground)]">
+                          {badge.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-[color:var(--muted-foreground)]">
+                    Earned {new Date(row.earned_at).toLocaleDateString()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <div className="flex gap-2 flex-wrap">

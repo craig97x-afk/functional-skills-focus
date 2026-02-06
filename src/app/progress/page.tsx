@@ -72,9 +72,14 @@ export default async function ProgressPage() {
     <main className="p-6 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Progress</h1>
-        <Link className="apple-pill" href="/review">
-          Review mistakes
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link className="apple-pill" href="/progress/report">
+            Progress report
+          </Link>
+          <Link className="apple-pill" href="/review">
+            Review mistakes
+          </Link>
+        </div>
       </div>
 
       {attempts.length === 0 ? (

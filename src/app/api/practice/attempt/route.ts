@@ -30,5 +30,36 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  try {
+    const { count } = await supabase
+      .from("practice_attempts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", authData.user.id);
+
+    if (typeof count === "number" && count > 0) {
+      const milestones = [
+        { id: "first_attempt", at: 1 },
+        { id: "ten_attempts", at: 10 },
+        { id: "fifty_attempts", at: 50 },
+        { id: "hundred_attempts", at: 100 },
+      ];
+
+      const awards = milestones
+        .filter((milestone) => count >= milestone.at)
+        .map((milestone) => ({
+          user_id: authData.user.id,
+          achievement_id: milestone.id,
+        }));
+
+      if (awards.length > 0) {
+        await supabase
+          .from("user_achievements")
+          .upsert(awards, { onConflict: "user_id,achievement_id" });
+      }
+    }
+  } catch {
+    // Achievement tracking is optional; ignore failures.
+  }
+
   return NextResponse.json({ ok: true });
 }

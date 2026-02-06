@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import { WidgetBlock } from "./lesson-widgets";
+import LessonNotes from "./lesson-notes";
 
 type LessonRow = {
   id: string;
@@ -40,7 +41,16 @@ export default async function LessonPage({
     redirect(`/maths/${level}/${topicId}`);
   }
 
-  const lessonBody = lesson.body ? lesson.body.replace(/\\n/g, "\n\n") : null;
+  const lessonBody = lesson.body
+    ? lesson.body.replace(/\\\\n/g, "\n\n").replace(/\\n/g, "\n\n")
+    : null;
+
+  const { data: note } = await supabase
+    .from("lesson_notes")
+    .select("id, content")
+    .eq("lesson_id", lessonId)
+    .eq("user_id", session.user.id)
+    .maybeSingle();
 
   return (
     <main className="space-y-8 max-w-3xl">
@@ -107,6 +117,14 @@ export default async function LessonPage({
           <p>No content yet.</p>
         )}
       </article>
+
+      <section className="apple-card p-6">
+        <LessonNotes
+          lessonId={lessonId}
+          initialNoteId={note?.id ?? null}
+          initialContent={note?.content ?? ""}
+        />
+      </section>
     </main>
   );
 }

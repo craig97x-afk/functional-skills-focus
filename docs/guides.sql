@@ -5,6 +5,7 @@ create table if not exists public.guides (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   description text,
+  category text not null default 'general',
   type text not null check (type in ('pdf', 'markdown', 'video')),
   content text,
   file_path text,
@@ -33,6 +34,10 @@ create table if not exists public.guide_purchases (
 
 alter table public.guides enable row level security;
 alter table public.guide_purchases enable row level security;
+
+-- Backfill category for existing rows if the column was added later
+alter table public.guides
+  add column if not exists category text default 'general';
 
 -- Public can read published guides
 drop policy if exists "Public read guides" on public.guides;

@@ -11,7 +11,7 @@ label: Half past ten`,
   },
   {
     title: "Bar chart",
-    description: "Horizontal bars with accent colors and labels.",
+    description: "Column bars with gridlines and axis labels.",
     block: `type: bar
 title: Fruit sold
 data: Apples=5, Bananas=3, Oranges=8
@@ -41,6 +41,39 @@ unit: °`,
 title: Class favourites
 data: Apples=4, Bananas=6, Oranges=3
 unit:`,
+  },
+  {
+    title: "Stacked bar",
+    description: "Stacked series with legend and totals.",
+    block: `type: stacked_bar
+title: Attendance by week
+data: Mon=3|2|1, Tue=4|1|3, Wed=2|3|2
+series: Maths|English|ICT
+y_label: Students
+x_label: Day
+unit:`,
+  },
+  {
+    title: "Scatter plot",
+    description: "Relationship between two variables.",
+    block: `type: scatter
+title: Study vs score
+data: 1|45, 2|52, 3|58, 4|70
+x_label: Hours
+y_label: Score
+x_min: 0
+x_max: 5
+y_min: 40
+y_max: 80
+unit:`,
+  },
+  {
+    title: "Data table",
+    description: "Tabular data for quick comparisons.",
+    block: `type: table
+title: Assessment results
+headers: Name|Score|Grade
+rows: Ava|12|A; Ben|9|B; Cara|7|C`,
   },
   {
     title: "Number line",

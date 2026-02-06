@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { createClient } from "@/lib/supabase/server";
+import AchievementToaster from "@/components/achievement-toaster";
 
 export const metadata: Metadata = {
   title: "Functional Skills Focus",
@@ -43,6 +44,7 @@ export default async function RootLayout({
           </div>
           <Footer />
         </div>
+        <AchievementToaster />
       </body>
     </html>
   );
