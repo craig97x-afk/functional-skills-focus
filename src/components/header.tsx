@@ -114,6 +114,9 @@ export default async function Header() {
                   <Link className="apple-nav-menu-item" href="/flashcards">
                     Flashcards
                   </Link>
+                  <Link className="apple-nav-menu-item" href="/messages">
+                    Messages
+                  </Link>
                   <Link className="apple-nav-menu-item" href="/guides">
                     Guides
                   </Link>

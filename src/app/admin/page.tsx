@@ -51,6 +51,10 @@ export default async function AdminPage() {
           <div className="font-semibold">Manage Users</div>
           <div className="apple-subtle mt-1">Overrides and access control.</div>
         </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/messages">
+          <div className="font-semibold">Messages</div>
+          <div className="apple-subtle mt-1">Reply to student questions.</div>
+        </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/billing">
           <div className="font-semibold">Billing Audit</div>
           <div className="apple-subtle mt-1">Stripe status + resync tools.</div>
