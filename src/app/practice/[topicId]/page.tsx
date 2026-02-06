@@ -16,10 +16,17 @@ type QuestionRow = {
 
 export default async function PracticePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ topicId: string }>;
+  searchParams?: { mode?: string; count?: string };
 }) {
   const { topicId } = await params;
+  const mode = searchParams?.mode === "adaptive" ? "adaptive" : "all";
+  const requestedCount = Number.parseInt(searchParams?.count ?? "10", 10);
+  const desiredCount = Number.isFinite(requestedCount)
+    ? Math.min(Math.max(requestedCount, 5), 20)
+    : 10;
 
   const session = await getUser();
   if (!session) redirect("/login");
@@ -67,6 +74,39 @@ export default async function PracticePage({
     })),
   }));
 
+  let selectedQuestions = hydrated;
+
+  if (mode === "adaptive" && hydrated.length > 0) {
+    const { data: attemptsRaw } = await supabase
+      .from("practice_attempts")
+      .select("question_id, is_correct")
+      .eq("user_id", session.user.id)
+      .in("question_id", qIds);
+
+    const attemptStats = new Map<string, { total: number; correct: number }>();
+    (attemptsRaw ?? []).forEach((attempt: any) => {
+      if (attempt.is_correct === null) return;
+      const stat = attemptStats.get(attempt.question_id) ?? { total: 0, correct: 0 };
+      stat.total += 1;
+      if (attempt.is_correct === true) stat.correct += 1;
+      attemptStats.set(attempt.question_id, stat);
+    });
+
+    const ranked = [...hydrated].sort((a, b) => {
+      const aStat = attemptStats.get(a.id);
+      const bStat = attemptStats.get(b.id);
+      const aAttempts = aStat?.total ?? 0;
+      const bAttempts = bStat?.total ?? 0;
+      const aAcc = aAttempts > 0 ? (aStat?.correct ?? 0) / aAttempts : -1;
+      const bAcc = bAttempts > 0 ? (bStat?.correct ?? 0) / bAttempts : -1;
+      if (aAcc !== bAcc) return aAcc - bAcc;
+      if (aAttempts !== bAttempts) return aAttempts - bAttempts;
+      return a.prompt.localeCompare(b.prompt);
+    });
+
+    selectedQuestions = ranked.slice(0, Math.min(desiredCount, ranked.length));
+  }
+
   return (
     <main className="space-y-6">
       <Link className="apple-subtle inline-flex" href="/maths/practice">
@@ -83,7 +123,26 @@ export default async function PracticePage({
           Answer each question to check your understanding.
         </p>
       </div>
-      <PracticeRunner topicTitle={topic.title} questions={hydrated} />
+      <div className="flex flex-wrap gap-2">
+        <Link
+          className="apple-pill"
+          href={`/practice/${topicId}`}
+        >
+          Full set ({hydrated.length})
+        </Link>
+        <Link
+          className="apple-pill"
+          href={`/practice/${topicId}?mode=adaptive&count=${desiredCount}`}
+        >
+          Adaptive set ({selectedQuestions.length})
+        </Link>
+      </div>
+      <p className="apple-subtle">
+        {mode === "adaptive"
+          ? "Adaptive set prioritises weaker or unseen questions."
+          : "Full set covers every published question in this topic."}
+      </p>
+      <PracticeRunner topicTitle={topic.title} questions={selectedQuestions} />
     </main>
   );
 }

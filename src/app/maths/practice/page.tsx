@@ -86,21 +86,32 @@ export default async function MathsPracticePage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 {levelTopics.map((topic) => (
-                  <Link
-                    key={topic.id}
-                    href={hasAccess ? `/practice/${topic.id}` : "/pricing"}
-                    className="apple-card p-5 hover:shadow-md transition"
-                  >
-                    <div className="font-semibold">{topic.title}</div>
-                    {topic.description && (
-                      <p className="apple-subtle mt-2">{topic.description}</p>
-                    )}
-                    {!hasAccess && (
-                      <div className="text-xs text-slate-500 mt-3">
+                  <div key={topic.id} className="apple-card p-5 space-y-3">
+                    <div>
+                      <div className="font-semibold">{topic.title}</div>
+                      {topic.description && (
+                        <p className="apple-subtle mt-2">{topic.description}</p>
+                      )}
+                    </div>
+
+                    {hasAccess ? (
+                      <div className="flex flex-wrap gap-2">
+                        <Link className="apple-pill" href={`/practice/${topic.id}`}>
+                          Full set
+                        </Link>
+                        <Link
+                          className="apple-pill"
+                          href={`/practice/${topic.id}?mode=adaptive`}
+                        >
+                          Adaptive set
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-slate-500">
                         Subscription required for practice
                       </div>
                     )}
-                  </Link>
+                  </div>
                 ))}
 
                 {levelTopics.length === 0 && (
