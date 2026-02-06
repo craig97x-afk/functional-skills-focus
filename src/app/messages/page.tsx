@@ -40,6 +40,15 @@ export default async function MessagesPage({
 
   const messages = (messagesRaw ?? []) as Message[];
 
+  if (conversationId) {
+    await supabase
+      .from("support_messages")
+      .update({ read_at: new Date().toISOString() })
+      .eq("conversation_id", conversationId)
+      .neq("sender_id", session.user.id)
+      .is("read_at", null);
+  }
+
   return (
     <main className="space-y-6 max-w-4xl">
       <div>

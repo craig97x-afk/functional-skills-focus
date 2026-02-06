@@ -71,6 +71,15 @@ export default async function AdminMessagesPage({
 
   const messages = (messagesRaw ?? []) as Message[];
 
+  if (selectedConversationId) {
+    await supabase
+      .from("support_messages")
+      .update({ read_at: new Date().toISOString() })
+      .eq("conversation_id", selectedConversationId)
+      .neq("sender_id", session.user.id)
+      .is("read_at", null);
+  }
+
   return (
     <main className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
