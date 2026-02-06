@@ -114,6 +114,81 @@ a {
     background-color: var(--accent);
   }
 
+  .apple-nav-group {
+    @apply relative;
+  }
+
+  .apple-nav-menu {
+    @apply absolute left-0 mt-2 min-w-[180px] rounded-2xl border p-2 shadow-lg backdrop-blur transition;
+    background-color: var(--surface);
+    border-color: var(--border);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px) scale(0.98);
+    z-index: 50;
+  }
+
+  .apple-nav-menu-right {
+    @apply right-0 left-auto;
+  }
+
+  .apple-nav-group:hover .apple-nav-menu,
+  .apple-nav-group:focus-within .apple-nav-menu {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+
+  .apple-nav-menu-item {
+    @apply block w-full rounded-xl px-3 py-2 text-sm font-medium text-left transition;
+    color: var(--foreground);
+    opacity: 0.85;
+  }
+
+  .apple-nav-menu-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    opacity: 1;
+  }
+
+  .apple-nav-menu-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .apple-switch {
+    @apply inline-flex items-center justify-start transition;
+    width: 46px;
+    height: 26px;
+    padding: 2px;
+    border-radius: 999px;
+    background-color: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .apple-switch:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.35);
+  }
+
+  .apple-switch-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 200ms ease;
+  }
+
+  .apple-switch[data-state="on"] {
+    background-color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .apple-switch[data-state="on"] .apple-switch-thumb {
+    transform: translateX(20px);
+  }
+
   .apple-header {
     @apply border-b backdrop-blur;
     background-color: var(--surface);
@@ -163,6 +238,15 @@ a {
 html[data-theme="dark"] .apple-nav:hover,
 html[data-theme="dark"] .apple-nav-pill:hover {
   background-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .apple-nav-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .apple-switch {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Neutral text helpers to keep legacy gray/slate utilities readable in dark mode */

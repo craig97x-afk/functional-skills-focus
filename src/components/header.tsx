@@ -26,29 +26,39 @@ export default async function Header() {
         <nav className="flex items-center gap-2 flex-wrap justify-end">
           {session && (
             <>
-              <Link href="/maths" className={navItem}>
-                Maths
-              </Link>
-              <Link href="/english" className={navItem}>
-                English
-              </Link>
-              <Link href="/guides" className={navItem}>
-                Guides
-              </Link>
-              <Link href="/progress" className={navItem}>
-                Progress
-              </Link>
-              <Link href="/mastery" className={navItem}>
-                Mastery
-              </Link>
+              <div className="apple-nav-group">
+                <button className={navItem} type="button">
+                  Learn
+                </button>
+                <div className="apple-nav-menu">
+                  <Link className="apple-nav-menu-item" href="/maths">
+                    Maths
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/english">
+                    English
+                  </Link>
+                </div>
+              </div>
+
+              <div className="apple-nav-group">
+                <button className={navItem} type="button">
+                  Practice
+                </button>
+                <div className="apple-nav-menu">
+                  <Link className="apple-nav-menu-item" href="/progress">
+                    Progress
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/mastery">
+                    Mastery
+                  </Link>
+                </div>
+              </div>
             </>
           )}
 
-          {!session && (
-            <Link href="/guides" className={navItem}>
-              Guides
-            </Link>
-          )}
+          <Link href="/guides" className={navItem}>
+            Guides
+          </Link>
 
           {session && session.profile?.role !== "admin" && (
             <Link href="/pricing" className={navItem}>
@@ -62,24 +72,28 @@ export default async function Header() {
             </Link>
           )}
 
-          {session && (
-            <Link href="/account" className={navPill}>
-              Account
-            </Link>
-          )}
-
           <ThemeToggle />
 
-          {!session ? (
+          {session ? (
+            <div className="apple-nav-group">
+              <button className={navPill} type="button">
+                Account
+              </button>
+              <div className="apple-nav-menu apple-nav-menu-right">
+                <Link className="apple-nav-menu-item" href="/account">
+                  Account
+                </Link>
+                <form action={signOut}>
+                  <button className="apple-nav-menu-item apple-nav-menu-button" type="submit">
+                    Logout
+                  </button>
+                </form>
+              </div>
+            </div>
+          ) : (
             <Link href="/login" className={navPrimary}>
               Login
             </Link>
-          ) : (
-            <form action={signOut}>
-              <button className={navPill} type="submit">
-                Logout
-              </button>
-            </form>
           )}
         </nav>
       </div>

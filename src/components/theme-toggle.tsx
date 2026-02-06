@@ -29,15 +29,19 @@ export default function ThemeToggle() {
   }, [theme]);
 
   const next = theme === "light" ? "dark" : "light";
+  const isDark = theme === "dark";
 
   return (
     <button
-      className="apple-nav-pill"
+      className="apple-switch"
       type="button"
+      role="switch"
+      aria-checked={isDark}
+      data-state={isDark ? "on" : "off"}
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${next} mode`}
     >
-      {theme === "light" ? "Night" : "Day"}
+      <span className="apple-switch-thumb" />
     </button>
   );
 }
