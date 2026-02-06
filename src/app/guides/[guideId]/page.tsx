@@ -10,11 +10,15 @@ type Guide = {
   title: string;
   description: string | null;
   type: "pdf" | "markdown" | "video";
-  content: string | null;
-  file_url: string | null;
   price_cents: number;
   currency: string;
   is_published: boolean;
+};
+
+type GuideAsset = {
+  content: string | null;
+  file_path: string | null;
+  file_url: string | null;
 };
 
 function formatPrice(priceCents: number, currency: string) {
@@ -38,7 +42,7 @@ export default async function GuideDetailPage({
   const { data: guide } = (await supabase
     .from("guides")
     .select(
-      "id, title, description, type, content, file_url, price_cents, currency, is_published"
+      "id, title, description, type, price_cents, currency, is_published"
     )
     .eq("id", guideId)
     .maybeSingle()) as { data: Guide | null };
@@ -64,6 +68,26 @@ export default async function GuideDetailPage({
 
   const hasAccess = isSubscriber || guide.price_cents === 0 || Boolean(purchase);
   const priceLabel = formatPrice(guide.price_cents, guide.currency);
+  let asset: GuideAsset | null = null;
+  let resolvedFileUrl: string | null = null;
+
+  if (hasAccess) {
+    const { data: assetRow } = (await supabase
+      .from("guide_assets")
+      .select("content, file_path, file_url")
+      .eq("guide_id", guide.id)
+      .maybeSingle()) as { data: GuideAsset | null };
+
+    asset = assetRow;
+    resolvedFileUrl = asset?.file_url ?? null;
+
+    if (!resolvedFileUrl && asset?.file_path) {
+      const { data: signed } = await supabase.storage
+        .from("guides")
+        .createSignedUrl(asset.file_path, 60 * 60);
+      resolvedFileUrl = signed?.signedUrl ?? null;
+    }
+  }
 
   return (
     <main className="space-y-8">
@@ -99,41 +123,41 @@ export default async function GuideDetailPage({
 
       {hasAccess && (
         <section className="apple-card p-6 space-y-4">
-          {guide.type === "markdown" && guide.content && (
+          {guide.type === "markdown" && asset?.content && (
             <article className="prose max-w-none prose-headings:tracking-tight">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {guide.content}
+                {asset.content}
               </ReactMarkdown>
             </article>
           )}
 
-          {guide.type === "pdf" && guide.file_url && (
+          {guide.type === "pdf" && resolvedFileUrl && (
             <div className="space-y-3">
-              <a className="apple-button" href={guide.file_url} target="_blank">
+              <a className="apple-button" href={resolvedFileUrl} target="_blank">
                 Download PDF
               </a>
               <iframe
                 title={guide.title}
-                src={guide.file_url}
+                src={resolvedFileUrl}
                 className="w-full min-h-[600px] rounded-2xl border"
               />
             </div>
           )}
 
-          {guide.type === "video" && guide.file_url && (
+          {guide.type === "video" && resolvedFileUrl && (
             <div className="space-y-3">
-              <a className="apple-button" href={guide.file_url} target="_blank">
+              <a className="apple-button" href={resolvedFileUrl} target="_blank">
                 Open video
               </a>
               <video
                 controls
                 className="w-full rounded-2xl border"
-                src={guide.file_url}
+                src={resolvedFileUrl}
               />
             </div>
           )}
 
-          {!guide.file_url && guide.type !== "markdown" && (
+          {!resolvedFileUrl && guide.type !== "markdown" && (
             <div className="text-sm text-slate-500">
               This guide file is not available yet.
             </div>

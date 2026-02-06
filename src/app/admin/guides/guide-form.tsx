@@ -62,22 +62,39 @@ export default function GuideForm() {
       fileUrl = publicUrl.publicUrl;
     }
 
-    const { error } = await supabase.from("guides").insert({
-      title,
-      description: description || null,
-      type,
-      content: type === "markdown" ? content : null,
-      file_path: filePath,
-      file_url: fileUrl,
-      price_cents: priceCents,
-      currency: "gbp",
-      stripe_price_id: stripePriceId.trim() || null,
-      is_published: published,
-    });
+    const { data: guideRow, error: guideErr } = await supabase
+      .from("guides")
+      .insert({
+        title,
+        description: description || null,
+        type,
+        price_cents: priceCents,
+        currency: "gbp",
+        stripe_price_id: stripePriceId.trim() || null,
+        is_published: published,
+      })
+      .select("id")
+      .single();
+
+    if (guideErr || !guideRow) {
+      setLoading(false);
+      setMsg(guideErr?.message ?? "Failed to create guide.");
+      return;
+    }
+
+    const { error: assetErr } = await supabase.from("guide_assets").upsert(
+      {
+        guide_id: guideRow.id,
+        content: type === "markdown" ? content : null,
+        file_path: filePath,
+        file_url: fileUrl,
+      },
+      { onConflict: "guide_id" }
+    );
 
     setLoading(false);
-    setMsg(error ? error.message : "Guide created. Refreshing...");
-    if (!error) window.location.reload();
+    setMsg(assetErr ? assetErr.message : "Guide created. Refreshing...");
+    if (!assetErr) window.location.reload();
   }
 
   return (

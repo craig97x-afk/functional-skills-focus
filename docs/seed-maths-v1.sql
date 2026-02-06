@@ -196,6 +196,11 @@ update public.lessons set body =
 '### Percentage change\n**What you will learn:** Find increases and decreases by a percentage.\n**Vocabulary:** percent, increase, decrease.\n**Steps:** Find the percent of the original, then add or subtract.\n**Worked example:** Increase 200 by 10 percent = 220.\n**Quick check:** 15 percent of 80 = 12.'
 where title = 'Percentage change' and (body is null or length(body) < 120);
 
+-- If any lesson bodies contain literal "\n" sequences, convert them to real newlines.
+update public.lessons
+set body = replace(body, '\\n', E'\n')
+where body like '%\\n%';
+
 -- Fix escaped newlines in existing lesson bodies
 update public.lessons
 set body = replace(body, '\\n', E'\n')
