@@ -43,45 +43,55 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <label className="block">
-          <span className="text-sm text-slate-600">Email</span>
-          <input
-            className={fieldClass}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-          />
-        </label>
+        <form
+          className="space-y-6"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!loading) {
+              void signIn();
+            }
+          }}
+        >
+          <label className="block">
+            <span className="text-sm text-slate-600">Email</span>
+            <input
+              className={fieldClass}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              autoComplete="email"
+            />
+          </label>
 
-        <label className="block">
-          <span className="text-sm text-slate-600">Password</span>
-          <input
-            className={fieldClass}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="current-password"
-          />
-        </label>
+          <label className="block">
+            <span className="text-sm text-slate-600">Password</span>
+            <input
+              className={fieldClass}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              autoComplete="current-password"
+            />
+          </label>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            className="apple-button"
-            onClick={signIn}
-            disabled={loading || !email || !password}
-          >
-            {loading ? "Working..." : "Sign in"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              className="apple-button"
+              type="submit"
+              disabled={loading || !email || !password}
+            >
+              {loading ? "Working..." : "Sign in"}
+            </button>
 
-          <Link className="apple-pill" href="/create-account">
-            Create account
-          </Link>
+            <Link className="apple-pill" href="/create-account">
+              Create account
+            </Link>
 
-          <Link href="/forgot-password" className="text-sm text-slate-600 hover:text-slate-900">
-            Forgot password?
-          </Link>
-        </div>
+            <Link href="/forgot-password" className="text-sm text-slate-600 hover:text-slate-900">
+              Forgot password?
+            </Link>
+          </div>
+        </form>
 
         {msg && <p className="text-sm text-slate-600">{msg}</p>}
 
