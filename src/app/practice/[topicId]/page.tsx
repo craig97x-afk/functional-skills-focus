@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 import PracticeRunner from "./practice-runner";
+import Link from "next/link";
 
 type QuestionOptionRow = { id: string; question_id: string; label: string; is_correct: boolean };
 type QuestionRow = {
@@ -31,7 +32,7 @@ export default async function PracticePage({
     .eq("id", topicId)
     .single();
 
-  if (!topic) redirect("/maths");
+  if (!topic) redirect("/maths/practice");
 
   const { data: questions } = await supabase
     .from("questions")
@@ -67,8 +68,21 @@ export default async function PracticePage({
   }));
 
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">Practice: {topic.title}</h1>
+    <main className="space-y-6">
+      <Link className="apple-subtle inline-flex" href="/maths/practice">
+        ← Practice topics
+      </Link>
+      <div className="space-y-2">
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Practice
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          {topic.title} practice
+        </h1>
+        <p className="apple-subtle">
+          Answer each question to check your understanding.
+        </p>
+      </div>
       <PracticeRunner topicTitle={topic.title} questions={hydrated} />
     </main>
   );

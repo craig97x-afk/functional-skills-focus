@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function TopicLessonsPage({
   params,
@@ -12,6 +13,11 @@ export default async function TopicLessonsPage({
   const session = await getUser();
   if (!session) redirect("/login");
 
+  const profile = session.profile;
+  const hasAccess = Boolean(
+    profile?.role === "admin" || profile?.is_subscribed || profile?.access_override
+  );
+
   const supabase = await createClient();
 
   const { data: topic } = await supabase
@@ -20,7 +26,7 @@ export default async function TopicLessonsPage({
     .eq("id", topicId)
     .single();
 
-  if (!topic) redirect(`/maths/${level}`);
+  if (!topic) redirect(`/maths/learn`);
 
   const { data: lessons } = await supabase
     .from("lessons")
@@ -30,33 +36,52 @@ export default async function TopicLessonsPage({
     .order("sort_order");
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">{topic.title}</h1>
+    <main className="space-y-8">
+      <Link className="apple-subtle inline-flex" href={`/maths/${level}`}>
+        ← Back to {level} topics
+      </Link>
 
-      <a
-        href={`/practice/${topicId}`}
-        className="inline-block rounded-md border px-3 py-2"
-      >
-        Practice questions
-      </a>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="space-y-2">
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            Topic
+          </div>
+          <h1 className="text-3xl font-semibold tracking-tight">{topic.title}</h1>
+          <p className="apple-subtle">
+            Lessons, worked examples, and revision notes for this topic.
+          </p>
+        </div>
+        <div className="flex gap-3 flex-wrap">
+          {hasAccess ? (
+            <Link className="apple-button" href={`/practice/${topicId}`}>
+              Practice this topic
+            </Link>
+          ) : (
+            <Link className="apple-pill" href="/pricing">
+              Unlock practice
+            </Link>
+          )}
+        </div>
+      </div>
 
-      <div className="space-y-2">
+      <section className="grid gap-4 md:grid-cols-2">
         {(lessons ?? []).map((l) => (
-          <a
+          <Link
             key={l.id}
             href={`/maths/${level}/${topicId}/${l.id}`}
-            className="block rounded-md border p-3 hover:bg-gray-50"
+            className="apple-card p-5 hover:shadow-md transition"
           >
-            {l.title}
-          </a>
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Lesson
+            </div>
+            <div className="font-semibold mt-2">{l.title}</div>
+          </Link>
         ))}
 
         {(!lessons || lessons.length === 0) && (
-          <p className="text-sm text-gray-500">
-            No lessons published yet.
-          </p>
+          <p className="text-sm text-slate-500">No lessons published yet.</p>
         )}
-      </div>
+      </section>
     </main>
   );
 }

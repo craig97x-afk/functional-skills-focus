@@ -28,21 +28,47 @@ export default async function Header() {
             <>
               <div className="apple-nav-group">
                 <button className={navItem} type="button">
-                  Learn
+                  Maths
                 </button>
                 <div className="apple-nav-menu">
                   <Link className="apple-nav-menu-item" href="/maths">
-                    Maths
+                    Overview
                   </Link>
-                  <Link className="apple-nav-menu-item" href="/english">
-                    English
+                  <Link className="apple-nav-menu-item" href="/maths/learn">
+                    Learning
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/maths/practice">
+                    Practice
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/maths/mocks">
+                    Exam mocks
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/maths/resources">
+                    Resources
                   </Link>
                 </div>
               </div>
 
               <div className="apple-nav-group">
                 <button className={navItem} type="button">
-                  Practice
+                  English
+                </button>
+                <div className="apple-nav-menu">
+                  <Link className="apple-nav-menu-item" href="/english">
+                    Overview
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/english">
+                    Learning (soon)
+                  </Link>
+                  <Link className="apple-nav-menu-item" href="/english">
+                    Practice (soon)
+                  </Link>
+                </div>
+              </div>
+
+              <div className="apple-nav-group">
+                <button className={navItem} type="button">
+                  Progress
                 </button>
                 <div className="apple-nav-menu">
                   <Link className="apple-nav-menu-item" href="/progress">

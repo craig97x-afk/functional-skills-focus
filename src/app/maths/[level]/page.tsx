@@ -21,7 +21,7 @@ export default async function MathsLevelPage({
     .eq("code", levelCode)
     .single();
 
-  if (!level) redirect("/maths");
+  if (!level) redirect("/maths/learn");
 
   const { data: topics } = await supabase
     .from("topics")
@@ -30,22 +30,38 @@ export default async function MathsLevelPage({
     .order("sort_order");
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Maths – {level.code}</h1>
-
+    <main className="space-y-8">
       <div className="space-y-3">
+        <Link className="apple-subtle inline-flex" href="/maths/learn">
+          ← Maths learning
+        </Link>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Level {level.code}
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight">Maths topics</h1>
+        <p className="apple-subtle">
+          Choose a topic to view lessons, examples, and revision material.
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
         {(topics ?? []).map((t) => (
           <Link
             key={t.id}
             href={`/maths/${level.code}/${t.id}`}
-            className="block rounded-lg border p-4 hover:bg-gray-50"
+            className="apple-card p-5 hover:shadow-md transition"
           >
-            <div className="font-semibold">{t.title}</div>
-            {t.description && <div className="text-sm text-gray-500 mt-1">{t.description}</div>}
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Topic
+            </div>
+            <div className="font-semibold mt-2">{t.title}</div>
+            {t.description && <div className="apple-subtle mt-2">{t.description}</div>}
           </Link>
         ))}
 
-        {(!topics || topics.length === 0) && <p className="text-sm text-gray-500">No topics yet.</p>}
+        {(!topics || topics.length === 0) && (
+          <p className="text-sm text-slate-500">No topics yet.</p>
+        )}
       </div>
     </main>
   );

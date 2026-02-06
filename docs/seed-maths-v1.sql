@@ -8,6 +8,11 @@ insert into public.subjects (id, slug, title)
 select gen_random_uuid(), 'maths', 'Maths'
 where not exists (select 1 from public.subjects where slug = 'maths');
 
+-- Subject (English placeholder)
+insert into public.subjects (id, slug, title)
+select gen_random_uuid(), 'english', 'English'
+where not exists (select 1 from public.subjects where slug = 'english');
+
 -- Levels (handles schemas with or without a title column)
 do $$
 begin
@@ -719,6 +724,418 @@ select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
 from l
 where not exists (
   select 1 from public.questions where prompt = 'Find 15% of 80.' and lesson_id = l.lesson_id
+);
+
+-- Additional topics and lessons (expanding content)
+-- E1 Time
+insert into public.topics (id, subject_id, level_id, title, description, sort_order)
+select gen_random_uuid(), s.id, l.id, 'Time', 'Telling time and simple schedules.', 3
+from public.subjects s, public.levels l
+where s.slug = 'maths' and l.code = 'E1'
+  and not exists (select 1 from public.topics t where t.title = 'Time' and t.level_id = l.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Telling the time',
+'### Telling the time\nRead analogue and digital clocks.',
+1, true
+from public.topics t
+where t.title = 'Time'
+  and not exists (select 1 from public.lessons l where l.title = 'Telling the time' and l.topic_id = t.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Timetables',
+'### Timetables\nWork out start and finish times.',
+2, true
+from public.topics t
+where t.title = 'Time'
+  and not exists (select 1 from public.lessons l where l.title = 'Timetables' and l.topic_id = t.id);
+
+-- E2 Graphs
+insert into public.topics (id, subject_id, level_id, title, description, sort_order)
+select gen_random_uuid(), s.id, l.id, 'Graphs', 'Read and interpret simple charts.', 3
+from public.subjects s, public.levels l
+where s.slug = 'maths' and l.code = 'E2'
+  and not exists (select 1 from public.topics t where t.title = 'Graphs' and t.level_id = l.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Reading bar charts',
+'### Reading bar charts\nCompare values and totals.',
+1, true
+from public.topics t
+where t.title = 'Graphs'
+  and not exists (select 1 from public.lessons l where l.title = 'Reading bar charts' and l.topic_id = t.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Line graphs basics',
+'### Line graphs basics\nSpot increases and decreases.',
+2, true
+from public.topics t
+where t.title = 'Graphs'
+  and not exists (select 1 from public.lessons l where l.title = 'Line graphs basics' and l.topic_id = t.id);
+
+-- E3 Algebra
+insert into public.topics (id, subject_id, level_id, title, description, sort_order)
+select gen_random_uuid(), s.id, l.id, 'Algebra', 'Expressions and simple equations.', 2
+from public.subjects s, public.levels l
+where s.slug = 'maths' and l.code = 'E3'
+  and not exists (select 1 from public.topics t where t.title = 'Algebra' and t.level_id = l.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Simplifying expressions',
+'### Simplifying expressions\nCollect like terms.',
+1, true
+from public.topics t
+where t.title = 'Algebra'
+  and not exists (select 1 from public.lessons l where l.title = 'Simplifying expressions' and l.topic_id = t.id);
+
+insert into public.lessons (id, topic_id, title, body, sort_order, published)
+select gen_random_uuid(), t.id, 'Solving one-step equations',
+'### Solving one-step equations\nUse inverse operations.',
+2, true
+from public.topics t
+where t.title = 'Algebra'
+  and not exists (select 1 from public.lessons l where l.title = 'Solving one-step equations' and l.topic_id = t.id);
+
+-- Questions: Telling the time
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Telling the time' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'What is another way to say 3:30?',
+    '30 minutes past the hour means half past.',
+    '3:30 is half past three.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'What is another way to say 3:30?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, 'Half past three', true from q
+union all select gen_random_uuid(), q.id, 'Quarter past three', false from q
+union all select gen_random_uuid(), q.id, 'Quarter to three', false from q
+union all select gen_random_uuid(), q.id, 'Half past four', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Telling the time' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    '15 minutes past 7 is?',
+    '15 minutes past means :15.',
+    '15 minutes past 7 is 7:15.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = '15 minutes past 7 is?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '7:15', true from q
+union all select gen_random_uuid(), q.id, '7:45', false from q
+union all select gen_random_uuid(), q.id, '6:45', false from q
+union all select gen_random_uuid(), q.id, '8:15', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Telling the time' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'Write “half past 9” as a digital time.',
+  'Half past means 30 minutes.',
+  'Half past 9 is 9:30.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'Write “half past 9” as a digital time.' and lesson_id = l.lesson_id
+);
+
+-- Questions: Timetables
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Timetables' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'A bus leaves at 10:05. What time is 20 minutes later?',
+    'Add 20 minutes.',
+    '10:05 + 20 minutes = 10:25.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'A bus leaves at 10:05. What time is 20 minutes later?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '10:25', true from q
+union all select gen_random_uuid(), q.id, '10:15', false from q
+union all select gen_random_uuid(), q.id, '10:35', false from q
+union all select gen_random_uuid(), q.id, '11:25', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Timetables' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Your lesson starts at 13:40. What is 10 minutes before?',
+    'Subtract 10 minutes.',
+    '13:40 minus 10 minutes = 13:30.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Your lesson starts at 13:40. What is 10 minutes before?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '13:30', true from q
+union all select gen_random_uuid(), q.id, '13:50', false from q
+union all select gen_random_uuid(), q.id, '12:30', false from q
+union all select gen_random_uuid(), q.id, '13:20', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Timetables' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'A journey starts at 14:15 and lasts 45 minutes. Finish time?',
+  'Add 45 minutes.',
+  '14:15 + 45 minutes = 15:00.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'A journey starts at 14:15 and lasts 45 minutes. Finish time?' and lesson_id = l.lesson_id
+);
+
+-- Questions: Reading bar charts
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Reading bar charts' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'A chart shows apples 12, bananas 8, oranges 10. Which is largest?',
+    'Pick the highest number.',
+    'Apples at 12 are the largest.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'A chart shows apples 12, bananas 8, oranges 10. Which is largest?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, 'Apples', true from q
+union all select gen_random_uuid(), q.id, 'Bananas', false from q
+union all select gen_random_uuid(), q.id, 'Oranges', false from q
+union all select gen_random_uuid(), q.id, 'All equal', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Reading bar charts' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'How many more apples (12) than bananas (8)?',
+    'Find the difference.',
+    '12 - 8 = 4 more apples.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'How many more apples (12) than bananas (8)?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '4', true from q
+union all select gen_random_uuid(), q.id, '3', false from q
+union all select gen_random_uuid(), q.id, '6', false from q
+union all select gen_random_uuid(), q.id, '8', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Reading bar charts' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'If the values are 5, 7, and 9, what is the greatest value?',
+  'Choose the largest number.',
+  'The greatest value is 9.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'If the values are 5, 7, and 9, what is the greatest value?' and lesson_id = l.lesson_id
+);
+
+-- Questions: Line graphs basics
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Line graphs basics' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'A value goes from 10 at 9am to 14 at 10am. What is the change?',
+    'Subtract start from end.',
+    '14 - 10 = 4.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'A value goes from 10 at 9am to 14 at 10am. What is the change?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '4', true from q
+union all select gen_random_uuid(), q.id, '3', false from q
+union all select gen_random_uuid(), q.id, '5', false from q
+union all select gen_random_uuid(), q.id, '6', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Line graphs basics' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Values are 9am = 5, 10am = 7, 11am = 6. Which time is highest?',
+    'Pick the largest value.',
+    '10am has the highest value (7).',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Values are 9am = 5, 10am = 7, 11am = 6. Which time is highest?' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '10am', true from q
+union all select gen_random_uuid(), q.id, '9am', false from q
+union all select gen_random_uuid(), q.id, '11am', false from q
+union all select gen_random_uuid(), q.id, 'All same', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Line graphs basics' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'A value increases from 3 to 9. What is the increase?',
+  'Subtract start from end.',
+  '9 - 3 = 6.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'A value increases from 3 to 9. What is the increase?' and lesson_id = l.lesson_id
+);
+
+-- Questions: Simplifying expressions
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Simplifying expressions' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Simplify 2a + 3a.',
+    'Add the coefficients.',
+    '2a + 3a = 5a.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Simplify 2a + 3a.' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '5a', true from q
+union all select gen_random_uuid(), q.id, '6a', false from q
+union all select gen_random_uuid(), q.id, '5', false from q
+union all select gen_random_uuid(), q.id, 'a5', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Simplifying expressions' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Simplify 4x - x.',
+    'Subtract the coefficients.',
+    '4x - x = 3x.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Simplify 4x - x.' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '3x', true from q
+union all select gen_random_uuid(), q.id, '4x', false from q
+union all select gen_random_uuid(), q.id, '5x', false from q
+union all select gen_random_uuid(), q.id, 'x3', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Simplifying expressions' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'Simplify 5y + y.',
+  'Add the like terms.',
+  '5y + y = 6y.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'Simplify 5y + y.' and lesson_id = l.lesson_id
+);
+
+-- Questions: Solving one-step equations
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Solving one-step equations' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Solve x + 7 = 12.',
+    'Subtract 7 from both sides.',
+    'x = 5.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Solve x + 7 = 12.' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '5', true from q
+union all select gen_random_uuid(), q.id, '7', false from q
+union all select gen_random_uuid(), q.id, '12', false from q
+union all select gen_random_uuid(), q.id, '19', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Solving one-step equations' limit 1
+), q as (
+  insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+  select gen_random_uuid(), l.topic_id, l.lesson_id, 'mcq',
+    'Solve 3p = 18.',
+    'Divide both sides by 3.',
+    'p = 6.',
+    true
+  from l
+  where not exists (
+    select 1 from public.questions where prompt = 'Solve 3p = 18.' and lesson_id = l.lesson_id
+  )
+  returning id
+)
+insert into public.question_options (id, question_id, label, is_correct)
+select gen_random_uuid(), q.id, '6', true from q
+union all select gen_random_uuid(), q.id, '9', false from q
+union all select gen_random_uuid(), q.id, '12', false from q
+union all select gen_random_uuid(), q.id, '15', false from q;
+
+with l as (
+  select id as lesson_id, topic_id from public.lessons where title = 'Solving one-step equations' limit 1
+)
+insert into public.questions (id, topic_id, lesson_id, type, prompt, hint, solution_explainer, published)
+select gen_random_uuid(), l.topic_id, l.lesson_id, 'short',
+  'Solve n - 4 = 9.',
+  'Add 4 to both sides.',
+  'n = 13.',
+  true
+from l
+where not exists (
+  select 1 from public.questions where prompt = 'Solve n - 4 = 9.' and lesson_id = l.lesson_id
 );
 
 commit;

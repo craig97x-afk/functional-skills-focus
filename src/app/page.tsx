@@ -90,8 +90,16 @@ export default async function HomePage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link href="/maths" className="apple-button">
-              Go to Maths
+              Maths hub
             </Link>
+            <Link href="/maths/learn" className="apple-pill">
+              Learning
+            </Link>
+            {hasAccess && (
+              <Link href="/maths/practice" className="apple-pill">
+                Practice
+              </Link>
+            )}
             <Link href="/english" className="apple-pill">
               English
             </Link>

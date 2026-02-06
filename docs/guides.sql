@@ -35,6 +35,7 @@ alter table public.guides enable row level security;
 alter table public.guide_purchases enable row level security;
 
 -- Public can read published guides
+drop policy if exists "Public read guides" on public.guides;
 create policy "Public read guides"
   on public.guides
   for select
@@ -42,6 +43,7 @@ create policy "Public read guides"
   using (is_published = true);
 
 -- Admins manage guides
+drop policy if exists "Admins manage guides" on public.guides;
 create policy "Admins manage guides"
   on public.guides
   for all
@@ -60,6 +62,7 @@ create policy "Admins manage guides"
   );
 
 -- Users can read their own purchases
+drop policy if exists "Users read purchases" on public.guide_purchases;
 create policy "Users read purchases"
   on public.guide_purchases
   for select
