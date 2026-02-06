@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import TopicForm from "./topic-form";
+import TopicRowActions from "./topic-row-actions";
 
 export default async function AdminTopicsPage() {
   await requireAdmin();
@@ -36,10 +37,11 @@ export default async function AdminTopicsPage() {
                 </div>
                 {t.description ? <div className="text-sm mt-1">{t.description}</div> : null}
               </div>
-              <div className="shrink-0">
+              <div className="shrink-0 flex flex-col items-end gap-2">
                 <Link className="text-sm underline" href={`/admin/topics/${t.id}`}>
                   Edit
                 </Link>
+                <TopicRowActions topicId={t.id} />
               </div>
             </div>
           ))}

@@ -89,7 +89,7 @@ export default async function HomePage() {
             Quick actions
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/maths" className="apple-button">
+            <Link href="/maths" className="apple-pill">
               Maths hub
             </Link>
             <Link href="/maths/learn" className="apple-pill">
@@ -113,6 +113,9 @@ export default async function HomePage() {
                 </Link>
                 <Link href="/mastery" className="apple-pill">
                   Mastery
+                </Link>
+                <Link href="/review" className="apple-pill">
+                  Review mistakes
                 </Link>
               </>
             ) : (

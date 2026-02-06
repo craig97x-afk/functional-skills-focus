@@ -15,31 +15,6 @@ export default function LoginPage() {
     "mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 " +
     "bg-[color:var(--surface-muted)] text-[color:var(--foreground)] border-[color:var(--border)]";
 
-  async function signUp() {
-    setLoading(true);
-    setMsg(null);
-
-    const redirectTo =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/verify-email`
-        : undefined;
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: redirectTo },
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
-
-    setMsg("Account created. Check your email to verify, then sign in.");
-  }
-
   async function signIn() {
     setLoading(true);
     setMsg(null);
@@ -99,14 +74,9 @@ export default function LoginPage() {
             {loading ? "Working..." : "Sign in"}
           </button>
 
-          <button
-            className="apple-pill"
-            onClick={signUp}
-            disabled={loading || !email || password.length < 8}
-            title="Password must be at least 8 characters"
-          >
+          <Link className="apple-pill" href="/create-account">
             Create account
-          </button>
+          </Link>
 
           <Link href="/forgot-password" className="text-sm text-slate-600 hover:text-slate-900">
             Forgot password?

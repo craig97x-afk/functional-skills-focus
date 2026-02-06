@@ -74,10 +74,10 @@ from public.subjects s, public.levels l
 where s.slug = 'maths' and l.code = 'E3'
   and not exists (select 1 from public.topics t where t.title = 'Ratio & Percentages' and t.level_id = l.id);
 
--- Lessons
+-- Lessons (core)
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Place value',
-'### Place value\nUnderstanding the value of digits in a number.',
+'### Place value\n**What you will learn:** Identify the value of each digit in a whole number.\n**Vocabulary:** ones, tens, hundreds, thousands.\n**Steps:** Start at the right-most digit and move left one place at a time.\n**Worked example:** In 3,428 the 4 is in the hundreds place, so its value is 400.\n**Quick check:** In 7,560 the 6 is in the tens place, so its value is 60.',
 1, true
 from public.topics t
 where t.title = 'Number'
@@ -85,7 +85,7 @@ where t.title = 'Number'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Addition and subtraction',
-'### Add and subtract\nWork with whole numbers and mental methods.',
+'### Add and subtract\n**What you will learn:** Add and subtract two- and three-digit numbers.\n**Vocabulary:** sum, difference, column, regroup.\n**Steps:** Add or subtract ones, then tens, then hundreds.\n**Worked example:** 245 + 80 = 325.\n**Quick check:** 100 - 47 = 53.',
 2, true
 from public.topics t
 where t.title = 'Number'
@@ -93,7 +93,7 @@ where t.title = 'Number'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Money totals',
-'### Totals\nAdd costs to find the total.',
+'### Money totals\n**What you will learn:** Add costs to find a total.\n**Vocabulary:** total, cost, pounds, pence.\n**Steps:** Line up decimal points and add pounds then pence.\n**Worked example:** 2.50 + 1.20 = 3.70.\n**Quick check:** 5.00 + 3.75 = 8.75.',
 1, true
 from public.topics t
 where t.title = 'Money'
@@ -101,7 +101,7 @@ where t.title = 'Money'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Change',
-'### Change\nCalculate change from payments.',
+'### Change\n**What you will learn:** Find change from a payment.\n**Vocabulary:** change, amount paid, cost.\n**Steps:** Subtract cost from amount paid.\n**Worked example:** 10.00 - 6.40 = 3.60.\n**Quick check:** 5.00 - 4.15 = 0.85.',
 2, true
 from public.topics t
 where t.title = 'Money'
@@ -109,7 +109,7 @@ where t.title = 'Money'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Equivalent fractions',
-'### Equivalent fractions\nFind fractions that are the same value.',
+'### Equivalent fractions\n**What you will learn:** Find fractions that are the same value.\n**Vocabulary:** numerator, denominator, equivalent.\n**Steps:** Multiply or divide top and bottom by the same number.\n**Worked example:** 1/2 = 2/4.\n**Quick check:** An equivalent fraction to 2/5 with denominator 10 is 4/10.',
 1, true
 from public.topics t
 where t.title = 'Fractions'
@@ -117,7 +117,7 @@ where t.title = 'Fractions'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Fractions to decimals',
-'### Fractions to decimals\nConvert common fractions to decimals.',
+'### Fractions to decimals\n**What you will learn:** Convert common fractions to decimals.\n**Vocabulary:** decimal, divide.\n**Steps:** Divide the numerator by the denominator.\n**Worked example:** 1/4 = 0.25.\n**Quick check:** 1/2 = 0.5.',
 2, true
 from public.topics t
 where t.title = 'Fractions'
@@ -125,7 +125,7 @@ where t.title = 'Fractions'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Metric units',
-'### Metric units\nKnow common metric conversions.',
+'### Metric units\n**What you will learn:** Use common metric conversions.\n**Vocabulary:** kilo, milli, metre, litre, gram.\n**Steps:** Use 10, 100, 1000 conversions.\n**Worked example:** 1 kilometre = 1000 metres.\n**Quick check:** 2500 g = 2.5 kg.',
 1, true
 from public.topics t
 where t.title = 'Measures'
@@ -133,7 +133,7 @@ where t.title = 'Measures'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Perimeter and area',
-'### Perimeter and area\nPerimeter is distance around; area is space inside.',
+'### Perimeter and area\n**What you will learn:** Find perimeter and area of rectangles and squares.\n**Vocabulary:** perimeter, area, length, width.\n**Steps:** Perimeter = add all sides. Area = length x width.\n**Worked example:** A 5 by 3 rectangle has perimeter 16 and area 15.\n**Quick check:** A square with side 7 has perimeter 28.',
 2, true
 from public.topics t
 where t.title = 'Measures'
@@ -141,7 +141,7 @@ where t.title = 'Measures'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Ratios and scale',
-'### Ratios and scale\nCompare quantities using ratios and scale.',
+'### Ratios and scale\n**What you will learn:** Compare quantities using ratios and scale.\n**Vocabulary:** ratio, parts, scale.\n**Steps:** Add parts to find the total, then multiply each part.\n**Worked example:** Ratio 2:3 with total 20 gives 2 parts = 8.\n**Quick check:** Simplify 6:9 to 2:3.',
 1, true
 from public.topics t
 where t.title = 'Ratio & Percentages'
@@ -149,11 +149,57 @@ where t.title = 'Ratio & Percentages'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Percentage change',
-'### Percentage change\nFind increases and decreases by a percentage.',
+'### Percentage change\n**What you will learn:** Find increases and decreases by a percentage.\n**Vocabulary:** percent, increase, decrease.\n**Steps:** Find the percent of the original, then add or subtract.\n**Worked example:** Increase 200 by 10 percent = 220.\n**Quick check:** 15 percent of 80 = 12.',
 2, true
 from public.topics t
 where t.title = 'Ratio & Percentages'
   and not exists (select 1 from public.lessons l where l.title = 'Percentage change' and l.topic_id = t.id);
+
+-- Refresh bodies if existing lessons have very short content
+update public.lessons set body =
+'### Place value\n**What you will learn:** Identify the value of each digit in a whole number.\n**Vocabulary:** ones, tens, hundreds, thousands.\n**Steps:** Start at the right-most digit and move left one place at a time.\n**Worked example:** In 3,428 the 4 is in the hundreds place, so its value is 400.\n**Quick check:** In 7,560 the 6 is in the tens place, so its value is 60.'
+where title = 'Place value' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Add and subtract\n**What you will learn:** Add and subtract two- and three-digit numbers.\n**Vocabulary:** sum, difference, column, regroup.\n**Steps:** Add or subtract ones, then tens, then hundreds.\n**Worked example:** 245 + 80 = 325.\n**Quick check:** 100 - 47 = 53.'
+where title = 'Addition and subtraction' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Money totals\n**What you will learn:** Add costs to find a total.\n**Vocabulary:** total, cost, pounds, pence.\n**Steps:** Line up decimal points and add pounds then pence.\n**Worked example:** 2.50 + 1.20 = 3.70.\n**Quick check:** 5.00 + 3.75 = 8.75.'
+where title = 'Money totals' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Change\n**What you will learn:** Find change from a payment.\n**Vocabulary:** change, amount paid, cost.\n**Steps:** Subtract cost from amount paid.\n**Worked example:** 10.00 - 6.40 = 3.60.\n**Quick check:** 5.00 - 4.15 = 0.85.'
+where title = 'Change' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Equivalent fractions\n**What you will learn:** Find fractions that are the same value.\n**Vocabulary:** numerator, denominator, equivalent.\n**Steps:** Multiply or divide top and bottom by the same number.\n**Worked example:** 1/2 = 2/4.\n**Quick check:** An equivalent fraction to 2/5 with denominator 10 is 4/10.'
+where title = 'Equivalent fractions' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Fractions to decimals\n**What you will learn:** Convert common fractions to decimals.\n**Vocabulary:** decimal, divide.\n**Steps:** Divide the numerator by the denominator.\n**Worked example:** 1/4 = 0.25.\n**Quick check:** 1/2 = 0.5.'
+where title = 'Fractions to decimals' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Metric units\n**What you will learn:** Use common metric conversions.\n**Vocabulary:** kilo, milli, metre, litre, gram.\n**Steps:** Use 10, 100, 1000 conversions.\n**Worked example:** 1 kilometre = 1000 metres.\n**Quick check:** 2500 g = 2.5 kg.'
+where title = 'Metric units' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Perimeter and area\n**What you will learn:** Find perimeter and area of rectangles and squares.\n**Vocabulary:** perimeter, area, length, width.\n**Steps:** Perimeter = add all sides. Area = length x width.\n**Worked example:** A 5 by 3 rectangle has perimeter 16 and area 15.\n**Quick check:** A square with side 7 has perimeter 28.'
+where title = 'Perimeter and area' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Ratios and scale\n**What you will learn:** Compare quantities using ratios and scale.\n**Vocabulary:** ratio, parts, scale.\n**Steps:** Add parts to find the total, then multiply each part.\n**Worked example:** Ratio 2:3 with total 20 gives 2 parts = 8.\n**Quick check:** Simplify 6:9 to 2:3.'
+where title = 'Ratios and scale' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Percentage change\n**What you will learn:** Find increases and decreases by a percentage.\n**Vocabulary:** percent, increase, decrease.\n**Steps:** Find the percent of the original, then add or subtract.\n**Worked example:** Increase 200 by 10 percent = 220.\n**Quick check:** 15 percent of 80 = 12.'
+where title = 'Percentage change' and (body is null or length(body) < 120);
+
+-- Fix escaped newlines in existing lesson bodies
+update public.lessons
+set body = replace(body, '\\n', E'\n')
+where body like '%\\n%';
 
 -- Questions + options
 -- Place value
@@ -736,7 +782,7 @@ where s.slug = 'maths' and l.code = 'E1'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Telling the time',
-'### Telling the time\nRead analogue and digital clocks.',
+'### Telling the time\n**What you will learn:** Read analogue and digital time.\n**Vocabulary:** hour hand, minute hand, half past, quarter past.\n**Steps:** Read minutes from 12, then hours from the short hand.\n**Worked example:** 3:30 is half past three.\n**Quick check:** 7:15 is quarter past seven.',
 1, true
 from public.topics t
 where t.title = 'Time'
@@ -744,7 +790,7 @@ where t.title = 'Time'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Timetables',
-'### Timetables\nWork out start and finish times.',
+'### Timetables\n**What you will learn:** Use a timetable to find start and finish times.\n**Vocabulary:** departure, arrival, duration.\n**Steps:** Read times in order, then calculate the difference.\n**Worked example:** 09:10 to 09:40 is 30 minutes.\n**Quick check:** 13:20 plus 45 minutes ends at 14:05.',
 2, true
 from public.topics t
 where t.title = 'Time'
@@ -759,7 +805,7 @@ where s.slug = 'maths' and l.code = 'E2'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Reading bar charts',
-'### Reading bar charts\nCompare values and totals.',
+'### Reading bar charts\n**What you will learn:** Compare values on a bar chart.\n**Vocabulary:** axis, scale, bar.\n**Steps:** Read the label, then read the bar height against the scale.\n**Worked example:** If Apples = 5 and Oranges = 8, Oranges are higher.\n**Quick check:** If Bananas = 3 and Pears = 6, Pears are double Bananas.',
 1, true
 from public.topics t
 where t.title = 'Graphs'
@@ -767,7 +813,7 @@ where t.title = 'Graphs'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Line graphs basics',
-'### Line graphs basics\nSpot increases and decreases.',
+'### Line graphs basics\n**What you will learn:** Spot trends on a line graph.\n**Vocabulary:** increase, decrease, axis, point.\n**Steps:** Follow the line from left to right and compare heights.\n**Worked example:** A rising line shows an increase over time.\n**Quick check:** A flat line shows no change.',
 2, true
 from public.topics t
 where t.title = 'Graphs'
@@ -782,7 +828,7 @@ where s.slug = 'maths' and l.code = 'E3'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Simplifying expressions',
-'### Simplifying expressions\nCollect like terms.',
+'### Simplifying expressions\n**What you will learn:** Collect like terms.\n**Vocabulary:** term, coefficient, like terms.\n**Steps:** Add or subtract coefficients of the same letter.\n**Worked example:** 2x + 3x = 5x.\n**Quick check:** 4a - a = 3a.',
 1, true
 from public.topics t
 where t.title = 'Algebra'
@@ -790,11 +836,69 @@ where t.title = 'Algebra'
 
 insert into public.lessons (id, topic_id, title, body, sort_order, published)
 select gen_random_uuid(), t.id, 'Solving one-step equations',
-'### Solving one-step equations\nUse inverse operations.',
+'### Solving one-step equations\n**What you will learn:** Solve simple equations using inverse operations.\n**Vocabulary:** equation, inverse.\n**Steps:** Do the opposite operation to both sides.\n**Worked example:** x + 5 = 12 gives x = 7.\n**Quick check:** x - 4 = 9 gives x = 13.',
 2, true
 from public.topics t
 where t.title = 'Algebra'
   and not exists (select 1 from public.lessons l where l.title = 'Solving one-step equations' and l.topic_id = t.id);
+
+-- Refresh bodies for added topics if existing lessons are short
+update public.lessons set body =
+'### Telling the time\n**What you will learn:** Read analogue and digital time.\n**Vocabulary:** hour hand, minute hand, half past, quarter past.\n**Steps:** Read minutes from 12, then hours from the short hand.\n**Worked example:** 3:30 is half past three.\n**Quick check:** 7:15 is quarter past seven.'
+where title = 'Telling the time' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Timetables\n**What you will learn:** Use a timetable to find start and finish times.\n**Vocabulary:** departure, arrival, duration.\n**Steps:** Read times in order, then calculate the difference.\n**Worked example:** 09:10 to 09:40 is 30 minutes.\n**Quick check:** 13:20 plus 45 minutes ends at 14:05.'
+where title = 'Timetables' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Reading bar charts\n**What you will learn:** Compare values on a bar chart.\n**Vocabulary:** axis, scale, bar.\n**Steps:** Read the label, then read the bar height against the scale.\n**Worked example:** If Apples = 5 and Oranges = 8, Oranges are higher.\n**Quick check:** If Bananas = 3 and Pears = 6, Pears are double Bananas.'
+where title = 'Reading bar charts' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Line graphs basics\n**What you will learn:** Spot trends on a line graph.\n**Vocabulary:** increase, decrease, axis, point.\n**Steps:** Follow the line from left to right and compare heights.\n**Worked example:** A rising line shows an increase over time.\n**Quick check:** A flat line shows no change.'
+where title = 'Line graphs basics' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Simplifying expressions\n**What you will learn:** Collect like terms.\n**Vocabulary:** term, coefficient, like terms.\n**Steps:** Add or subtract coefficients of the same letter.\n**Worked example:** 2x + 3x = 5x.\n**Quick check:** 4a - a = 3a.'
+where title = 'Simplifying expressions' and (body is null or length(body) < 120);
+
+update public.lessons set body =
+'### Solving one-step equations\n**What you will learn:** Solve simple equations using inverse operations.\n**Vocabulary:** equation, inverse.\n**Steps:** Do the opposite operation to both sides.\n**Worked example:** x + 5 = 12 gives x = 7.\n**Quick check:** x - 4 = 9 gives x = 13.'
+where title = 'Solving one-step equations' and (body is null or length(body) < 120);
+
+-- Add visual widget examples (only if not already present)
+update public.lessons
+set body = body || E'\n\n```widget\n' ||
+  'type: clock\n' ||
+  'time: 07:15\n' ||
+  'label: Quarter past seven\n' ||
+  '```\n'
+where title = 'Telling the time' and body not like '%```widget%';
+
+update public.lessons
+set body = body || E'\n\n```widget\n' ||
+  'type: bar\n' ||
+  'title: Fruit sold\n' ||
+  'data: Apples=12, Bananas=8, Oranges=10\n' ||
+  '```\n'
+where title = 'Reading bar charts' and body not like '%```widget%';
+
+update public.lessons
+set body = body || E'\n\n```widget\n' ||
+  'type: shape\n' ||
+  'shape: rectangle\n' ||
+  'label: Rectangle 5 x 3\n' ||
+  '```\n'
+where title = 'Perimeter and area' and body not like '%```widget%';
+
+update public.lessons
+set body = body || E'\n\n```widget\n' ||
+  'type: bar\n' ||
+  'title: Savings over weeks\n' ||
+  'data: Week 1=5, Week 2=8, Week 3=12, Week 4=15\n' ||
+  '```\n'
+where title = 'Percentage change' and body not like '%```widget%';
 
 -- Questions: Telling the time
 with l as (
@@ -1137,5 +1241,10 @@ from l
 where not exists (
   select 1 from public.questions where prompt = 'Solve n - 4 = 9.' and lesson_id = l.lesson_id
 );
+
+-- Fix escaped newlines from earlier seed content
+update public.lessons
+set body = replace(body, '\\n', E'\n\n')
+where body like '%\\n%';
 
 commit;

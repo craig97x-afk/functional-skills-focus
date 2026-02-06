@@ -77,6 +77,9 @@ export default async function Header() {
                   <Link className="apple-nav-menu-item" href="/mastery">
                     Mastery
                   </Link>
+                  <Link className="apple-nav-menu-item" href="/review">
+                    Review mistakes
+                  </Link>
                 </div>
               </div>
             </>

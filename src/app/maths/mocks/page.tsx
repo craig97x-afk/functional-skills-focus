@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
+import MockTimer from "./mock-timer";
 
 export default async function MathsMocksPage() {
   const session = await getUser();
@@ -39,6 +40,9 @@ export default async function MathsMocksPage() {
           <Link className="apple-pill" href="/guides">
             Browse mocks
           </Link>
+          <Link className="apple-pill" href="/maths/mocks/answer-sheet">
+            Print answer sheet
+          </Link>
           {!hasAccess && (
             <Link className="apple-pill" href="/pricing">
               Unlock with subscription
@@ -46,6 +50,8 @@ export default async function MathsMocksPage() {
           )}
         </div>
       </section>
+
+      <MockTimer />
     </main>
   );
 }

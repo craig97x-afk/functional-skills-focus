@@ -6,7 +6,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl;
 
-  const protectedPrefixes = ["/practice", "/progress", "/mastery"];
+  const protectedPrefixes = ["/practice", "/progress", "/mastery", "/review"];
   const isProtected = protectedPrefixes.some((p) => url.pathname.startsWith(p));
 
   if (!isProtected) return NextResponse.next();
@@ -82,5 +82,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/practice/:path*", "/progress", "/mastery"],
+  matcher: ["/practice/:path*", "/progress", "/mastery", "/review"],
 };

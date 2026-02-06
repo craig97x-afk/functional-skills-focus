@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
@@ -69,7 +70,12 @@ export default async function ProgressPage() {
 
   return (
     <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Progress</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">Progress</h1>
+        <Link className="apple-pill" href="/review">
+          Review mistakes
+        </Link>
+      </div>
 
       {attempts.length === 0 ? (
         <p className="text-sm text-gray-400">No attempts yet. Do some practice and come back.</p>
