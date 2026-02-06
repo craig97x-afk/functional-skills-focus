@@ -8,7 +8,6 @@ const levels = [
   { slug: "entry-3", label: "Entry Level 3", status: "Available" },
   { slug: "fs-1", label: "Functional Skills Level 1", status: "Available" },
   { slug: "fs-2", label: "Functional Skills Level 2", status: "Available" },
-  { slug: "fs-3", label: "Functional Skills Level 3", status: "Coming soon" },
 ];
 
 export default async function MathsLevelsPage() {

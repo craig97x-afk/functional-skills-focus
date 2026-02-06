@@ -10,7 +10,6 @@ const levelLabels: Record<string, string> = {
   "entry-3": "Entry Level 3",
   "fs-1": "Functional Skills Level 1",
   "fs-2": "Functional Skills Level 2",
-  "fs-3": "Functional Skills Level 3",
 };
 
 export default async function EnglishLevelDetailPage({

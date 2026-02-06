@@ -8,7 +8,6 @@ const levels = [
   { slug: "entry-3", label: "Entry Level 3" },
   { slug: "fs-1", label: "Functional Skills Level 1" },
   { slug: "fs-2", label: "Functional Skills Level 2" },
-  { slug: "fs-3", label: "Functional Skills Level 3" },
 ];
 
 export default async function EnglishLevelsPage() {

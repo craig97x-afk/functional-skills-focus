@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
+import LevelTabs from "./level-tabs";
 
 export const dynamic = "force-dynamic";
 
@@ -184,11 +185,6 @@ const levelContent: Record<
       },
     ],
   },
-  "fs-3": {
-    title: "Functional Skills Level 3",
-    summary: "Functional Skills Level 3 content will be added soon.",
-    comingSoon: true,
-  },
 };
 
 export default async function MathsLevelDetailPage({
@@ -228,25 +224,7 @@ export default async function MathsLevelDetailPage({
           </p>
         </section>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-3">
-          {(level.categories ?? []).map((category) => (
-            <section key={category.title} className="apple-card p-6 space-y-4">
-              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
-                {category.title}
-              </div>
-              <div className="grid gap-2">
-                {category.topics.map((topic) => (
-                  <div
-                    key={topic}
-                    className="rounded-xl border border-[color:var(--border)] px-3 py-2 text-sm"
-                  >
-                    {topic}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        <LevelTabs categories={level.categories ?? []} />
       )}
     </main>
   );
