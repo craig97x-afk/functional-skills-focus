@@ -6,6 +6,7 @@ import ThemeToggle from "@/components/theme-toggle";
 export default async function Header() {
   const session = await getUser();
   const supabase = await createClient();
+  const messagesHref = session?.profile?.role === "admin" ? "/admin/messages" : "/messages";
   const { data: latestAchievement } = session
     ? await supabase
         .from("user_achievements")
@@ -32,8 +33,17 @@ export default async function Header() {
 
   let unreadMessages = 0;
   const notifications: { label: string; href: string; count: number }[] = [];
+  const recentThreads: {
+    id: string;
+    student_id: string;
+    admin_id: string;
+    last_message_at: string | null;
+    preview?: string | null;
+    unreadCount?: number;
+  }[] = [];
 
   if (session) {
+    let unreadRowsAll: { conversation_id: string }[] = [];
     const { data: conversations } = await supabase
       .from("support_conversations")
       .select("id")
@@ -42,13 +52,53 @@ export default async function Header() {
     const conversationIds = (conversations ?? []).map((c) => c.id) as string[];
 
     if (conversationIds.length > 0) {
-      const { count } = await supabase
+      const { data: unreadRows } = await supabase
         .from("support_messages")
-        .select("id", { count: "exact", head: true })
+        .select("id, conversation_id")
         .in("conversation_id", conversationIds)
         .is("read_at", null)
         .neq("sender_id", session.user.id);
-      unreadMessages = count ?? 0;
+      unreadRowsAll = (unreadRows ?? []) as { conversation_id: string }[];
+      unreadMessages = unreadRowsAll.length;
+    }
+
+    const { data: recentConversations } = await supabase
+      .from("support_conversations")
+      .select("id, student_id, admin_id, last_message_at")
+      .or(`student_id.eq.${session.user.id},admin_id.eq.${session.user.id}`)
+      .order("last_message_at", { ascending: false })
+      .limit(5);
+
+    const recentConversationIds = (recentConversations ?? []).map((c) => c.id) as string[];
+
+    if (recentConversationIds.length > 0) {
+      const { data: recentMessages } = await supabase
+        .from("support_messages")
+        .select("conversation_id, body, created_at")
+        .in("conversation_id", recentConversationIds)
+        .order("created_at", { ascending: false });
+
+      const previews = new Map<string, string>();
+      (recentMessages ?? []).forEach((msg) => {
+        if (!previews.has(msg.conversation_id)) {
+          previews.set(msg.conversation_id, msg.body);
+        }
+      });
+
+      const unreadMap = new Map<string, number>();
+      unreadRowsAll.forEach((row) => {
+        if (recentConversationIds.includes(row.conversation_id)) {
+          unreadMap.set(row.conversation_id, (unreadMap.get(row.conversation_id) ?? 0) + 1);
+        }
+      });
+
+      (recentConversations ?? []).forEach((thread) => {
+        recentThreads.push({
+          ...thread,
+          preview: previews.get(thread.id) ?? null,
+          unreadCount: unreadMap.get(thread.id) ?? 0,
+        });
+      });
     }
 
     const { count: guidesCount } = await supabase
@@ -62,6 +112,28 @@ export default async function Header() {
         label: `${guidesCount} new guide${guidesCount === 1 ? "" : "s"} available`,
         href: "/guides",
         count: guidesCount ?? 0,
+      });
+    }
+
+    const { count: lessonsCount, error: lessonsErr } = await supabase
+      .from("lessons")
+      .select("id", { count: "exact", head: true })
+      .eq("published", true)
+      .gte("created_at", weekAgoIso);
+
+    if (!lessonsErr && (lessonsCount ?? 0) > 0) {
+      notifications.push({
+        label: `${lessonsCount} new lesson${lessonsCount === 1 ? "" : "s"} added`,
+        href: "/maths",
+        count: lessonsCount ?? 0,
+      });
+    }
+
+    if (unreadMessages > 0) {
+      notifications.push({
+        label: `${unreadMessages} unread message${unreadMessages === 1 ? "" : "s"}`,
+        href: messagesHref,
+        count: unreadMessages,
       });
     }
 
@@ -128,7 +200,6 @@ export default async function Header() {
     "relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] transition hover:bg-[color:var(--surface-muted)]";
   const badgeClass =
     "absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-[color:var(--accent)] px-1 text-[10px] font-semibold text-white flex items-center justify-center";
-  const messagesHref = session?.profile?.role === "admin" ? "/admin/messages" : "/messages";
 
   return (
     <header className="apple-header sticky top-0 z-50">
@@ -211,7 +282,7 @@ export default async function Header() {
                   <Link className="apple-nav-menu-item" href="/flashcards">
                     Flashcards
                   </Link>
-                  <Link className="apple-nav-menu-item" href="/messages">
+                  <Link className="apple-nav-menu-item" href={messagesHref}>
                     Messages
                   </Link>
                   <Link className="apple-nav-menu-item" href="/guides">
@@ -242,22 +313,67 @@ export default async function Header() {
 
           {session && (
             <>
-              <Link href={messagesHref} className={iconButton} aria-label="Messages">
-                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                  <path
-                    d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H8l-4 4v-4H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                {unreadMessages > 0 && (
-                  <span className={badgeClass} aria-label={`${unreadMessages} unread messages`}>
-                    {messageBadge}
-                  </span>
-                )}
-              </Link>
+              <div className="apple-nav-group">
+                <button className={iconButton} type="button" aria-label="Messages">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                    <path
+                      d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H8l-4 4v-4H4a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 4 5.5Z"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {unreadMessages > 0 && (
+                    <span className={badgeClass} aria-label={`${unreadMessages} unread messages`}>
+                      {messageBadge}
+                    </span>
+                  )}
+                </button>
+                <div className="apple-nav-menu apple-nav-menu-right min-w-[260px]">
+                  <Link className="apple-nav-menu-item" href={messagesHref}>
+                    Open inbox
+                  </Link>
+                  <div className="my-2 border-t border-[color:var(--border)]" />
+                  {recentThreads.length === 0 ? (
+                    <div className="px-3 py-2 text-xs text-[color:var(--muted-foreground)]">
+                      No conversations yet.
+                    </div>
+                  ) : (
+                    recentThreads.map((thread) => {
+                      const label =
+                        session.profile?.role === "admin"
+                          ? `Student ${thread.student_id.slice(0, 6)}…`
+                          : "Teacher";
+                      const previewRaw = thread.preview ?? "No messages yet.";
+                      const preview =
+                        previewRaw.length > 56 ? `${previewRaw.slice(0, 56)}…` : previewRaw;
+                      const unreadCount = thread.unreadCount ?? 0;
+                      return (
+                        <Link
+                          key={thread.id}
+                          href={`${messagesHref}?conversationId=${thread.id}`}
+                          className="apple-nav-menu-item"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={unreadCount > 0 ? "font-semibold" : "font-medium"}>
+                              {label}
+                            </span>
+                            {unreadCount > 0 && (
+                              <span className="rounded-full bg-[color:var(--accent)] px-2 py-0.5 text-[10px] font-semibold text-white">
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-1 text-xs text-[color:var(--muted-foreground)]">
+                            {preview}
+                          </div>
+                        </Link>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
 
               <div className="apple-nav-group">
                 <button className={iconButton} type="button" aria-label="Notifications">
