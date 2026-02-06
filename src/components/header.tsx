@@ -5,11 +5,28 @@ import ThemeToggle from "@/components/theme-toggle";
 
 export default async function Header() {
   const session = await getUser();
+  const supabase = await createClient();
+  const { data: latestAchievement } = session
+    ? await supabase
+        .from("user_achievements")
+        .select("earned_at, achievement:achievements(id, title, icon)")
+        .eq("user_id", session.user.id)
+        .order("earned_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null as { achievement: unknown } | null };
+  const achievement = Array.isArray(latestAchievement?.achievement)
+    ? latestAchievement?.achievement[0]
+    : latestAchievement?.achievement;
+  const achievementIcon =
+    typeof achievement === "object" && achievement && "icon" in achievement
+      ? (achievement as { icon?: string | null }).icon
+      : null;
 
   async function signOut() {
     "use server";
-    const supabase = await createClient();
-    await supabase.auth.signOut();
+    const actionClient = await createClient();
+    await actionClient.auth.signOut();
   }
 
   const navItem = "apple-nav";
@@ -126,7 +143,12 @@ export default async function Header() {
           {session ? (
             <div className="apple-nav-group">
               <button className={navPill} type="button">
-                Account
+                <span>Account</span>
+                {achievementIcon && (
+                  <span className="ml-2 text-base" title="Latest badge">
+                    {achievementIcon}
+                  </span>
+                )}
               </button>
               <div className="apple-nav-menu apple-nav-menu-right">
                 <Link className="apple-nav-menu-item" href="/account">
