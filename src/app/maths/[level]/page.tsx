@@ -21,7 +21,7 @@ export default async function MathsLevelPage({
     .eq("code", levelCode)
     .single();
 
-  if (!level) redirect("/maths/learn");
+  if (!level) redirect("/maths/levels");
 
   const { data: topics } = await supabase
     .from("topics")
@@ -32,8 +32,8 @@ export default async function MathsLevelPage({
   return (
     <main className="space-y-8">
       <div className="space-y-3">
-        <Link className="apple-subtle inline-flex" href="/maths/learn">
-          ← Maths learning
+        <Link className="apple-subtle inline-flex" href="/maths/levels">
+          ← Maths levels
         </Link>
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
           Level {level.code}

@@ -30,13 +30,13 @@ export default async function MathsHubPage() {
       </div>
 
       <section className="grid gap-6 md:grid-cols-2">
-        <Link className="apple-card p-6 hover:shadow-md transition" href="/maths/learn">
+        <Link className="apple-card p-6 hover:shadow-md transition" href="/maths/levels">
           <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Learn
+            Levels
           </div>
-          <div className="text-lg font-semibold mt-2">Learning materials</div>
+          <div className="text-lg font-semibold mt-2">Maths levels</div>
           <p className="apple-subtle mt-2">
-            Lessons, examples, and topic explanations at each level.
+            Browse Entry and Functional Skills levels with organised topics.
           </p>
         </Link>
 

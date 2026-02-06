@@ -26,7 +26,7 @@ export default async function TopicLessonsPage({
     .eq("id", topicId)
     .single();
 
-  if (!topic) redirect(`/maths/learn`);
+  if (!topic) redirect(`/maths/levels`);
 
   const { data: lessons } = await supabase
     .from("lessons")

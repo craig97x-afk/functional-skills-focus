@@ -138,8 +138,8 @@ export default async function HomePage() {
             <Link href="/maths" className="apple-pill">
               Maths hub
             </Link>
-            <Link href="/maths/learn" className="apple-pill">
-              Learning
+            <Link href="/maths/levels" className="apple-pill">
+              Levels
             </Link>
             {hasAccess && (
               <Link href="/maths/practice" className="apple-pill">

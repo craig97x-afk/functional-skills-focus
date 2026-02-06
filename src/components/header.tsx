@@ -7,6 +7,14 @@ export default async function Header() {
   const session = await getUser();
   const supabase = await createClient();
   const messagesHref = session?.profile?.role === "admin" ? "/admin/messages" : "/messages";
+  const levelLinks = [
+    { slug: "entry-1", label: "Entry Level 1" },
+    { slug: "entry-2", label: "Entry Level 2" },
+    { slug: "entry-3", label: "Entry Level 3" },
+    { slug: "fs-1", label: "Functional Skills Level 1" },
+    { slug: "fs-2", label: "Functional Skills Level 2" },
+    { slug: "fs-3", label: "Functional Skills Level 3" },
+  ];
   const { data: latestAchievement } = session
     ? await supabase
         .from("user_achievements")
@@ -216,21 +224,19 @@ export default async function Header() {
                   Maths
                 </button>
                 <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/maths">
-                    Overview
+                  <Link className="apple-nav-menu-item" href="/maths/levels">
+                    Levels
                   </Link>
-                  <Link className="apple-nav-menu-item" href="/maths/learn">
-                    Learning
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/maths/practice">
-                    Practice
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/maths/mocks">
-                    Exam mocks
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/maths/resources">
-                    Resources
-                  </Link>
+                  <div className="my-2 border-t border-[color:var(--border)]" />
+                  {levelLinks.map((level) => (
+                    <Link
+                      key={`maths-${level.slug}`}
+                      className="apple-nav-menu-item"
+                      href={`/maths/levels/${level.slug}`}
+                    >
+                      {level.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
@@ -239,15 +245,19 @@ export default async function Header() {
                   English
                 </button>
                 <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/english">
-                    Overview
+                  <Link className="apple-nav-menu-item" href="/english/levels">
+                    Levels
                   </Link>
-                  <Link className="apple-nav-menu-item" href="/english">
-                    Learning (soon)
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/english">
-                    Practice (soon)
-                  </Link>
+                  <div className="my-2 border-t border-[color:var(--border)]" />
+                  {levelLinks.map((level) => (
+                    <Link
+                      key={`english-${level.slug}`}
+                      className="apple-nav-menu-item"
+                      href={`/english/levels/${level.slug}`}
+                    >
+                      {level.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
