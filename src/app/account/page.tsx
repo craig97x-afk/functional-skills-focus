@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import ExamCountdownForm from "@/app/account/exam-countdown-form";
 
 export default async function AccountPage() {
   const session = await getUser();
@@ -14,22 +15,32 @@ export default async function AccountPage() {
     .eq("id", session.user.id)
     .maybeSingle();
 
-  async function createPortal() {
-    "use server";
-    // Server Action: call your portal route
-    // (We redirect from the client via a normal POST below instead of needing server action plumbing)
-  }
+  const { data: userSettings } = await supabase
+    .from("user_settings")
+    .select("exam_date, show_exam_countdown")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
 
   return (
-    <main className="p-6 space-y-6 max-w-xl">
-      <h1 className="text-2xl font-bold">Account</h1>
-
-      <div className="rounded-lg border p-4 space-y-2">
-        <div className="text-sm text-gray-400">Email</div>
-        <div className="font-medium">{session.user.email}</div>
+    <main className="space-y-8 max-w-2xl">
+      <div>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Account
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight mt-2">
+          Your details
+        </h1>
+        <p className="apple-subtle mt-2">
+          Manage your subscription and dashboard preferences.
+        </p>
       </div>
 
-      <div className="rounded-lg border p-4 space-y-3">
+      <section className="apple-card p-6 space-y-2">
+        <div className="text-sm text-gray-400">Email</div>
+        <div className="font-medium">{session.user.email}</div>
+      </section>
+
+      <section className="apple-card p-6 space-y-4">
         <div className="font-semibold">Subscription</div>
 
         <div className="text-sm">
@@ -43,12 +54,12 @@ export default async function AccountPage() {
 
         {profile?.stripe_customer_id ? (
           <form action="/api/stripe/portal" method="post">
-            <button className="rounded-md border px-4 py-2">
+            <button className="apple-pill" type="submit">
               Manage subscription
             </button>
           </form>
         ) : (
-          <a className="underline text-sm" href="/pricing">
+          <a className="apple-pill inline-flex" href="/pricing">
             Subscribe
           </a>
         )}
@@ -56,13 +67,30 @@ export default async function AccountPage() {
         <p className="text-xs text-gray-500">
           If you’ve just paid, refresh once. Webhooks can take a moment.
         </p>
-      </div>
+      </section>
+
+      <section className="apple-card p-6 space-y-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Exam countdown
+          </div>
+          <h2 className="text-lg font-semibold mt-2">Exam date</h2>
+          <p className="apple-subtle mt-2">
+            Add your exam date and choose whether to show the countdown on your
+            dashboard.
+          </p>
+        </div>
+        <ExamCountdownForm
+          initialDate={userSettings?.exam_date ?? null}
+          initialShow={userSettings?.show_exam_countdown ?? false}
+        />
+      </section>
 
       <div className="flex gap-2 flex-wrap">
-        <a className="rounded-md border px-4 py-2" href="/progress">
+        <a className="apple-pill" href="/progress">
           Progress
         </a>
-        <a className="rounded-md border px-4 py-2" href="/mastery">
+        <a className="apple-pill" href="/mastery">
           Mastery
         </a>
       </div>

@@ -120,6 +120,33 @@ a {
     border-color: var(--border);
   }
 
+  .apple-footer {
+    @apply border-t backdrop-blur;
+    background-color: var(--surface);
+    border-color: var(--border);
+    color: var(--muted-foreground);
+  }
+
+  .apple-footer a {
+    color: var(--muted-foreground);
+  }
+
+  .apple-footer a:hover {
+    color: var(--foreground);
+  }
+
+  .apple-input {
+    @apply rounded-2xl border px-3 py-2 text-sm outline-none transition;
+    background-color: var(--surface);
+    border-color: var(--border);
+    color: var(--foreground);
+  }
+
+  .apple-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+  }
+
   .apple-button:hover,
   .apple-nav-primary:hover {
     background-color: var(--accent-strong);

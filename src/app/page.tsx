@@ -15,10 +15,39 @@ export default async function HomePage() {
     .eq("id", session.user.id)
     .maybeSingle();
 
+  const { data: userSettings } = await supabase
+    .from("user_settings")
+    .select("exam_date, show_exam_countdown")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+
   const role = profile?.role ?? "student";
   const hasAccess = Boolean(
     role === "admin" || profile?.is_subscribed || profile?.access_override
   );
+
+  const examDateRaw = userSettings?.exam_date ?? null;
+  const showCountdown = Boolean(userSettings?.show_exam_countdown && examDateRaw);
+  let daysLeft: number | null = null;
+  let examLabel: string | null = null;
+
+  if (examDateRaw) {
+    const examDate = new Date(`${examDateRaw}T00:00:00`);
+    const today = new Date();
+    const startOfToday = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    daysLeft = Math.ceil(
+      (examDate.getTime() - startOfToday.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    examLabel = examDate.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }
 
   return (
     <main className="space-y-8">
@@ -39,7 +68,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <section className="apple-card p-6 space-y-3">
           <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
             Account
@@ -89,6 +118,25 @@ export default async function HomePage() {
             )}
           </div>
         </section>
+
+        {showCountdown && (
+          <section className="apple-card p-6 space-y-3">
+            <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+              Exam countdown
+            </div>
+            <div className="text-3xl font-semibold tracking-tight">
+              {daysLeft !== null && daysLeft > 0 && `${daysLeft} days`}
+              {daysLeft === 0 && "Exam day"}
+              {daysLeft !== null && daysLeft < 0 && "Exam passed"}
+            </div>
+            {examLabel && (
+              <div className="apple-subtle">Exam date: {examLabel}</div>
+            )}
+            <Link href="/account" className="apple-pill inline-flex">
+              Edit countdown
+            </Link>
+          </section>
+        )}
       </div>
     </main>
   );

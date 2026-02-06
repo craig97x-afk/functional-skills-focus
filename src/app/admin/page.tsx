@@ -1,8 +1,16 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
+import { createClient } from "@/lib/supabase/server";
+import ThemeSettings from "@/app/admin/theme-settings";
 
 export default async function AdminPage() {
   await requireAdmin();
+  const supabase = await createClient();
+  const { data: settings } = await supabase
+    .from("app_settings")
+    .select("accent_color, accent_strong")
+    .eq("id", "default")
+    .maybeSingle();
 
   return (
     <main className="space-y-8">
@@ -40,6 +48,11 @@ export default async function AdminPage() {
           <div className="apple-subtle mt-1">Stripe status + resync tools.</div>
         </Link>
       </div>
+
+      <ThemeSettings
+        initialAccent={settings?.accent_color}
+        initialAccentStrong={settings?.accent_strong}
+      />
     </main>
   );
 }
