@@ -11,21 +11,24 @@ create table if not exists public.user_settings (
 alter table public.user_settings enable row level security;
 
 -- Users can read their own settings
-create policy if not exists "Users read own settings"
+drop policy if exists "Users read own settings" on public.user_settings;
+create policy "Users read own settings"
   on public.user_settings
   for select
   to authenticated
   using (user_id = auth.uid());
 
 -- Users can insert their own settings
-create policy if not exists "Users insert own settings"
+drop policy if exists "Users insert own settings" on public.user_settings;
+create policy "Users insert own settings"
   on public.user_settings
   for insert
   to authenticated
   with check (user_id = auth.uid());
 
 -- Users can update their own settings
-create policy if not exists "Users update own settings"
+drop policy if exists "Users update own settings" on public.user_settings;
+create policy "Users update own settings"
   on public.user_settings
   for update
   to authenticated

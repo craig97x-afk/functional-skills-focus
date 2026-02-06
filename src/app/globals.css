@@ -255,6 +255,20 @@ a {
     color: var(--foreground);
   }
 
+  html[data-theme="dark"] .apple-footer {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--foreground);
+  }
+
+  html[data-theme="dark"] .apple-footer a {
+    color: var(--foreground);
+    opacity: 0.85;
+  }
+
+  html[data-theme="dark"] .apple-footer a:hover {
+    opacity: 1;
+  }
+
   .apple-input {
     @apply rounded-2xl border px-3 py-2 text-sm outline-none transition;
     background-color: var(--surface);

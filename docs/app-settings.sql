@@ -16,14 +16,16 @@ on conflict (id) do nothing;
 alter table public.app_settings enable row level security;
 
 -- Anyone can read theme settings
-create policy if not exists "Public read app settings"
+drop policy if exists "Public read app settings" on public.app_settings;
+create policy "Public read app settings"
   on public.app_settings
   for select
   to public
   using (true);
 
 -- Only admins can update theme settings
-create policy if not exists "Admins update app settings"
+drop policy if exists "Admins update app settings" on public.app_settings;
+create policy "Admins update app settings"
   on public.app_settings
   for update
   to authenticated
@@ -41,7 +43,8 @@ create policy if not exists "Admins update app settings"
   );
 
 -- Allow admin upsert via insert
-create policy if not exists "Admins insert app settings"
+drop policy if exists "Admins insert app settings" on public.app_settings;
+create policy "Admins insert app settings"
   on public.app_settings
   for insert
   to authenticated
