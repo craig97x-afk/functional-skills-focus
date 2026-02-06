@@ -21,10 +21,26 @@ export default async function HomePage() {
     .eq("user_id", session.user.id)
     .order("exam_date", { ascending: true });
 
+  const { data: flashcardsRaw } = await supabase
+    .from("flashcards")
+    .select("id, front, back, tags, show_on_dashboard")
+    .eq("user_id", session.user.id)
+    .eq("show_on_dashboard", true)
+    .order("updated_at", { ascending: false })
+    .limit(3);
+
   const exams = (examsRaw ?? []) as {
     id: string;
     exam_name: string;
     exam_date: string;
+    show_on_dashboard: boolean;
+  }[];
+
+  const flashcards = (flashcardsRaw ?? []) as {
+    id: string;
+    front: string;
+    back: string;
+    tags: string | null;
     show_on_dashboard: boolean;
   }[];
 
@@ -200,6 +216,40 @@ export default async function HomePage() {
           )}
           <Link href="/account" className="apple-pill inline-flex">
             Manage countdowns
+          </Link>
+        </section>
+
+        <section className="apple-card p-6 space-y-4">
+          <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+            Flashcards
+          </div>
+          {flashcards.length > 0 ? (
+            <div className="space-y-3">
+              {flashcards.map((card) => (
+                <div
+                  key={card.id}
+                  className="rounded-xl border border-[color:var(--border)]/60 px-4 py-3 space-y-1"
+                >
+                  <div className="text-sm text-[color:var(--muted-foreground)]">
+                    Front
+                  </div>
+                  <div className="font-semibold">{card.front}</div>
+                  <div className="text-xs text-[color:var(--muted-foreground)] mt-2">
+                    Back
+                  </div>
+                  <div className="text-sm text-[color:var(--foreground)]">
+                    {card.back}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="apple-subtle">
+              Pin flashcards to your dashboard from the Flashcards page.
+            </p>
+          )}
+          <Link href="/flashcards" className="apple-pill inline-flex">
+            Manage flashcards
           </Link>
         </section>
       </div>

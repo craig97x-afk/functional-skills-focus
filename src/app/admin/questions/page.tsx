@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import QuestionForm from "./question-form";
 import QuestionRowActions from "./question-row-actions";
+import QuestionFilters from "./question-filters";
 
 type Topic = {
   id: string;
@@ -87,56 +88,12 @@ export default async function AdminQuestionsPage({
 
       <section className="apple-card p-6">
         <h2 className="font-semibold mb-4">Existing questions</h2>
-        <form className="flex flex-wrap items-end gap-2 mb-4" method="get">
-          <label className="text-xs text-[color:var(--muted-foreground)]">
-            Status
-            <select
-              name="status"
-              defaultValue={status}
-              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
-            >
-              <option value="all">All</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-            </select>
-          </label>
-
-          <label className="text-xs text-[color:var(--muted-foreground)]">
-            Type
-            <select
-              name="type"
-              defaultValue={typeFilter}
-              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
-            >
-              <option value="all">All</option>
-              <option value="mcq">MCQ</option>
-              <option value="short">Short</option>
-            </select>
-          </label>
-
-          <label className="text-xs text-[color:var(--muted-foreground)]">
-            Topic
-            <select
-              name="topic"
-              defaultValue={topicFilter}
-              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
-            >
-              <option value="all">All topics</option>
-              {(topics ?? []).map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button className="apple-pill" type="submit">
-            Apply
-          </button>
-          <Link className="apple-pill" href="/admin/questions">
-            Reset
-          </Link>
-        </form>
+        <QuestionFilters
+          topics={topics ?? []}
+          status={status}
+          type={typeFilter}
+          topic={topicFilter}
+        />
 
         <div className="space-y-2">
           {(questions ?? []).map((q) => (

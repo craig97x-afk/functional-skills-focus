@@ -53,9 +53,14 @@ create table if not exists public.flashcards (
   front text not null,
   back text not null,
   tags text,
+  show_on_dashboard boolean not null default false,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
+
+-- Backfill if the column was added later
+alter table public.flashcards
+  add column if not exists show_on_dashboard boolean not null default false;
 
 create index if not exists flashcards_user_id_idx
   on public.flashcards (user_id);

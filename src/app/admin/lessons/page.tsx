@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import LessonForm from "./lesson-form";
 import LessonRowActions from "./lesson-row-actions";
+import LessonFilters from "./lesson-filters";
 
 type TopicRow = {
   id: string;
@@ -87,43 +88,7 @@ export default async function AdminLessonsPage({
 
       <section className="apple-card p-6">
         <h2 className="font-semibold mb-4">Existing lessons</h2>
-        <form className="flex flex-wrap items-end gap-2 mb-4" method="get">
-          <label className="text-xs text-[color:var(--muted-foreground)]">
-            Status
-            <select
-              name="status"
-              defaultValue={status}
-              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
-            >
-              <option value="all">All</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-            </select>
-          </label>
-
-          <label className="text-xs text-[color:var(--muted-foreground)]">
-            Topic
-            <select
-              name="topic"
-              defaultValue={topicFilter}
-              className="ml-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1.5 text-sm text-[color:var(--foreground)]"
-            >
-              <option value="all">All topics</option>
-              {topics.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <button className="apple-pill" type="submit">
-            Apply
-          </button>
-          <Link className="apple-pill" href="/admin/lessons">
-            Reset
-          </Link>
-        </form>
+        <LessonFilters topics={topics} status={status} topic={topicFilter} />
 
         <div className="space-y-2">
           {lessons.map((l) => (

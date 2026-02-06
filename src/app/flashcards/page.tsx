@@ -11,7 +11,7 @@ export default async function FlashcardsPage() {
 
   const { data: cardsRaw } = await supabase
     .from("flashcards")
-    .select("id, front, back, tags")
+    .select("id, front, back, tags, show_on_dashboard")
     .eq("user_id", session.user.id)
     .order("created_at", { ascending: false });
 
@@ -20,6 +20,7 @@ export default async function FlashcardsPage() {
     front: string;
     back: string;
     tags: string | null;
+    show_on_dashboard: boolean;
   }[];
 
   return (

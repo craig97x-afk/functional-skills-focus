@@ -9,6 +9,7 @@ export type Flashcard = {
   front: string;
   back: string;
   tags: string | null;
+  show_on_dashboard: boolean;
 };
 
 type Props = {
@@ -21,6 +22,7 @@ export default function FlashcardsManager({ initialCards }: Props) {
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [tags, setTags] = useState("");
+  const [showOnDashboard, setShowOnDashboard] = useState(false);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">(
     "idle"
   );
@@ -46,9 +48,10 @@ export default function FlashcardsManager({ initialCards }: Props) {
         front: front.trim(),
         back: back.trim(),
         tags: tags.trim() || null,
+        show_on_dashboard: showOnDashboard,
         updated_at: new Date().toISOString(),
       })
-      .select("id, front, back, tags")
+      .select("id, front, back, tags, show_on_dashboard")
       .single();
 
     if (error || !data) {
@@ -61,6 +64,7 @@ export default function FlashcardsManager({ initialCards }: Props) {
     setFront("");
     setBack("");
     setTags("");
+    setShowOnDashboard(false);
     setStatus("saved");
     setMessage("Card added.");
   }
@@ -75,6 +79,7 @@ export default function FlashcardsManager({ initialCards }: Props) {
         front: card.front.trim(),
         back: card.back.trim(),
         tags: card.tags?.trim() || null,
+        show_on_dashboard: card.show_on_dashboard,
         updated_at: new Date().toISOString(),
       })
       .eq("id", card.id);
@@ -149,6 +154,15 @@ export default function FlashcardsManager({ initialCards }: Props) {
             onChange={(event) => setTags(event.target.value)}
             placeholder="e.g. fractions, algebra"
           />
+        </label>
+
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={showOnDashboard}
+            onChange={(event) => setShowOnDashboard(event.target.checked)}
+          />
+          Show this flashcard on my dashboard
         </label>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -239,6 +253,17 @@ export default function FlashcardsManager({ initialCards }: Props) {
                     }
                   />
                 </div>
+
+                <label className="flex items-center gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={card.show_on_dashboard}
+                    onChange={(event) =>
+                      updateCard(card.id, { show_on_dashboard: event.target.checked })
+                    }
+                  />
+                  Show on dashboard
+                </label>
 
                 <div className="flex flex-wrap gap-2">
                   <button
