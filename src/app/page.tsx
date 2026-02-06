@@ -92,6 +92,9 @@ export default async function HomePage() {
             <Link href="/maths" className="apple-button">
               Go to Maths
             </Link>
+            <Link href="/english" className="apple-pill">
+              English
+            </Link>
             <Link href="/guides" className="apple-pill">
               Guides
             </Link>
