@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -27,10 +27,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   if (event.type === "checkout.session.completed") {
     const s = event.data.object as Stripe.Checkout.Session;
+    const purchaseType = s.metadata?.purchase_type;
 
     const userId =
       (s.client_reference_id as string | null) ||
@@ -44,11 +45,43 @@ export async function POST(req: NextRequest) {
         ? s.subscription
         : s.subscription?.id;
 
-    if (userId && customerId) {
-      await supabase.from("profiles").update({
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subId ?? null,
-      }).eq("id", userId);
+    if (purchaseType === "guide") {
+      const guideId = s.metadata?.guide_id;
+      const paymentIntentId =
+        typeof s.payment_intent === "string"
+          ? s.payment_intent
+          : s.payment_intent?.id;
+
+      if (userId && customerId) {
+        await supabase
+          .from("profiles")
+          .update({ stripe_customer_id: customerId })
+          .eq("id", userId)
+          .is("stripe_customer_id", null);
+      }
+
+      if (userId && guideId) {
+        await supabase.from("guide_purchases").upsert(
+          {
+            user_id: userId,
+            guide_id: guideId,
+            status: "paid",
+            stripe_checkout_session_id: s.id,
+            stripe_payment_intent_id: paymentIntentId ?? null,
+            amount_total: s.amount_total ?? null,
+            currency: s.currency ?? null,
+          },
+          { onConflict: "user_id,guide_id" }
+        );
+      }
+    } else if (userId && customerId) {
+      await supabase
+        .from("profiles")
+        .update({
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subId ?? null,
+        })
+        .eq("id", userId);
     }
   }
 

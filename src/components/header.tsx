@@ -24,6 +24,10 @@ export default async function Header() {
         </Link>
 
         <nav className="flex items-center gap-2 flex-wrap justify-end">
+          <Link href="/guides" className={navItem}>
+            Guides
+          </Link>
+
           {session && (
             <Link href="/maths" className={navItem}>
               Maths

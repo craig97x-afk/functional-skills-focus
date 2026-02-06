@@ -22,7 +22,7 @@ export default async function AdminPage() {
           Content control
         </h1>
         <p className="apple-subtle mt-2">
-          Create and manage Maths content, users and billing.
+          Create and manage Maths content, guides, users and billing.
         </p>
       </div>
 
@@ -38,6 +38,10 @@ export default async function AdminPage() {
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/questions">
           <div className="font-semibold">Manage Questions</div>
           <div className="apple-subtle mt-1">MCQs and short answers.</div>
+        </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/guides">
+          <div className="font-semibold">Manage Guides</div>
+          <div className="apple-subtle mt-1">Upload revision packs and pricing.</div>
         </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/users">
           <div className="font-semibold">Manage Users</div>
