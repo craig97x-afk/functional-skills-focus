@@ -72,8 +72,6 @@ export default async function Header() {
             </Link>
           )}
 
-          <ThemeToggle />
-
           {session ? (
             <div className="apple-nav-group">
               <button className={navPill} type="button">
@@ -95,6 +93,8 @@ export default async function Header() {
               Login
             </Link>
           )}
+
+          <ThemeToggle />
         </nav>
       </div>
     </header>

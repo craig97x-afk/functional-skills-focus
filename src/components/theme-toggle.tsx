@@ -41,6 +41,38 @@ export default function ThemeToggle() {
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${next} mode`}
     >
+      <span className="apple-switch-icon apple-switch-icon-moon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+      <span className="apple-switch-icon apple-switch-icon-sun" aria-hidden="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle
+            cx="12"
+            cy="12"
+            r="4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+          />
+          <path
+            d="M12 3v2M12 19v2M4.22 4.22l1.41 1.41M18.36 18.36l1.41 1.41M3 12h2M19 12h2M4.22 19.78l1.41-1.41M18.36 5.64l1.41-1.41"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
       <span className="apple-switch-thumb" />
     </button>
   );
