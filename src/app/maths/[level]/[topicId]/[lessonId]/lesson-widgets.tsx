@@ -10,6 +10,8 @@ const chartColors = [
   "#f472b6",
 ];
 
+const chartGridColor = "rgba(148, 163, 184, 0.25)";
+
 function parseWidget(value: string): WidgetConfig {
   const config: WidgetConfig = {};
   value
@@ -61,33 +63,60 @@ function ClockWidget({ time, label }: { time: string; label?: string }) {
       <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
         Clock
       </div>
-      <div className="flex flex-wrap items-center gap-5 mt-3">
-        <div className="relative h-28 w-28 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] shadow-sm">
-          {Array.from({ length: 12 }).map((_, index) => (
+      <div className="flex flex-wrap items-center gap-6 mt-4">
+        <div
+          className="relative h-32 w-32 rounded-full border border-[color:var(--border)] shadow-sm"
+          style={{
+            background:
+              "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(15,23,42,0.12))",
+          }}
+        >
+          {Array.from({ length: 60 }).map((_, index) => (
             <div
               key={index}
-              className="absolute left-1/2 top-1/2 h-2 w-[2px] bg-[color:var(--muted-foreground)]"
+              className="absolute left-1/2 top-1/2 h-2 w-[1px]"
               style={{
-                transform: `translate(-50%, -100%) rotate(${index * 30}deg)`,
+                background:
+                  index % 5 === 0
+                    ? "var(--foreground)"
+                    : "rgba(148, 163, 184, 0.45)",
+                transform: `translate(-50%, -100%) rotate(${index * 6}deg)`,
                 transformOrigin: "bottom center",
+                height: index % 5 === 0 ? "10px" : "6px",
               }}
             />
           ))}
+          {[12, 3, 6, 9].map((num) => (
+            <span
+              key={num}
+              className="absolute text-xs font-semibold text-[color:var(--foreground)]"
+              style={{
+                left: "50%",
+                top: "50%",
+                transform: `translate(-50%, -50%) rotate(${
+                  num * 30
+                }deg) translate(0, -50px) rotate(${-num * 30}deg)`,
+              }}
+            >
+              {num}
+            </span>
+          ))}
           <div
-            className="absolute left-1/2 top-1/2 h-9 w-[2px] bg-[color:var(--foreground)]"
+            className="absolute left-1/2 top-1/2 h-10 w-[3px] rounded-full bg-[color:var(--foreground)]"
             style={{
               transform: `translate(-50%, -100%) rotate(${hourDeg}deg)`,
               transformOrigin: "bottom center",
             }}
           />
           <div
-            className="absolute left-1/2 top-1/2 h-12 w-[2px] bg-[color:var(--accent)]"
+            className="absolute left-1/2 top-1/2 h-14 w-[2px] rounded-full"
             style={{
+              background: "linear-gradient(180deg, var(--accent), #1d4ed8)",
               transform: `translate(-50%, -100%) rotate(${minuteDeg}deg)`,
               transformOrigin: "bottom center",
             }}
           />
-          <div className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color:var(--foreground)]" />
+          <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[color:var(--foreground)]" />
         </div>
         <div>
           <div className="text-lg font-semibold">{label || time}</div>
@@ -103,7 +132,7 @@ function BarChartWidget({ title, data }: { title: string; data: string }) {
   const maxValue = Math.max(...items.map((i) => i.value), 1);
 
   return (
-    <div className="apple-card p-5 space-y-3">
+    <div className="apple-card p-5 space-y-4">
       <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
         Bar chart
       </div>
@@ -164,19 +193,44 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
     })
     .join(" ");
 
+  const svgHeight = 100;
+  const padding = 8;
+
   return (
-    <div className="apple-card p-5 space-y-3">
+    <div className="apple-card p-5 space-y-4">
       <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
         Line graph
       </div>
       <div className="text-lg font-semibold">{title || "Line graph"}</div>
-      <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
         <svg viewBox="0 0 100 100" className="h-36 w-full">
+          <defs>
+            <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          {Array.from({ length: 5 }).map((_, index) => (
+            <line
+              key={index}
+              x1={padding}
+              x2={100 - padding}
+              y1={padding + (index * (svgHeight - padding * 2)) / 4}
+              y2={padding + (index * (svgHeight - padding * 2)) / 4}
+              stroke={chartGridColor}
+              strokeWidth="0.5"
+            />
+          ))}
           <polyline
             fill="none"
             stroke="var(--accent)"
             strokeWidth="2"
             points={points}
+          />
+          <polyline
+            fill="url(#lineFill)"
+            stroke="none"
+            points={`${points} 100,100 0,100`}
           />
           {items.map((item, index) => {
             const x = (index / (items.length - 1)) * 100;
@@ -188,7 +242,7 @@ function LineChartWidget({ title, data }: { title: string; data: string }) {
                 key={`${item.label}-${index}`}
                 cx={x}
                 cy={y}
-                r="2.5"
+                r="3"
                 fill="var(--foreground)"
               />
             );
@@ -234,18 +288,21 @@ function PieChartWidget({ title, data }: { title: string; data: string }) {
   });
 
   return (
-    <div className="apple-card p-5 space-y-3">
+    <div className="apple-card p-5 space-y-4">
       <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
         Pie chart
       </div>
       <div className="text-lg font-semibold">{title || "Pie chart"}</div>
       <div className="flex flex-wrap items-center gap-6">
-        <div
-          className="h-32 w-32 rounded-full"
-          style={{
-            background: `conic-gradient(${segments.join(", ")})`,
-          }}
-        />
+        <div className="relative">
+          <div
+            className="h-32 w-32 rounded-full"
+            style={{
+              background: `conic-gradient(${segments.join(", ")})`,
+            }}
+          />
+          <div className="absolute inset-0 m-auto h-14 w-14 rounded-full bg-[color:var(--surface)] shadow-sm" />
+        </div>
         <div className="space-y-2 text-sm">
           {items.map((item, index) => (
             <div key={item.label} className="flex items-center gap-2">
@@ -293,7 +350,7 @@ function NumberLineWidget({
   const highlightPercent = ((highlightValue - safeMin) / range) * 100;
 
   return (
-    <div className="apple-card p-5 space-y-3">
+    <div className="apple-card p-5 space-y-4">
       <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
         Number line
       </div>
@@ -314,11 +371,11 @@ function NumberLineWidget({
           );
         })}
         <div
-          className="absolute -top-1 left-0 flex -translate-x-1/2 flex-col items-center"
+          className="absolute -top-2 left-0 flex -translate-x-1/2 flex-col items-center"
           style={{ left: `${highlightPercent}%` }}
         >
-          <div className="h-3 w-3 rounded-full bg-[color:var(--accent)]" />
-          <div className="text-xs text-[color:var(--foreground)] mt-1">
+          <div className="h-3 w-3 rounded-full bg-[color:var(--accent)] shadow" />
+          <div className="text-xs text-[color:var(--foreground)] mt-1 font-semibold">
             {highlightValue}
           </div>
         </div>
@@ -514,7 +571,8 @@ export function WidgetBlock({ value }: { value: string }) {
   return (
     <div className="apple-card p-5">
       <div className="text-sm text-slate-500">
-        Unknown widget type. Try: clock, bar, line, pie, numberline, fraction, shape.
+        Unknown widget type. Try: clock, bar, line, pie, numberline, fraction,
+        shape.
       </div>
     </div>
   );

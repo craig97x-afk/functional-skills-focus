@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import LessonWidgetBuilder from "../lesson-widget-builder";
+import LessonSectionBuilder from "../lesson-section-builder";
 
 type Topic = {
   id: string;
@@ -114,6 +115,7 @@ export default function LessonEditForm({
         />
       </label>
 
+      <LessonSectionBuilder body={body} onInsert={setBody} />
       <LessonWidgetBuilder body={body} onInsert={setBody} />
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
