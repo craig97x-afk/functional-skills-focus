@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 
+export const dynamic = "force-dynamic";
+
 const levelLabels: Record<string, string> = {
   "entry-1": "Entry Level 1",
   "entry-2": "Entry Level 2",
@@ -14,12 +16,13 @@ const levelLabels: Record<string, string> = {
 export default async function EnglishLevelDetailPage({
   params,
 }: {
-  params: { level: string };
+  params: Promise<{ level: string }>;
 }) {
   const session = await getUser();
   if (!session) redirect("/login");
 
-  const title = levelLabels[params.level] ?? "English Level";
+  const { level } = await params;
+  const title = levelLabels[level] ?? "English Level";
 
   return (
     <main className="space-y-8">

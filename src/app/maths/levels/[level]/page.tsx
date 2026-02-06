@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
+
+export const dynamic = "force-dynamic";
 
 const levelContent: Record<
   string,
@@ -192,13 +194,18 @@ const levelContent: Record<
 export default async function MathsLevelDetailPage({
   params,
 }: {
-  params: { level: string };
+  params: Promise<{ level: string }>;
 }) {
   const session = await getUser();
   if (!session) redirect("/login");
 
-  const level = levelContent[params.level];
-  if (!level) notFound();
+  const { level: levelKey } = await params;
+  const level =
+    levelContent[levelKey] ?? ({
+      title: "Level coming soon",
+      summary: "We’re preparing content for this level. Check back soon.",
+      comingSoon: true,
+    } as const);
 
   return (
     <main className="space-y-8">
