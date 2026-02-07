@@ -224,7 +224,11 @@ export default async function MathsLevelDetailPage({
           </p>
         </section>
       ) : (
-        <LevelTabs categories={level.categories ?? []} />
+        <LevelTabs
+          categories={level.categories ?? []}
+          subject="maths"
+          levelSlug={levelKey}
+        />
       )}
     </main>
   );
