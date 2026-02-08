@@ -223,23 +223,50 @@ a {
 
   .apple-header {
     @apply border-b;
-    background-color: var(--surface);
-    border-color: var(--border);
+    background-color: var(--accent);
+    border-color: var(--accent-strong);
+    color: #ffffff;
   }
 
   .apple-footer {
     @apply border-t;
-    background-color: var(--surface);
-    border-color: var(--border);
-    color: var(--muted-foreground);
+    background-color: var(--accent);
+    border-color: var(--accent-strong);
+    color: #ffffff;
   }
 
   .apple-footer a {
-    color: var(--muted-foreground);
+    color: #ffffff;
   }
 
   .apple-footer a:hover {
+    color: #ffffff;
+    opacity: 0.9;
+  }
+
+  .apple-header .apple-nav,
+  .apple-header .apple-nav-pill,
+  .apple-header .apple-nav-menu-item {
+    color: #ffffff;
+  }
+
+  .apple-header .apple-nav:hover,
+  .apple-header .apple-nav-pill:hover,
+  .apple-header .apple-nav-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .apple-header .apple-nav-menu {
+    background-color: #ffffff;
     color: var(--foreground);
+  }
+
+  .apple-header .apple-nav-menu-item {
+    color: var(--foreground);
+  }
+
+  .apple-header .apple-nav-menu-item:hover {
+    background-color: var(--surface-muted);
   }
 
   html[data-theme="dark"] .apple-footer {
