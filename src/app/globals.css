@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f8fc;
+  --background: #f7f9fc;
   --foreground: #0b1220;
   --surface: #ffffff;
-  --surface-muted: #f1f4fa;
-  --border: #cbd5e1;
+  --surface-muted: #eef2f7;
+  --border: #d7e0ee;
   --accent: #0b2a4a;
   --accent-strong: #071b31;
   --muted-foreground: #5b6b86;
-  --shadow: 0 18px 40px rgba(7, 27, 49, 0.12);
-  --radius: 20px;
+  --shadow: 0 10px 22px rgba(7, 27, 49, 0.12);
+  --radius: 16px;
   --font-sans: "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI",
     sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
@@ -22,11 +22,11 @@
   --foreground: #eef3fb;
   --surface: #141c2d;
   --surface-muted: #0f1726;
-  --border: rgba(255, 255, 255, 0.14);
+  --border: rgba(255, 255, 255, 0.12);
   --accent: #2f5cff;
   --accent-strong: #1f4ad6;
   --muted-foreground: #a3b1c6;
-  --shadow: 0 18px 40px rgba(3, 7, 16, 0.6);
+  --shadow: 0 14px 30px rgba(3, 7, 16, 0.7);
 }
 
 @theme inline {
@@ -37,13 +37,7 @@
 }
 
 body {
-  background: radial-gradient(
-      1200px 600px at 50% -220px,
-      #ffffff 0%,
-      #f1f4fa 55%,
-      #e6ecf6 100%
-    )
-    fixed;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -51,13 +45,7 @@ body {
 }
 
 html[data-theme="dark"] body {
-  background: radial-gradient(
-      1200px 600px at 50% -260px,
-      #1c2740 0%,
-      #0b1020 55%,
-      #090d18 100%
-    )
-    fixed;
+  background: var(--background);
   color: var(--foreground);
 }
 
@@ -68,49 +56,48 @@ a {
 
 @layer components {
   .apple-card {
-    @apply rounded-[20px] border shadow-sm backdrop-blur;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     background-color: var(--surface);
-    border-color: var(--border);
+    box-shadow: var(--shadow);
   }
   .apple-pill {
     @apply inline-flex items-center justify-center rounded-full border px-4 py-2 text-sm font-medium transition;
-    background-color: var(--surface-muted);
+    background-color: var(--surface);
     border-color: var(--border);
     color: var(--foreground);
   }
   .apple-button {
-    @apply inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-medium text-white transition;
+    @apply inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold text-white transition;
     background-color: var(--accent);
   }
   .apple-subtle {
     @apply text-sm;
-    color: var(--foreground);
-    opacity: 0.65;
+    color: var(--muted-foreground);
   }
 
   .apple-nav {
-    @apply rounded-full px-3 py-2 text-sm font-medium transition;
+    @apply rounded-full px-3 py-2 text-sm font-semibold transition;
     color: var(--foreground);
-    opacity: 0.8;
   }
 
   .apple-nav:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--surface-muted);
   }
 
   .apple-nav-pill {
-    @apply rounded-full border px-3 py-2 text-sm font-medium transition;
-    background-color: var(--surface-muted);
+    @apply rounded-full border px-3 py-2 text-sm font-semibold transition;
+    background-color: var(--surface);
     border-color: var(--border);
     color: var(--foreground);
   }
 
   .apple-nav-pill:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--surface-muted);
   }
 
   .apple-nav-primary {
-    @apply rounded-full px-4 py-2 text-sm font-medium text-white transition;
+    @apply rounded-full px-4 py-2 text-sm font-semibold text-white transition;
     background-color: var(--accent);
   }
 
@@ -128,7 +115,7 @@ a {
   }
 
   .apple-nav-menu {
-    @apply absolute left-0 mt-2 min-w-[180px] rounded-2xl border p-2 shadow-lg backdrop-blur transition;
+    @apply absolute left-0 mt-2 min-w-[200px] rounded-2xl border p-2 shadow-lg transition;
     background-color: var(--surface);
     border-color: var(--border);
     opacity: 0;
@@ -155,7 +142,7 @@ a {
   }
 
   .apple-nav-menu-item:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--surface-muted);
     opacity: 1;
   }
 
@@ -235,13 +222,13 @@ a {
   }
 
   .apple-header {
-    @apply border-b backdrop-blur;
+    @apply border-b;
     background-color: var(--surface);
     border-color: var(--border);
   }
 
   .apple-footer {
-    @apply border-t backdrop-blur;
+    @apply border-t;
     background-color: var(--surface);
     border-color: var(--border);
     color: var(--muted-foreground);
@@ -270,7 +257,7 @@ a {
   }
 
   .apple-input {
-    @apply rounded-2xl border px-3 py-2 text-sm outline-none transition;
+    @apply rounded-xl border px-3 py-2 text-sm outline-none transition;
     background-color: var(--surface);
     border-color: var(--border);
     color: var(--foreground);
