@@ -11,70 +11,110 @@ export default async function MathsHubPage() {
     profile?.role === "admin" || profile?.is_subscribed || profile?.access_override
   );
 
+  const topics = [
+    {
+      title: "Number and Place Value",
+      description:
+        "Resources and activities that build confidence with numbers, digit value, and ordering.",
+      imageTitle: "Place Value",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#12355f] to-[#1f4c7e]",
+    },
+    {
+      title: "Addition and Subtraction",
+      description:
+        "Guided practice, worked examples, and fluency packs for all key strategies.",
+      imageTitle: "Addition and Subtraction",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#1a3f6e] to-[#2b5a95]",
+    },
+    {
+      title: "Multiplication and Division",
+      description:
+        "Times tables, division facts, and short methods with clear step-by-step visuals.",
+      imageTitle: "Multiplication and Division",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#163862] to-[#254f85]",
+    },
+    {
+      title: "Fractions and Decimals",
+      description:
+        "Equivalents, conversions, and real-world examples to strengthen fraction sense.",
+      imageTitle: "Fractions and Decimals",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#1b3f6a] to-[#2f5d94]",
+    },
+    {
+      title: "Measures, Shape and Space",
+      description:
+        "Length, area, perimeter, time, and geometry packs with diagrams and practice.",
+      imageTitle: "Measures and Shape",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#14355f] to-[#214a7b]",
+    },
+    {
+      title: "Handling Data",
+      description:
+        "Charts, tables, and data interpretation tasks for real-world problem solving.",
+      imageTitle: "Data and Graphs",
+      href: "/maths/levels",
+      imageClass: "from-[#0b2a4a] via-[#193e69] to-[#2b5a8d]",
+    },
+  ];
+
   return (
     <main className="space-y-10">
-      <div className="max-w-3xl space-y-3">
+      <section className="space-y-4 max-w-4xl">
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
           Maths
         </div>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Functional Skills Maths
+          Functional Skills Maths Resource Library
         </h1>
         <p className="apple-subtle">
-          Pick a pathway: learn the content, practise questions, or review mock
-          materials.
+          Find everything you need to teach, revise, and practise across the
+          Functional Skills Maths curriculum.
         </p>
-        <div className="apple-pill inline-flex">
-          {hasAccess ? "Full access" : "Learning access"}
+        <div className="flex flex-wrap items-center gap-3">
+          <Link className="apple-button" href="/maths/levels">
+            Browse levels
+          </Link>
+          <Link className="apple-pill" href="/contact">
+            Request a resource
+          </Link>
+          <div className="apple-pill inline-flex">
+            {hasAccess ? "Full access" : "Learning access"}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <Link className="apple-card p-6 hover:shadow-md transition" href="/maths/levels">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Levels
-          </div>
-          <div className="text-lg font-semibold mt-2">Maths levels</div>
-          <p className="apple-subtle mt-2">
-            Browse Entry and Functional Skills levels with organised topics.
-          </p>
-        </Link>
-
-        <Link
-          className="apple-card p-6 hover:shadow-md transition"
-          href="/maths/practice"
-        >
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Practice
-          </div>
-          <div className="text-lg font-semibold mt-2">Practice questions</div>
-          <p className="apple-subtle mt-2">
-            Drill topics with instant feedback and hints.
-          </p>
-        </Link>
-
-        <Link className="apple-card p-6 hover:shadow-md transition" href="/maths/mocks">
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Mocks
-          </div>
-          <div className="text-lg font-semibold mt-2">Exam mock papers</div>
-          <p className="apple-subtle mt-2">
-            Timed practice papers and exam-style tasks.
-          </p>
-        </Link>
-
-        <Link
-          className="apple-card p-6 hover:shadow-md transition"
-          href="/maths/resources"
-        >
-          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            Resources
-          </div>
-          <div className="text-lg font-semibold mt-2">Study resources</div>
-          <p className="apple-subtle mt-2">
-            Revision guides, worksheets, and study tips.
-          </p>
-        </Link>
+      <section className="space-y-8">
+        {topics.map((topic) => (
+          <article key={topic.title} className="apple-card p-6 lg:p-8">
+            <div className="grid gap-6 lg:grid-cols-[380px_1fr] items-center">
+              <div
+                className={`relative h-56 w-full rounded-2xl border border-white/20 overflow-hidden bg-gradient-to-br ${topic.imageClass}`}
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_40%)]" />
+                <div className="relative h-full w-full flex flex-col items-start justify-end p-6 text-white">
+                  <div className="text-xs uppercase tracking-[0.28em] opacity-80">
+                    Topic
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-semibold leading-tight">
+                    {topic.imageTitle}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <h2 className="text-2xl font-semibold">{topic.title}</h2>
+                <p className="apple-subtle">{topic.description}</p>
+                <Link className="apple-button inline-flex" href={topic.href}>
+                  Go to resources
+                </Link>
+              </div>
+            </div>
+          </article>
+        ))}
       </section>
 
       <section className="apple-card p-6 flex flex-wrap items-center justify-between gap-4">

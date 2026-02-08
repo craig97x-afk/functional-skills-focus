@@ -38,6 +38,9 @@
 
 body {
   background: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='220'%20height='220'%20viewBox='0%200%20220%20220'%3E%3Cg%20fill='none'%20stroke='%23c9d6ea'%20stroke-width='3'%20opacity='0.35'%3E%3Cpath%20d='M30%2040h20M40%2030v20'/%3E%3Cpath%20d='M130%2040h20'/%3E%3Cpath%20d='M40%20140h20M40%20150h20'/%3E%3Cpath%20d='M130%20120l20%2020M150%20120l-20%2020'/%3E%3Ccircle%20cx='120'%20cy='150'%20r='2'%20fill='%23c9d6ea'%20stroke='none'/%3E%3Ccircle%20cx='120'%20cy='170'%20r='2'%20fill='%23c9d6ea'%20stroke='none'/%3E%3Cpath%20d='M130%20160h20'/%3E%3Cpath%20d='M70%2090l12%2012M82%2090l-12%2012'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 260px 260px;
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -46,6 +49,7 @@ body {
 
 html[data-theme="dark"] body {
   background: var(--background);
+  background-image: none;
   color: var(--foreground);
 }
 
@@ -223,15 +227,15 @@ a {
 
   .apple-header {
     @apply border-b;
-    background-color: var(--accent);
-    border-color: var(--accent-strong);
+    background-color: #061633;
+    border-color: #041026;
     color: #ffffff;
   }
 
   .apple-footer {
     @apply border-t;
-    background-color: var(--accent);
-    border-color: var(--accent-strong);
+    background-color: #061633;
+    border-color: #041026;
     color: #ffffff;
   }
 
@@ -244,16 +248,30 @@ a {
     opacity: 0.9;
   }
 
-  .apple-header .apple-nav,
-  .apple-header .apple-nav-pill,
-  .apple-header .apple-nav-menu-item {
+  .apple-header .apple-nav {
     color: #ffffff;
+    opacity: 1;
+    font-weight: 600;
   }
 
-  .apple-header .apple-nav:hover,
+  .apple-header .apple-nav-pill {
+    background-color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.4);
+    color: #091c3a;
+  }
+
+  .apple-header .apple-nav-primary {
+    background-color: #ffffff;
+    color: #091c3a;
+  }
+
+  .apple-header .apple-nav:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
   .apple-header .apple-nav-pill:hover,
-  .apple-header .apple-nav-menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.12);
+  .apple-header .apple-nav-primary:hover {
+    background-color: rgba(255, 255, 255, 0.92);
   }
 
   .apple-header .apple-nav-menu {
