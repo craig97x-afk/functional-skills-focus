@@ -86,8 +86,8 @@ html[data-theme="dark"] body::before {
   height: 40px;
   width: 40px;
   display: block;
-  mix-blend-mode: multiply;
-  filter: brightness(1.08) saturate(1.15);
+  mix-blend-mode: screen;
+  filter: brightness(1.35) saturate(1.2) drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
 }
 
 a {
