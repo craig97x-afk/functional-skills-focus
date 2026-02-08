@@ -284,6 +284,42 @@ a {
     background-color: #e7edf7;
   }
 
+  html[data-theme="dark"] .apple-header {
+    background-color: #050d1f;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f5f7fb;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav {
+    color: #f5f7fb;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav-pill {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f5f7fb;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav-primary {
+    background-color: var(--accent);
+    color: #ffffff;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav-menu {
+    background-color: #0f1c33;
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #eef3fb;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav-menu-item {
+    color: #eef3fb;
+    opacity: 0.95;
+  }
+
+  html[data-theme="dark"] .apple-header .apple-nav-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
   html[data-theme="dark"] .apple-footer {
     border-color: rgba(255, 255, 255, 0.2);
     color: var(--foreground);

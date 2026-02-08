@@ -34,6 +34,14 @@ const workbookTemplates = [
   { title: "Workbook 4 - Mixed Revision", detail: "Short mixed practice set." },
 ];
 
+const topicGradients = [
+  "from-[#0b2a4a] via-[#12355f] to-[#1f4c7e]",
+  "from-[#102d52] via-[#18406f] to-[#2a5c94]",
+  "from-[#0c2847] via-[#16395f] to-[#275081]",
+  "from-[#0b2440] via-[#16365c] to-[#224b7a]",
+  "from-[#0f2b4f] via-[#1a406d] to-[#2a5a92]",
+];
+
 export default function LevelTabs({
   categories,
   subject,
@@ -125,77 +133,96 @@ export default function LevelTabs({
         </div>
       </div>
 
-      <div className="grid gap-5">
-        {activeCategory.topics.map((topic) => (
-          <article key={topic} className="apple-card p-5 space-y-4 w-full">
-            <div className="text-lg font-semibold">{topic}</div>
-            <div className="grid gap-2">
-              {(() => {
-                const key = topic.toLowerCase();
-                const actual = workbooksByTopic.get(key) ?? [];
-                const display: DisplayWorkbook[] =
-                  actual.length > 0
-                    ? actual.map((workbook) => ({
-                        id: workbook.id,
-                        title: workbook.title,
-                        detail: workbook.description || "Workbook material.",
-                        thumbnail_url: workbook.thumbnail_url,
-                        file_url: workbook.file_url,
-                      }))
-                    : workbookTemplates.map((workbook, index) => ({
-                        id: `placeholder-${key}-${index}`,
-                        title: workbook.title,
-                        detail: workbook.detail,
-                        isPlaceholder: true,
-                      }));
+      <div className="grid gap-6">
+        {activeCategory.topics.map((topic, index) => {
+          const key = topic.toLowerCase();
+          const actual = workbooksByTopic.get(key) ?? [];
+          const display: DisplayWorkbook[] =
+            actual.length > 0
+              ? actual.map((workbook) => ({
+                  id: workbook.id,
+                  title: workbook.title,
+                  detail: workbook.description || "Workbook material.",
+                  thumbnail_url: workbook.thumbnail_url,
+                  file_url: workbook.file_url,
+                }))
+              : workbookTemplates.map((workbook, templateIndex) => ({
+                  id: `placeholder-${key}-${templateIndex}`,
+                  title: workbook.title,
+                  detail: workbook.detail,
+                  isPlaceholder: true,
+                }));
+          const gradient = topicGradients[index % topicGradients.length];
 
-                return display.map((workbook) => (
-                  <div
-                    key={workbook.id}
-                    className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="flex flex-1 items-center gap-4">
-                      <div className="h-16 w-full max-w-[120px] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
-                        {workbook.thumbnail_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={workbook.thumbnail_url}
-                            alt={workbook.title}
-                            className="h-full w-full object-cover"
-                          />
+          return (
+            <article key={topic} className="apple-card p-6 lg:p-8">
+              <div className="grid gap-6 lg:grid-cols-[360px_1fr] items-start">
+                <div
+                  className={`relative h-52 lg:h-60 w-full rounded-3xl overflow-hidden border border-white/15 bg-gradient-to-br ${gradient}`}
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_45%)]" />
+                  <div className="relative h-full w-full flex flex-col items-start justify-end p-6 text-white">
+                    <div className="text-xs uppercase tracking-[0.3em] opacity-80">
+                      Topic
+                    </div>
+                    <div className="text-3xl font-semibold leading-tight">{topic}</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <p className="apple-subtle text-base">
+                    Workbooks, lesson packs, and revision sheets for {topic}.
+                  </p>
+                  <div className="grid gap-3">
+                    {display.map((workbook) => (
+                      <div
+                        key={workbook.id}
+                        className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex flex-1 items-center gap-4">
+                          <div className="h-16 w-full max-w-[140px] rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                            {workbook.thumbnail_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={workbook.thumbnail_url}
+                                alt={workbook.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-[10px] uppercase tracking-[0.2em] text-slate-200">
+                                Workbook
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="text-sm font-semibold">{workbook.title}</div>
+                            <div className="text-xs text-[color:var(--muted-foreground)]">
+                              {workbook.detail}
+                            </div>
+                          </div>
+                        </div>
+                        {workbook.file_url ? (
+                          <a
+                            className="rounded-full border px-3 py-1 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                            href={workbook.file_url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Open workbook
+                          </a>
                         ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-slate-700/40 to-slate-900/60 flex items-center justify-center text-[10px] uppercase tracking-[0.2em] text-slate-200">
-                            Workbook
+                          <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                            {workbook.isPlaceholder ? "Draft" : "No file yet"}
                           </div>
                         )}
                       </div>
-                      <div>
-                        <div className="text-sm font-medium">{workbook.title}</div>
-                        <div className="text-xs text-[color:var(--muted-foreground)]">
-                          {workbook.detail}
-                        </div>
-                      </div>
-                    </div>
-                    {workbook.file_url ? (
-                      <a
-                        className="rounded-full border px-3 py-1 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                        href={workbook.file_url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Open workbook
-                      </a>
-                    ) : (
-                      <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                        {workbook.isPlaceholder ? "Draft" : "No file yet"}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ));
-              })()}
-            </div>
-          </article>
-        ))}
+                </div>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
