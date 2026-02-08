@@ -1,33 +1,54 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function HomePage() {
   const session = await getUser();
-  if (!session) redirect("/login");
-
   const supabase = await createClient();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, is_subscribed, access_override")
-    .eq("id", session.user.id)
-    .maybeSingle();
+  let profile: { role: string; is_subscribed: boolean; access_override: boolean } | null = null;
+  let examsRaw:
+    | {
+        id: string;
+        exam_name: string;
+        exam_date: string;
+        show_on_dashboard: boolean;
+      }[]
+    | null = null;
+  let flashcardsRaw:
+    | {
+        id: string;
+        front: string;
+        back: string;
+        tags: string | null;
+        show_on_dashboard: boolean;
+      }[]
+    | null = null;
 
-  const { data: examsRaw } = await supabase
-    .from("user_exams")
-    .select("id, exam_name, exam_date, show_on_dashboard")
-    .eq("user_id", session.user.id)
-    .order("exam_date", { ascending: true });
+  if (session) {
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("role, is_subscribed, access_override")
+      .eq("id", session.user.id)
+      .maybeSingle();
+    profile = profileData as typeof profile;
 
-  const { data: flashcardsRaw } = await supabase
-    .from("flashcards")
-    .select("id, front, back, tags, show_on_dashboard")
-    .eq("user_id", session.user.id)
-    .eq("show_on_dashboard", true)
-    .order("updated_at", { ascending: false })
-    .limit(3);
+    const { data: examsData } = await supabase
+      .from("user_exams")
+      .select("id, exam_name, exam_date, show_on_dashboard")
+      .eq("user_id", session.user.id)
+      .order("exam_date", { ascending: true });
+    examsRaw = examsData as typeof examsRaw;
+
+    const { data: flashcardsData } = await supabase
+      .from("flashcards")
+      .select("id, front, back, tags, show_on_dashboard")
+      .eq("user_id", session.user.id)
+      .eq("show_on_dashboard", true)
+      .order("updated_at", { ascending: false })
+      .limit(3);
+    flashcardsRaw = flashcardsData as typeof flashcardsRaw;
+  }
 
   const exams = (examsRaw ?? []) as {
     id: string;
@@ -44,9 +65,10 @@ export default async function HomePage() {
     show_on_dashboard: boolean;
   }[];
 
-  const role = profile?.role ?? "student";
+  const role = profile?.role ?? (session ? "student" : "guest");
   const hasAccess = Boolean(
-    role === "admin" || profile?.is_subscribed || profile?.access_override
+    session &&
+      (role === "admin" || profile?.is_subscribed || profile?.access_override)
   );
 
   const today = new Date();
@@ -103,14 +125,16 @@ export default async function HomePage() {
             Dashboard
           </div>
           <h1 className="text-3xl font-semibold tracking-tight mt-2">
-            Welcome back
+            {session ? "Welcome back" : "Welcome to your dashboard"}
           </h1>
           <p className="apple-subtle mt-2">
-            Pick up where you left off or jump into practice.
+            {session
+              ? "Pick up where you left off or jump into practice."
+              : "Log in to track progress, save resources, and unlock full access."}
           </p>
         </div>
         <div className="apple-pill">
-          {hasAccess ? "Full access" : "Limited access"}
+          {session ? (hasAccess ? "Full access" : "Limited access") : "Guest view"}
         </div>
       </div>
 
@@ -121,13 +145,21 @@ export default async function HomePage() {
           </div>
           <div className="text-lg font-semibold">{role}</div>
           <div className="apple-subtle">
-            {hasAccess
-              ? "You have access to lessons, practice, progress and mastery."
-              : "Practice, progress, and mastery require a subscription."}
+            {session
+              ? hasAccess
+                ? "You have access to lessons, practice, progress and mastery."
+                : "Practice, progress, and mastery require a subscription."
+              : "Sign in to manage your account and unlock full access."}
           </div>
-          <Link href="/account" className="apple-pill mt-2 inline-flex">
-            Manage account
-          </Link>
+          {session ? (
+            <Link href="/account" className="apple-pill mt-2 inline-flex">
+              Manage account
+            </Link>
+          ) : (
+            <Link href="/login" className="apple-pill mt-2 inline-flex">
+              Log in
+            </Link>
+          )}
         </section>
 
         <section className="apple-card p-6 space-y-4">
@@ -135,55 +167,60 @@ export default async function HomePage() {
             Quick actions
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link href="/maths" className="apple-pill">
-              Maths hub
-            </Link>
             <Link href="/maths/levels" className="apple-pill">
-              Levels
+              Maths levels
             </Link>
-            {hasAccess && (
-              <Link href="/maths/practice" className="apple-pill">
-                Practice
-              </Link>
-            )}
-            <Link href="/english" className="apple-pill">
-              English
+            <Link href="/english/levels" className="apple-pill">
+              English levels
             </Link>
             <Link href="/guides" className="apple-pill">
-              Guides
+              Shop
             </Link>
-            <Link href="/study-plan" className="apple-pill">
-              Study plan
-            </Link>
-            <Link href="/flashcards" className="apple-pill">
-              Flashcards
-            </Link>
-            {hasAccess ? (
+            {session ? (
               <>
-                <Link href="/progress" className="apple-pill">
-                  Progress
+                {hasAccess && (
+                  <Link href="/maths/practice" className="apple-pill">
+                    Practice
+                  </Link>
+                )}
+                <Link href="/study-plan" className="apple-pill">
+                  Study plan
                 </Link>
-                <Link href="/mastery" className="apple-pill">
-                  Mastery
+                <Link href="/flashcards" className="apple-pill">
+                  Flashcards
                 </Link>
-                <Link href="/review" className="apple-pill">
-                  Review mistakes
-                </Link>
+                {hasAccess ? (
+                  <>
+                    <Link href="/progress" className="apple-pill">
+                      Progress
+                    </Link>
+                    <Link href="/mastery" className="apple-pill">
+                      Mastery
+                    </Link>
+                    <Link href="/review" className="apple-pill">
+                      Review mistakes
+                    </Link>
+                  </>
+                ) : (
+                  <Link href="/pricing" className="apple-pill">
+                    Subscribe
+                  </Link>
+                )}
+                {role === "admin" && (
+                  <>
+                    <Link href="/admin" className="apple-pill">
+                      Admin Panel
+                    </Link>
+                    <Link href="/admin/users" className="apple-pill">
+                      Users
+                    </Link>
+                  </>
+                )}
               </>
             ) : (
-              <Link href="/pricing" className="apple-pill">
-                Subscribe
+              <Link href="/login" className="apple-pill">
+                Log in
               </Link>
-            )}
-            {role === "admin" && (
-              <>
-                <Link href="/admin" className="apple-pill">
-                  Admin Panel
-                </Link>
-                <Link href="/admin/users" className="apple-pill">
-                  Users
-                </Link>
-              </>
             )}
           </div>
         </section>
@@ -192,7 +229,7 @@ export default async function HomePage() {
           <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
             Exam countdowns
           </div>
-          {examCards.length > 0 ? (
+          {session && examCards.length > 0 ? (
             <div className="space-y-3">
               {examCards.map((exam) => (
                 <div
@@ -211,19 +248,27 @@ export default async function HomePage() {
             </div>
           ) : (
             <p className="apple-subtle">
-              Add exam dates in your account to see countdowns here.
+              {session
+                ? "Add exam dates in your account to see countdowns here."
+                : "Log in to add exam countdowns to your dashboard."}
             </p>
           )}
-          <Link href="/account" className="apple-pill inline-flex">
-            Manage countdowns
-          </Link>
+          {session ? (
+            <Link href="/account" className="apple-pill inline-flex">
+              Manage countdowns
+            </Link>
+          ) : (
+            <Link href="/login" className="apple-pill inline-flex">
+              Log in
+            </Link>
+          )}
         </section>
 
         <section className="apple-card p-6 space-y-4">
           <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
             Flashcards
           </div>
-          {flashcards.length > 0 ? (
+          {session && flashcards.length > 0 ? (
             <div className="space-y-3">
               {flashcards.map((card) => (
                 <div
@@ -245,12 +290,20 @@ export default async function HomePage() {
             </div>
           ) : (
             <p className="apple-subtle">
-              Pin flashcards to your dashboard from the Flashcards page.
+              {session
+                ? "Pin flashcards to your dashboard from the Flashcards page."
+                : "Log in to create flashcards and pin them here."}
             </p>
           )}
-          <Link href="/flashcards" className="apple-pill inline-flex">
-            Manage flashcards
-          </Link>
+          {session ? (
+            <Link href="/flashcards" className="apple-pill inline-flex">
+              Manage flashcards
+            </Link>
+          ) : (
+            <Link href="/login" className="apple-pill inline-flex">
+              Log in
+            </Link>
+          )}
         </section>
       </div>
     </main>

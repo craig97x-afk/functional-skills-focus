@@ -209,8 +209,13 @@ export default async function Header() {
   return (
     <header className="apple-header sticky top-0 z-50">
       <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="text-lg font-semibold tracking-tight">
-          Functional Skills Focus
+        <Link href="/" className="flex items-center gap-3 text-lg font-semibold tracking-tight">
+          <img
+            src="/brand/logo-mark.png"
+            alt="Functional Skills Focus"
+            className="h-8 w-8"
+          />
+          <span>Functional Skills Focus</span>
         </Link>
 
         <nav className="flex items-center gap-2 flex-wrap justify-end">
@@ -439,6 +444,12 @@ export default async function Header() {
                 </form>
               </div>
             </div>
+          )}
+
+          {!session && (
+            <Link href="/login" className={navItem}>
+              Login
+            </Link>
           )}
 
           <ThemeToggle />

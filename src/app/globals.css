@@ -11,6 +11,7 @@
   --muted-foreground: #5b6b86;
   --shadow: 0 10px 22px rgba(7, 27, 49, 0.12);
   --radius: 16px;
+  --brand-mark: url("/brand/logo-mark.png");
   --font-sans: "SF Pro Display", "SF Pro Text", "Helvetica Neue", "Segoe UI",
     sans-serif;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
@@ -42,11 +43,34 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  position: relative;
 }
 
 html[data-theme="dark"] body {
   background: var(--background);
   color: var(--foreground);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--brand-mark);
+  background-size: 220px;
+  background-repeat: repeat;
+  background-position: 24px 24px;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+html[data-theme="dark"] body::before {
+  opacity: 0.08;
+}
+
+#__next {
+  position: relative;
+  z-index: 1;
 }
 
 a {
