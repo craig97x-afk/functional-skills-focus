@@ -201,8 +201,6 @@ export default async function Header() {
   }
 
   const navItem = "apple-nav";
-  const navPill = "apple-nav-pill";
-  const navPrimary = "apple-nav-primary";
   const iconButton =
     "relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] transition hover:bg-[color:var(--surface-muted)]";
   const badgeClass =
@@ -216,50 +214,50 @@ export default async function Header() {
         </Link>
 
         <nav className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="apple-nav-group">
+            <button className={navItem} type="button">
+              Maths
+            </button>
+            <div className="apple-nav-menu">
+              <Link className="apple-nav-menu-item" href="/maths/levels">
+                Levels
+              </Link>
+              <div className="my-2 border-t border-[color:var(--border)]" />
+              {levelLinks.map((level) => (
+                <Link
+                  key={`maths-${level.slug}`}
+                  className="apple-nav-menu-item"
+                  href={`/maths/levels/${level.slug}`}
+                >
+                  {level.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="apple-nav-group">
+            <button className={navItem} type="button">
+              English
+            </button>
+            <div className="apple-nav-menu">
+              <Link className="apple-nav-menu-item" href="/english/levels">
+                Levels
+              </Link>
+              <div className="my-2 border-t border-[color:var(--border)]" />
+              {levelLinks.map((level) => (
+                <Link
+                  key={`english-${level.slug}`}
+                  className="apple-nav-menu-item"
+                  href={`/english/levels/${level.slug}`}
+                >
+                  {level.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
           {session && (
             <>
-              <div className="apple-nav-group">
-                <button className={navItem} type="button">
-                  Maths
-                </button>
-                <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/maths/levels">
-                    Levels
-                  </Link>
-                  <div className="my-2 border-t border-[color:var(--border)]" />
-                  {levelLinks.map((level) => (
-                    <Link
-                      key={`maths-${level.slug}`}
-                      className="apple-nav-menu-item"
-                      href={`/maths/levels/${level.slug}`}
-                    >
-                      {level.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              <div className="apple-nav-group">
-                <button className={navItem} type="button">
-                  English
-                </button>
-                <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/english/levels">
-                    Levels
-                  </Link>
-                  <div className="my-2 border-t border-[color:var(--border)]" />
-                  {levelLinks.map((level) => (
-                    <Link
-                      key={`english-${level.slug}`}
-                      className="apple-nav-menu-item"
-                      href={`/english/levels/${level.slug}`}
-                    >
-                      {level.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
               <div className="apple-nav-group">
                 <button className={navItem} type="button">
                   Progress
@@ -294,19 +292,14 @@ export default async function Header() {
                   <Link className="apple-nav-menu-item" href={messagesHref}>
                     Messages
                   </Link>
-                  <Link className="apple-nav-menu-item" href="/guides">
-                    Guides
-                  </Link>
                 </div>
               </div>
             </>
           )}
 
-          {!session && (
-            <Link href="/guides" className={navItem}>
-              Guides
-            </Link>
-          )}
+          <Link href="/guides" className={navItem}>
+            Shop
+          </Link>
 
           {session && session.profile?.role !== "admin" && (
             <Link href="/pricing" className={navItem}>
@@ -315,7 +308,7 @@ export default async function Header() {
           )}
 
           {session?.profile?.role === "admin" && (
-            <Link href="/admin" className={navPill}>
+            <Link href="/admin" className={navItem}>
               Admin
             </Link>
           )}
@@ -425,9 +418,9 @@ export default async function Header() {
             </>
           )}
 
-          {session ? (
+          {session && (
             <div className="apple-nav-group">
-              <button className={navPill} type="button">
+              <button className={navItem} type="button">
                 <span>Account</span>
                 {achievementIcon && (
                   <span className="ml-2 text-base" title="Latest badge">
@@ -446,10 +439,6 @@ export default async function Header() {
                 </form>
               </div>
             </div>
-          ) : (
-            <Link href="/login" className={navPrimary}>
-              Login
-            </Link>
           )}
 
           <ThemeToggle />

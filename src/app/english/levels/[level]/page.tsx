@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/get-user";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +15,6 @@ export default async function EnglishLevelDetailPage({
 }: {
   params: Promise<{ level: string }>;
 }) {
-  const session = await getUser();
-  if (!session) redirect("/login");
-
   const { level } = await params;
   const title = levelLabels[level] ?? "English Level";
 

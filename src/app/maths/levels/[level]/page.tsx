@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import LevelTabs from "./level-tabs";
 
@@ -193,7 +192,11 @@ export default async function MathsLevelDetailPage({
   params: Promise<{ level: string }>;
 }) {
   const session = await getUser();
-  if (!session) redirect("/login");
+  const hasAccess = Boolean(
+    session?.profile?.role === "admin" ||
+      session?.profile?.is_subscribed ||
+      session?.profile?.access_override
+  );
 
   const { level: levelKey } = await params;
   const level =
@@ -228,6 +231,7 @@ export default async function MathsLevelDetailPage({
           categories={level.categories ?? []}
           subject="maths"
           levelSlug={levelKey}
+          hasAccess={hasAccess}
         />
       )}
     </main>

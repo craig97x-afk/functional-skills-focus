@@ -34,22 +34,20 @@ const workbookTemplates = [
   { title: "Workbook 4 - Mixed Revision", detail: "Short mixed practice set." },
 ];
 
-const topicGradients = [
-  "from-[#0b2a4a] via-[#12355f] to-[#1f4c7e]",
-  "from-[#102d52] via-[#18406f] to-[#2a5c94]",
-  "from-[#0c2847] via-[#16395f] to-[#275081]",
-  "from-[#0b2440] via-[#16365c] to-[#224b7a]",
-  "from-[#0f2b4f] via-[#1a406d] to-[#2a5a92]",
-];
+const bannerGradientStyle = {
+  background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%)",
+};
 
 export default function LevelTabs({
   categories,
   subject,
   levelSlug,
+  hasAccess,
 }: {
   categories: Category[];
   subject: string;
   levelSlug: string;
+  hasAccess: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -152,12 +150,11 @@ export default function LevelTabs({
                   detail: workbook.detail,
                   isPlaceholder: true,
                 }));
-          const gradient = topicGradients[index % topicGradients.length];
-
           return (
             <article key={topic} className="apple-card p-6 lg:p-8">
               <div
-                className={`relative h-52 lg:h-60 w-full rounded-3xl overflow-hidden border border-white/15 bg-gradient-to-br ${gradient}`}
+                style={bannerGradientStyle}
+                className="relative h-52 lg:h-60 w-full rounded-3xl overflow-hidden border border-white/15"
               >
                 <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_45%)]" />
                 <div className="relative h-full w-full flex flex-col items-start justify-end p-6 text-white">
@@ -171,10 +168,15 @@ export default function LevelTabs({
                   Workbooks, lesson packs, and revision sheets for {topic}.
                 </p>
                 <div className="grid gap-4">
-                  {display.map((workbook) => (
+                  {display.map((workbook, workbookIndex) => {
+                    const isLocked = !hasAccess && workbookIndex >= 2;
+                    return (
                     <div
                       key={workbook.id}
-                      className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center"
+                      className={[
+                        "rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center",
+                        isLocked ? "opacity-80" : "",
+                      ].join(" ")}
                     >
                       <div className="h-40 w-full lg:h-28 lg:w-64 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
                         {workbook.thumbnail_url ? (
@@ -195,7 +197,11 @@ export default function LevelTabs({
                         <div className="text-sm text-[color:var(--muted-foreground)]">
                           {workbook.detail}
                         </div>
-                        {workbook.file_url ? (
+                        {isLocked ? (
+                          <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                            Subscription user only
+                          </span>
+                        ) : workbook.file_url ? (
                           <a
                             className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
                             href={workbook.file_url}
@@ -211,7 +217,8 @@ export default function LevelTabs({
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               </div>
             </article>

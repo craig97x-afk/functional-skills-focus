@@ -49,11 +49,9 @@ export default async function GuidesPage() {
     <main className="space-y-10">
       <div className="max-w-3xl">
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
-          Guides
+          Shop
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight mt-2">
-          Study guides and revision packs
-        </h1>
+        <h1 className="text-3xl font-semibold tracking-tight mt-2">Shop</h1>
         <p className="apple-subtle mt-3">
           Subscribers get full access. Non-subscribers can purchase individual
           guides.

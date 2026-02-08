@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth/get-user";
 
 const levels = [
   { slug: "entry-1", label: "Entry Level 1" },
@@ -11,9 +9,6 @@ const levels = [
 ];
 
 export default async function EnglishLevelsPage() {
-  const session = await getUser();
-  if (!session) redirect("/login");
-
   return (
     <main className="space-y-8">
       <div className="space-y-3">

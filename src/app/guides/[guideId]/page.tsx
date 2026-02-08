@@ -93,7 +93,7 @@ export default async function GuideDetailPage({
     <main className="space-y-8">
       <div className="space-y-2">
         <Link className="apple-subtle" href="/guides">
-          ← Back to guides
+          ← Back to shop
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{guide.title}</h1>
         {guide.description && <p className="apple-subtle">{guide.description}</p>}
