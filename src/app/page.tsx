@@ -6,7 +6,13 @@ export default async function HomePage() {
   const session = await getUser();
   const supabase = await createClient();
 
-  let profile: { role: string; is_subscribed: boolean; access_override: boolean } | null = null;
+  type ProfileRow = {
+    role: string | null;
+    is_subscribed: boolean | null;
+    access_override: boolean | null;
+  };
+
+  let profile: ProfileRow | null = null;
   let examsRaw:
     | {
         id: string;
@@ -31,7 +37,7 @@ export default async function HomePage() {
       .select("role, is_subscribed, access_override")
       .eq("id", session.user.id)
       .maybeSingle();
-    profile = profileData as typeof profile;
+    profile = (profileData ?? null) as ProfileRow | null;
 
     const { data: examsData } = await supabase
       .from("user_exams")
@@ -65,10 +71,13 @@ export default async function HomePage() {
     show_on_dashboard: boolean;
   }[];
 
-  const role = profile?.role ?? (session ? "student" : "guest");
+  const profileSafe = profile as ProfileRow | null;
+  const role = profileSafe?.role ?? (session ? "student" : "guest");
   const hasAccess = Boolean(
     session &&
-      (role === "admin" || profile?.is_subscribed || profile?.access_override)
+      (role === "admin" ||
+        profileSafe?.is_subscribed ||
+        profileSafe?.access_override)
   );
 
   const today = new Date();
