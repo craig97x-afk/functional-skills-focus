@@ -71,24 +71,24 @@ export default async function EnglishPage() {
 
       <section className="space-y-8">
         {topics.map((topic) => (
-          <article key={topic.title} className="apple-card p-6 lg:p-8">
-            <div className="grid gap-6 lg:grid-cols-[380px_1fr] items-center">
+          <article key={topic.title} className="apple-card p-6 lg:p-10">
+            <div className="grid gap-8 lg:grid-cols-[460px_1fr] items-center">
               <div
-                className={`relative h-56 w-full rounded-2xl border border-white/20 overflow-hidden bg-gradient-to-br ${topic.imageClass}`}
+                className={`relative h-64 w-full rounded-3xl border border-white/20 overflow-hidden bg-gradient-to-br ${topic.imageClass}`}
               >
                 <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_40%)]" />
                 <div className="relative h-full w-full flex flex-col items-start justify-end p-6 text-white">
                   <div className="text-xs uppercase tracking-[0.28em] opacity-80">
                     Topic
                   </div>
-                  <div className="text-2xl sm:text-3xl font-semibold leading-tight">
+                  <div className="text-3xl sm:text-4xl font-semibold leading-tight">
                     {topic.imageTitle}
                   </div>
                 </div>
               </div>
               <div className="space-y-3">
-                <h2 className="text-2xl font-semibold">{topic.title}</h2>
-                <p className="apple-subtle">{topic.description}</p>
+                <h2 className="text-3xl font-semibold">{topic.title}</h2>
+                <p className="apple-subtle text-base">{topic.description}</p>
                 <Link className="apple-button inline-flex" href={topic.href}>
                   Go to resources
                 </Link>
