@@ -250,6 +250,11 @@ a {
     font-weight: 600;
   }
 
+  .apple-header .apple-nav-menu {
+    background-color: #ffffff;
+    color: #0b1220;
+  }
+
   .apple-header .apple-nav-pill {
     background-color: #ffffff;
     border-color: rgba(255, 255, 255, 0.4);
@@ -270,17 +275,13 @@ a {
     background-color: rgba(255, 255, 255, 0.92);
   }
 
-  .apple-header .apple-nav-menu {
-    background-color: #ffffff;
-    color: var(--foreground);
-  }
-
   .apple-header .apple-nav-menu-item {
-    color: var(--foreground);
+    color: #0b1220;
+    opacity: 1;
   }
 
   .apple-header .apple-nav-menu-item:hover {
-    background-color: var(--surface-muted);
+    background-color: #e7edf7;
   }
 
   html[data-theme="dark"] .apple-footer {
