@@ -78,10 +78,10 @@ html[data-theme="dark"] body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 84px;
-  width: 84px;
+  height: 112px;
+  width: 112px;
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .brand-mark-img {
