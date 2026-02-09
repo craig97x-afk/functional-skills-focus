@@ -208,7 +208,7 @@ export default async function Header() {
 
   return (
     <header className="apple-header sticky top-0 z-50">
-      <div className="mx-auto max-w-6xl px-6 py-1 flex items-center justify-between">
+      <div className="mx-auto max-w-6xl px-6 py-0.5 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 text-lg font-semibold tracking-tight">
           <span className="brand-mark-wrap" aria-hidden="true">
             <img
