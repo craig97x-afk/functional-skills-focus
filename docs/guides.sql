@@ -166,3 +166,43 @@ select g.id,
 from public.guides g
 where g.title = 'Starter Maths Revision Pack'
   and not exists (select 1 from public.guide_assets a where a.guide_id = g.id);
+
+-- Dummy guide 2
+insert into public.guides (id, title, description, category, type, cover_url, price_cents, currency, is_published)
+select gen_random_uuid(),
+  'Exam Practice Set 1',
+  'Exam-style questions with worked answers and tips.',
+  'general',
+  'markdown',
+  '/guide-sample.svg',
+  0,
+  'gbp',
+  true
+where not exists (select 1 from public.guides where title = 'Exam Practice Set 1');
+
+insert into public.guide_assets (guide_id, content)
+select g.id,
+  '## Exam Practice Set 1\n\nUse this pack for timed practice. Mark your work using the notes provided.\n\n### Sections\n- 10 quick-fire questions\n- 5 longer problems\n- Answer check steps\n\n### Tip\nFocus on method marks: show your working clearly.\n'
+from public.guides g
+where g.title = 'Exam Practice Set 1'
+  and not exists (select 1 from public.guide_assets a where a.guide_id = g.id);
+
+-- Dummy guide 3
+insert into public.guides (id, title, description, category, type, cover_url, price_cents, currency, is_published)
+select gen_random_uuid(),
+  'Problem Solving Booster',
+  'Mixed word problems to build confidence with real-world maths.',
+  'general',
+  'markdown',
+  '/guide-sample.svg',
+  0,
+  'gbp',
+  true
+where not exists (select 1 from public.guides where title = 'Problem Solving Booster');
+
+insert into public.guide_assets (guide_id, content)
+select g.id,
+  '## Problem Solving Booster\n\nShort, structured word problems to practise choosing the right method.\n\n### What you''ll practise\n- Identifying key information\n- Selecting the correct operation\n- Checking your answer\n\n### Try this\nRead each problem twice before starting.\n'
+from public.guides g
+where g.title = 'Problem Solving Booster'
+  and not exists (select 1 from public.guide_assets a where a.guide_id = g.id);

@@ -14,7 +14,7 @@ export type ShopRotatorItem = {
 
 export default function ShopRotator({
   items,
-  intervalMs = 2000,
+  intervalMs = 4000,
 }: {
   items: ShopRotatorItem[];
   intervalMs?: number;

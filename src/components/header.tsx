@@ -14,23 +14,6 @@ export default async function Header() {
     { slug: "fs-1", label: "Functional Skills Level 1" },
     { slug: "fs-2", label: "Functional Skills Level 2" },
   ];
-  const { data: latestAchievement } = session
-    ? await supabase
-        .from("user_achievements")
-        .select("earned_at, achievement:achievements(id, title, icon)")
-        .eq("user_id", session.user.id)
-        .order("earned_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    : { data: null as { achievement: unknown } | null };
-  const achievement = Array.isArray(latestAchievement?.achievement)
-    ? latestAchievement?.achievement[0]
-    : latestAchievement?.achievement;
-  const achievementIcon =
-    typeof achievement === "object" && achievement && "icon" in achievement
-      ? (achievement as { icon?: string | null }).icon
-      : null;
-
   const dayMs = 24 * 60 * 60 * 1000;
   const now = new Date();
   const weekAgoIso = new Date(now.getTime() - 7 * dayMs).toISOString();
@@ -429,11 +412,6 @@ export default async function Header() {
             <div className="apple-nav-group">
               <button className={navItem} type="button">
                 <span>Account</span>
-                {achievementIcon && (
-                  <span className="ml-2 text-base" title="Latest badge">
-                    {achievementIcon}
-                  </span>
-                )}
               </button>
               <div className="apple-nav-menu apple-nav-menu-right">
                 <Link className="apple-nav-menu-item" href="/account">
