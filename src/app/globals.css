@@ -51,24 +51,6 @@ html[data-theme="dark"] body {
   color: var(--foreground);
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: var(--brand-mark);
-  background-size: 220px;
-  background-repeat: repeat;
-  background-position: 24px 24px;
-  opacity: 0.05;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 0;
-}
-
-html[data-theme="dark"] body::before {
-  opacity: 0.08;
-}
-
 #__next {
   position: relative;
   z-index: 1;
@@ -78,16 +60,16 @@ html[data-theme="dark"] body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 72px;
-  width: 72px;
+  height: 76px;
+  width: 76px;
 }
 
 .brand-mark-img {
-  height: 64px;
-  width: 64px;
+  height: 70px;
+  width: 70px;
   display: block;
   mix-blend-mode: screen;
-  filter: saturate(1.25) drop-shadow(0 0 8px rgba(255, 255, 255, 0.25));
+  filter: saturate(1.35) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
 }
 
 a {
