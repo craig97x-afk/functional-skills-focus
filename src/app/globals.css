@@ -64,7 +64,7 @@ body::before {
   background-size: 220px;
   background-repeat: repeat;
   background-position: 24px 24px;
-  opacity: 0.15;
+  opacity: 0.06;
   mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 0;
@@ -107,6 +107,21 @@ html[data-theme="dark"] body::before {
   display: block;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
+}
+
+.dashboard-banner {
+  background: #061633;
+  border: 1px solid #0b1d3f;
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.dashboard-banner-logo {
+  height: 120px;
+  width: 120px;
+  mix-blend-mode: screen;
+  filter: saturate(1.4) drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
 }
 
 a {

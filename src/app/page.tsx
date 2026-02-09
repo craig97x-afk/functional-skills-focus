@@ -128,6 +128,25 @@ export default async function HomePage() {
 
   return (
     <main className="space-y-8">
+      <section className="dashboard-banner">
+        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col items-center text-center gap-4">
+          <img
+            src="/brand/logo-mark.png"
+            alt="Functional Skills Focus"
+            className="dashboard-banner-logo"
+          />
+          <div>
+            <div className="text-3xl font-semibold tracking-tight">
+              Functional Skills Focus
+            </div>
+            <div className="mt-2 text-sm text-white/80">
+              Learn, practise, and build confidence with structured Functional Skills
+              support.
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
