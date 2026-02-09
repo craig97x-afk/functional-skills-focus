@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function CreateAccountPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [dob, setDob] = useState("");
   const [email, setEmail] = useState("");
@@ -37,6 +39,7 @@ export default function CreateAccountPage() {
   const needsGuardian = age !== null && age < 16;
 
   async function signUp() {
+    let guardianNotice: string | null = null;
     if (password !== confirm) {
       setMsg("Passwords do not match.");
       return;
@@ -67,9 +70,8 @@ export default function CreateAccountPage() {
       },
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       setMsg(error.message);
       return;
     }
@@ -77,6 +79,7 @@ export default function CreateAccountPage() {
     if (needsGuardian) {
       const studentId = data?.user?.id;
       if (!studentId) {
+        setLoading(false);
         setMsg(
           "Account created, but guardian email could not be sent (missing student ID)."
         );
@@ -96,6 +99,7 @@ export default function CreateAccountPage() {
 
       const result = await response.json();
       if (!response.ok) {
+        setLoading(false);
         setMsg(
           result?.error ??
             "Account created, but guardian email could not be sent."
@@ -103,10 +107,31 @@ export default function CreateAccountPage() {
         return;
       }
 
+      guardianNotice = result.emailed
+        ? "Guardian access code emailed."
+        : `Guardian email not sent (email not configured). Code: ${result.code}`;
+    }
+
+    // Attempt auto-login if session is available (or email confirmation is off).
+    let session = data?.session ?? null;
+    if (!session) {
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({ email, password });
+      if (!signInError) {
+        session = signInData.session;
+      }
+    }
+
+    setLoading(false);
+
+    if (session) {
+      router.push("/");
+      return;
+    }
+
+    if (needsGuardian && guardianNotice) {
       setMsg(
-        result.emailed
-          ? "Account created. Guardian access code emailed. Check your email to verify, then sign in."
-          : `Account created. Guardian email not sent (email not configured). Code: ${result.code}`
+        `Account created. ${guardianNotice} Check your email to verify, then sign in.`
       );
       return;
     }

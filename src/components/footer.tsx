@@ -1,6 +1,11 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function Footer() {
+export default async function Footer() {
+  const cookieStore = await cookies();
+  const guardianSession = cookieStore.get("guardian_session")?.value;
+  if (guardianSession) return null;
+
   return (
     <footer className="apple-footer">
       <div className="mx-auto max-w-6xl px-6 py-8 text-xs flex flex-wrap items-center gap-4">

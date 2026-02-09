@@ -64,7 +64,7 @@ body::before {
   background-size: 220px;
   background-repeat: repeat;
   background-position: 24px 24px;
-  opacity: 0.06;
+  opacity: 0.04;
   mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 0;
@@ -159,25 +159,25 @@ html[data-theme="dark"] body::before {
 }
 
 .shop-rotator-slide {
-  animation: shopFade 2s ease-in-out;
+  animation: shopSlide 6s ease-in-out;
 }
 
-@keyframes shopFade {
+@keyframes shopSlide {
   0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateX(16px);
   }
-  20% {
+  15% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
-  80% {
+  85% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
   100% {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateX(-16px);
   }
 }
 
@@ -288,6 +288,22 @@ a {
     background: transparent;
     border: none;
     cursor: pointer;
+  }
+
+  .mobile-nav summary {
+    list-style: none;
+  }
+
+  .mobile-nav summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-nav-group summary {
+    list-style: none;
+  }
+
+  .mobile-nav-group summary::-webkit-details-marker {
+    display: none;
   }
 
   .apple-switch {

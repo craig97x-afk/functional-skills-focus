@@ -1,9 +1,35 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 import ThemeToggle from "@/components/theme-toggle";
+import GuardianLogoutButton from "@/components/guardian-logout-button";
 
 export default async function Header() {
+  const cookieStore = await cookies();
+  const guardianSession = cookieStore.get("guardian_session")?.value;
+
+  if (guardianSession) {
+    return (
+      <header className="apple-header sticky top-0 z-50">
+        <div className="mx-auto max-w-6xl px-6 py-[7px] flex items-center justify-between">
+          <Link href="/guardian/dashboard" className="brand-link text-lg font-semibold tracking-tight">
+            <span className="brand-mark-wrap" aria-hidden="true">
+              <img src="/brand/logo-mark.png" alt="" className="brand-mark-img" />
+            </span>
+            <span className="ml-3">Functional Skills Focus</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <span className="text-xs uppercase tracking-[0.2em] text-slate-200">
+              Guardian access
+            </span>
+            <GuardianLogoutButton />
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   const session = await getUser();
   const supabase = await createClient();
   const messagesHref = session?.profile?.role === "admin" ? "/admin/messages" : "/messages";
@@ -203,11 +229,12 @@ export default async function Header() {
           <span className="brand-link-text">Functional Skills Focus</span>
         </Link>
 
-        <nav className="flex items-center gap-2 flex-wrap justify-end">
-          <div className="apple-nav-group">
-            <button className={navItem} type="button">
-              Maths
-            </button>
+        <div className="flex items-center gap-3">
+          <nav className="hidden lg:flex items-center gap-2 flex-wrap justify-end">
+            <div className="apple-nav-group">
+              <button className={navItem} type="button">
+                Maths
+              </button>
             <div className="apple-nav-menu">
               <Link className="apple-nav-menu-item" href="/maths/levels">
                 Levels
@@ -433,7 +460,147 @@ export default async function Header() {
           )}
 
           <ThemeToggle />
-        </nav>
+          </nav>
+
+          <details className="relative lg:hidden mobile-nav">
+            <summary className={iconButton} aria-label="Open menu">
+              <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </summary>
+            <div className="absolute right-0 mt-3 w-[min(90vw,320px)] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 shadow-xl text-[color:var(--foreground)]">
+              <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                Menu
+              </div>
+              <div className="mt-3 flex flex-col gap-2">
+                <Link className="apple-nav-menu-item" href="/">
+                  Dashboard
+                </Link>
+
+                <details className="mobile-nav-group">
+                  <summary className="apple-nav-menu-item cursor-pointer">Maths</summary>
+                  <div className="mt-2 flex flex-col gap-2 pl-3">
+                    <Link className="apple-nav-menu-item" href="/maths/levels">
+                      Levels
+                    </Link>
+                    {levelLinks.map((level) => (
+                      <Link
+                        key={`mobile-maths-${level.slug}`}
+                        className="apple-nav-menu-item"
+                        href={`/maths/levels/${level.slug}`}
+                      >
+                        {level.label}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+
+                <details className="mobile-nav-group">
+                  <summary className="apple-nav-menu-item cursor-pointer">English</summary>
+                  <div className="mt-2 flex flex-col gap-2 pl-3">
+                    <Link className="apple-nav-menu-item" href="/english/levels">
+                      Levels
+                    </Link>
+                    {levelLinks.map((level) => (
+                      <Link
+                        key={`mobile-english-${level.slug}`}
+                        className="apple-nav-menu-item"
+                        href={`/english/levels/${level.slug}`}
+                      >
+                        {level.label}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
+
+                {session && (
+                  <>
+                    <details className="mobile-nav-group">
+                      <summary className="apple-nav-menu-item cursor-pointer">Progress</summary>
+                      <div className="mt-2 flex flex-col gap-2 pl-3">
+                        <Link className="apple-nav-menu-item" href="/progress">
+                          Progress
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/mastery">
+                          Mastery
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/review">
+                          Review mistakes
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/progress/report">
+                          Progress report
+                        </Link>
+                      </div>
+                    </details>
+
+                    <details className="mobile-nav-group">
+                      <summary className="apple-nav-menu-item cursor-pointer">Tools</summary>
+                      <div className="mt-2 flex flex-col gap-2 pl-3">
+                        <Link className="apple-nav-menu-item" href="/study-plan">
+                          Study plan
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/flashcards">
+                          Flashcards
+                        </Link>
+                        <Link className="apple-nav-menu-item" href={messagesHref}>
+                          Messages{unreadMessages > 0 ? ` (${messageBadge})` : ""}
+                        </Link>
+                      </div>
+                    </details>
+                  </>
+                )}
+
+                <Link className="apple-nav-menu-item" href="/guides">
+                  Shop
+                </Link>
+
+                {session && session.profile?.role !== "admin" && (
+                  <Link className="apple-nav-menu-item" href="/pricing">
+                    Pricing
+                  </Link>
+                )}
+
+                {session?.profile?.role === "admin" && (
+                  <Link className="apple-nav-menu-item" href="/admin">
+                    Admin
+                  </Link>
+                )}
+
+                {session && (
+                  <>
+                    <Link className="apple-nav-menu-item" href="/account">
+                      Account
+                    </Link>
+                    <form action={signOut}>
+                      <button
+                        className="apple-nav-menu-item apple-nav-menu-button"
+                        type="submit"
+                      >
+                        Logout
+                      </button>
+                    </form>
+                  </>
+                )}
+
+                {!session && (
+                  <Link className="apple-nav-menu-item" href="/login">
+                    Login
+                  </Link>
+                )}
+
+                <div className="pt-2">
+                  <ThemeToggle />
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
     </header>
   );

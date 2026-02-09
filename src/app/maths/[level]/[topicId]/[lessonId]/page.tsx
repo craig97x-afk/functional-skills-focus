@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import { WidgetBlock } from "./lesson-widgets";
 import LessonNotes from "./lesson-notes";
+import LessonViewTracker from "@/components/lesson-view-tracker";
 
 type LessonRow = {
   id: string;
@@ -54,6 +55,7 @@ export default async function LessonPage({
 
   return (
     <main className="space-y-8 max-w-3xl">
+      <LessonViewTracker lessonId={lessonId} />
       <Link className="apple-subtle inline-flex" href={`/maths/${level}/${topicId}`}>
         ← Back to topic
       </Link>
