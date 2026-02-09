@@ -71,7 +71,7 @@ body::before {
 }
 
 html[data-theme="dark"] body::before {
-  opacity: 0.035;
+  opacity: 0.02;
   mix-blend-mode: screen;
 }
 
@@ -110,11 +110,9 @@ html[data-theme="dark"] body::before {
 }
 
 .dashboard-banner {
-  background: #061633;
-  border: 1px solid #0b1d3f;
-  border-radius: 28px;
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  background: linear-gradient(135deg, #061633 0%, #0b1f45 55%, #0b1d3f 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 24px rgba(2, 10, 26, 0.35);
 }
 
 .dashboard-banner-logo {

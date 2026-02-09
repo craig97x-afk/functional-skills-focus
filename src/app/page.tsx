@@ -127,9 +127,9 @@ export default async function HomePage() {
   });
 
   return (
-    <main className="space-y-8">
-      <section className="dashboard-banner">
-        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col items-center text-center gap-4">
+    <main className="space-y-0">
+      <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-8">
+        <div className="mx-auto max-w-6xl px-6 py-12 flex flex-col items-center text-center gap-4">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"
