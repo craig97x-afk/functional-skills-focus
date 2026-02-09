@@ -65,13 +65,14 @@ body::before {
   background-repeat: repeat;
   background-position: 24px 24px;
   opacity: 0.15;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 0;
 }
 
 html[data-theme="dark"] body::before {
   opacity: 0.035;
+  mix-blend-mode: screen;
 }
 
 .brand-link {
