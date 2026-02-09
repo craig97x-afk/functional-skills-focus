@@ -6,6 +6,7 @@ create table if not exists public.guides (
   title text not null,
   description text,
   category text not null default 'general',
+  cover_url text,
   type text not null check (type in ('pdf', 'markdown', 'video')),
   content text,
   file_path text,
@@ -51,6 +52,10 @@ alter table public.guide_purchases enable row level security;
 -- Backfill category for existing rows if the column was added later
 alter table public.guides
   add column if not exists category text default 'general';
+
+-- Cover image URL (public)
+alter table public.guides
+  add column if not exists cover_url text;
 
 -- Public can read published guides
 drop policy if exists "Public read guides" on public.guides;
@@ -141,3 +146,23 @@ set content = null,
     file_path = null,
     file_url = null
 where content is not null or file_path is not null or file_url is not null;
+
+-- Dummy published guide (safe sample)
+insert into public.guides (id, title, description, category, type, cover_url, price_cents, currency, is_published)
+select gen_random_uuid(),
+  'Starter Maths Revision Pack',
+  'A short starter pack covering key number skills and quick practice.',
+  'general',
+  'markdown',
+  '/guide-sample.svg',
+  0,
+  'gbp',
+  true
+where not exists (select 1 from public.guides where title = 'Starter Maths Revision Pack');
+
+insert into public.guide_assets (guide_id, content)
+select g.id,
+  '## Starter Maths Revision Pack\n\nWelcome to your first revision pack. Use this guide to warm up before practice.\n\n### What''s inside\n- Place value refreshers\n- Four operations recap\n- Quick mixed practice\n\n### How to use\nRead each section, then try a few practice questions in the topic area.\n'
+from public.guides g
+where g.title = 'Starter Maths Revision Pack'
+  and not exists (select 1 from public.guide_assets a where a.guide_id = g.id);

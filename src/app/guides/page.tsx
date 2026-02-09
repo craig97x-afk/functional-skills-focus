@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth/get-user";
+import ShopRotator from "@/components/shop-rotator";
 
 type Guide = {
   id: string;
@@ -9,6 +10,7 @@ type Guide = {
   type: "pdf" | "markdown" | "video";
   price_cents: number;
   currency: string;
+  cover_url: string | null;
 };
 
 function formatPrice(priceCents: number, currency: string) {
@@ -26,7 +28,7 @@ export default async function GuidesPage() {
 
   const { data: guides } = await supabase
     .from("guides")
-    .select("id, title, description, type, price_cents, currency")
+    .select("id, title, description, type, price_cents, currency, cover_url")
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
@@ -44,6 +46,15 @@ export default async function GuidesPage() {
     : { data: [] as { guide_id: string }[] };
 
   const purchasedIds = new Set((purchases ?? []).map((p) => p.guide_id));
+  const rotatorItems =
+    guides?.map((guide) => ({
+      id: guide.id,
+      title: guide.title,
+      description: guide.description,
+      cover_url: guide.cover_url,
+      priceLabel: formatPrice(guide.price_cents, guide.currency),
+      type: guide.type,
+    })) ?? [];
 
   return (
     <main className="space-y-10">
@@ -57,6 +68,8 @@ export default async function GuidesPage() {
           guides.
         </p>
       </div>
+
+      <ShopRotator items={rotatorItems} />
 
       <section className="grid gap-6 md:grid-cols-2">
         {(guides ?? []).map((guide) => {

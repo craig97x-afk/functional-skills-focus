@@ -4,9 +4,7 @@ export default function Footer() {
   return (
     <footer className="apple-footer">
       <div className="mx-auto max-w-6xl px-6 py-8 text-xs flex flex-wrap items-center gap-4">
-        <div className="font-medium text-[color:var(--foreground)]">
-          Functional Skills Focus
-        </div>
+        <div className="font-medium text-white">Functional Skills Focus</div>
         <span className="hidden sm:inline-block opacity-50">•</span>
         <Link className="transition" href="/legal/terms">
           Terms
