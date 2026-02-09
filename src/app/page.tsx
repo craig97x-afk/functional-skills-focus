@@ -22,6 +22,16 @@ export default async function HomePage() {
     access_override: boolean | null;
   };
 
+  type GuideRow = {
+    id: string;
+    title: string;
+    description: string | null;
+    type: "pdf" | "markdown" | "video";
+    price_cents: number;
+    currency: string;
+    cover_url: string | null;
+  };
+
   let profile: ProfileRow | null = null;
   let examsRaw:
     | {
@@ -38,17 +48,6 @@ export default async function HomePage() {
         back: string;
         tags: string | null;
         show_on_dashboard: boolean;
-      }[]
-    | null = null;
-  let guidesRaw:
-    | {
-        id: string;
-        title: string;
-        description: string | null;
-        type: "pdf" | "markdown" | "video";
-        price_cents: number;
-        currency: string;
-        cover_url: string | null;
       }[]
     | null = null;
 
@@ -83,7 +82,7 @@ export default async function HomePage() {
     .eq("is_published", true)
     .order("created_at", { ascending: false })
     .limit(6);
-  guidesRaw = guidesData as typeof guidesRaw;
+  const guides = (guidesData ?? []) as GuideRow[];
 
   const exams = (examsRaw ?? []) as {
     id: string;
@@ -100,15 +99,14 @@ export default async function HomePage() {
     show_on_dashboard: boolean;
   }[];
 
-  const shopItems =
-    guidesRaw?.map((guide) => ({
-      id: guide.id,
-      title: guide.title,
-      description: guide.description,
-      cover_url: guide.cover_url,
-      priceLabel: formatPrice(guide.price_cents, guide.currency),
-      type: guide.type,
-    })) ?? [];
+  const shopItems = guides.map((guide) => ({
+    id: guide.id,
+    title: guide.title,
+    description: guide.description,
+    cover_url: guide.cover_url,
+    priceLabel: formatPrice(guide.price_cents, guide.currency),
+    type: guide.type,
+  }));
 
   const profileSafe = profile as ProfileRow | null;
   const role = profileSafe?.role ?? (session ? "student" : "guest");
