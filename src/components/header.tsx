@@ -230,7 +230,7 @@ export default async function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden lg:flex items-center gap-2 flex-wrap justify-end">
+          <nav className="primary-nav hidden lg:flex items-center gap-2 flex-wrap justify-end">
             <div className="apple-nav-group">
               <button className={navItem} type="button">
                 Maths

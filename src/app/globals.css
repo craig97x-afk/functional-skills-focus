@@ -306,6 +306,22 @@ a {
     display: none;
   }
 
+  @media (max-width: 1023px) {
+    .primary-nav {
+      display: none !important;
+    }
+
+    .mobile-nav {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .mobile-nav {
+      display: none;
+    }
+  }
+
   .apple-switch {
     @apply inline-flex items-center justify-start transition;
     position: relative;
