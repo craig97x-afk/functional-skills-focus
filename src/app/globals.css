@@ -78,13 +78,13 @@ html[data-theme="dark"] body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 88px;
-  width: 88px;
+  height: 104px;
+  width: 104px;
 }
 
 .brand-mark-img {
-  height: 200px;
-  width: 200px;
+  height: 96px;
+  width: 96px;
   display: block;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
