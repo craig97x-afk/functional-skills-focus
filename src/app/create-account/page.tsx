@@ -11,6 +11,8 @@ export default function CreateAccountPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [guardianName, setGuardianName] = useState("");
+  const [guardianEmail, setGuardianEmail] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +20,30 @@ export default function CreateAccountPage() {
     "mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 " +
     "bg-[color:var(--surface-muted)] text-[color:var(--foreground)] border-[color:var(--border)]";
 
+  function getAge(dateString: string) {
+    if (!dateString) return null;
+    const birth = new Date(dateString);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age -= 1;
+    }
+    return age;
+  }
+
+  const age = getAge(dob);
+  const needsGuardian = age !== null && age < 16;
+
   async function signUp() {
     if (password !== confirm) {
       setMsg("Passwords do not match.");
+      return;
+    }
+
+    if (needsGuardian && (!guardianName || !guardianEmail)) {
+      setMsg("Parent/guardian name and email are required for under 16s.");
       return;
     }
 
@@ -32,7 +55,7 @@ export default function CreateAccountPage() {
         ? `${window.location.origin}/verify-email`
         : undefined;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -48,6 +71,43 @@ export default function CreateAccountPage() {
 
     if (error) {
       setMsg(error.message);
+      return;
+    }
+
+    if (needsGuardian) {
+      const studentId = data?.user?.id;
+      if (!studentId) {
+        setMsg(
+          "Account created, but guardian email could not be sent (missing student ID)."
+        );
+        return;
+      }
+      const response = await fetch("/api/guardian/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId,
+          studentName: fullName,
+          studentEmail: email,
+          guardianName,
+          guardianEmail,
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setMsg(
+          result?.error ??
+            "Account created, but guardian email could not be sent."
+        );
+        return;
+      }
+
+      setMsg(
+        result.emailed
+          ? "Account created. Guardian access code emailed. Check your email to verify, then sign in."
+          : `Account created. Guardian email not sent (email not configured). Code: ${result.code}`
+      );
       return;
     }
 
@@ -89,6 +149,34 @@ export default function CreateAccountPage() {
             type="date"
           />
         </label>
+
+        {needsGuardian && (
+          <div className="space-y-4 rounded-2xl border border-slate-200/40 bg-white/5 p-4">
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Parent/guardian (required under 16)
+            </div>
+            <label className="block">
+              <span className="text-sm text-slate-600">Parent/guardian name</span>
+              <input
+                className={fieldClass}
+                value={guardianName}
+                onChange={(e) => setGuardianName(e.target.value)}
+                type="text"
+                autoComplete="name"
+              />
+            </label>
+            <label className="block">
+              <span className="text-sm text-slate-600">Parent/guardian email</span>
+              <input
+                className={fieldClass}
+                value={guardianEmail}
+                onChange={(e) => setGuardianEmail(e.target.value)}
+                type="email"
+                autoComplete="email"
+              />
+            </label>
+          </div>
+        )}
 
         <label className="block">
           <span className="text-sm text-slate-600">Email</span>
