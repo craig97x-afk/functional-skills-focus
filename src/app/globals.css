@@ -83,8 +83,8 @@ html[data-theme="dark"] body::before {
 }
 
 .brand-mark-img {
-  height: 80px;
-  width: 80px;
+  height: 200px;
+  width: 200px;
   display: block;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
