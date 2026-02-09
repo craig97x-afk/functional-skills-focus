@@ -370,13 +370,13 @@ export default async function HomePage() {
             </Link>
           )}
         </section>
-      </div>
 
-      {shopItems.length > 0 && (
-        <div className="mt-10">
-          <ShopRotator items={shopItems} />
-        </div>
-      )}
+        {shopItems.length > 0 && (
+          <div className="lg:col-span-2">
+            <ShopRotator items={shopItems} />
+          </div>
+        )}
+      </div>
     </main>
   );
 }
