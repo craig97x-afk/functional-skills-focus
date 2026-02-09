@@ -10,16 +10,17 @@ export default function PrivacyPage() {
       <section className="space-y-2">
         <h2 className="font-semibold">1. What we collect</h2>
         <p>
-          We collect account information (email), learning progress (attempts, results), and subscription status.
-          Payments are processed by Stripe and we do not store full card details.
+          We collect account details (name, email, date of birth if provided), learning activity (attempts, progress,
+          notes, flashcards, exam countdowns), support messages, and subscription or purchase status. Payments are
+          processed by Stripe and we do not store full card details.
         </p>
       </section>
 
       <section className="space-y-2">
         <h2 className="font-semibold">2. How we use your data</h2>
         <p>
-          We use data to provide the service, personalise learning, show progress, manage subscriptions, and maintain
-          platform security.
+          We use data to provide the service, personalise learning, show progress, respond to support messages, manage
+          subscriptions and guide purchases, and maintain platform security.
         </p>
       </section>
 

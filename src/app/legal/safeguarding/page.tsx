@@ -19,7 +19,8 @@ export default function SafeguardingPage() {
         <h2 className="font-semibold">2. Under-18 learners</h2>
         <p>
           If a learner is under 18, we recommend a parent/guardian or centre monitors their use of the platform. We do
-          not provide 1:1 direct messaging features between learners and staff within the platform at this time.
+          provide a support messaging feature for learner questions. There is no public student-to-student chat, and
+          messages are intended for educational support.
         </p>
       </section>
 

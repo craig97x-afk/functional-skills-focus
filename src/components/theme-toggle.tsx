@@ -6,21 +6,14 @@ type ThemeMode = "light" | "dark";
 
 const STORAGE_KEY = "fsf-theme";
 
-function getSystemTheme(): ThemeMode {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<ThemeMode>("light");
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
-    const initial = stored ?? getSystemTheme();
+    const initial: ThemeMode = "light";
     setTheme(initial);
     document.documentElement.dataset.theme = initial;
+    window.localStorage.setItem(STORAGE_KEY, initial);
   }, []);
 
   useEffect(() => {

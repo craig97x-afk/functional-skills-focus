@@ -63,6 +63,10 @@ export default async function AdminPage() {
           <div className="font-semibold">Billing Audit</div>
           <div className="apple-subtle mt-1">Stripe status + resync tools.</div>
         </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/dev">
+          <div className="font-semibold">Dev Report</div>
+          <div className="apple-subtle mt-1">Build checks and runtime status.</div>
+        </Link>
       </div>
 
       <ThemeSettings

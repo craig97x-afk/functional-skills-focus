@@ -30,6 +30,10 @@ export default function TermsPage() {
           Subscription payments are handled by Stripe. Subscriptions renew automatically unless cancelled via the billing
           portal. Access to paid features may be restricted if your subscription is inactive.
         </p>
+        <p>
+          Guides and digital resources may be offered separately in the Shop. Access to paid guides is provided after
+          successful payment or if your subscription includes access.
+        </p>
       </section>
 
       <section className="space-y-2">
@@ -45,6 +49,10 @@ export default function TermsPage() {
         <p>
           You agree not to misuse the platform, attempt to access other users&apos; data, scrape content, or interfere
           with platform operation. We may suspend accounts for abuse.
+        </p>
+        <p>
+          Support messaging is provided for learner questions. Do not share sensitive personal information or use the
+          messaging feature for inappropriate content.
         </p>
       </section>
 

@@ -21,6 +21,10 @@ export default function RefundsPage() {
           Subscription fees are generally non-refundable once a billing period has started. If you believe you were
           charged in error, contact support promptly and we will review the situation.
         </p>
+        <p>
+          Digital guide purchases are typically non-refundable once access is granted, unless required by law or where
+          a payment error has occurred.
+        </p>
       </section>
 
       <section className="space-y-2">

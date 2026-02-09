@@ -34,7 +34,7 @@ export default async function RootLayout({
       : undefined;
 
   return (
-    <html lang="en" className="h-full" style={themeStyle}>
+    <html lang="en" className="h-full" style={themeStyle} data-theme="light">
       <body className="min-h-screen">
         <div className="min-h-screen flex flex-col">
           <Header />
