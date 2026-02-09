@@ -209,7 +209,7 @@ export default async function Header() {
   return (
     <header className="apple-header sticky top-0 z-50">
       <div className="mx-auto max-w-6xl px-6 py-0 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 text-lg font-semibold tracking-tight">
+        <Link href="/" className="brand-link text-lg font-semibold tracking-tight">
           <span className="brand-mark-wrap" aria-hidden="true">
             <img
               src="/brand/logo-mark.png"
@@ -217,7 +217,7 @@ export default async function Header() {
               className="brand-mark-img"
             />
           </span>
-          <span>Functional Skills Focus</span>
+          <span className="brand-link-text">Functional Skills Focus</span>
         </Link>
 
         <nav className="flex items-center gap-2 flex-wrap justify-end">

@@ -74,14 +74,30 @@ html[data-theme="dark"] body::before {
   opacity: 0.06;
 }
 
+.brand-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding-left: 108px;
+  min-height: 56px;
+}
+
+.brand-link-text {
+  display: block;
+}
+
 .brand-mark-wrap {
+  position: absolute;
+  left: 0;
+  top: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 96px;
   width: 96px;
   flex-shrink: 0;
-  margin-top: 8px;
+  transform: translateY(-35%);
 }
 
 .brand-mark-img {
