@@ -1,6 +1,16 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import ShopRotator from "@/components/shop-rotator";
+
+function formatPrice(priceCents: number, currency: string) {
+  if (!priceCents) return "Free";
+  const formatter = new Intl.NumberFormat("en-GB", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  });
+  return formatter.format(priceCents / 100);
+}
 
 export default async function HomePage() {
   const session = await getUser();
@@ -30,6 +40,17 @@ export default async function HomePage() {
         show_on_dashboard: boolean;
       }[]
     | null = null;
+  let guidesRaw:
+    | {
+        id: string;
+        title: string;
+        description: string | null;
+        type: "pdf" | "markdown" | "video";
+        price_cents: number;
+        currency: string;
+        cover_url: string | null;
+      }[]
+    | null = null;
 
   if (session) {
     const { data: profileData } = await supabase
@@ -56,6 +77,14 @@ export default async function HomePage() {
     flashcardsRaw = flashcardsData as typeof flashcardsRaw;
   }
 
+  const { data: guidesData } = await supabase
+    .from("guides")
+    .select("id, title, description, type, price_cents, currency, cover_url")
+    .eq("is_published", true)
+    .order("created_at", { ascending: false })
+    .limit(6);
+  guidesRaw = guidesData as typeof guidesRaw;
+
   const exams = (examsRaw ?? []) as {
     id: string;
     exam_name: string;
@@ -70,6 +99,16 @@ export default async function HomePage() {
     tags: string | null;
     show_on_dashboard: boolean;
   }[];
+
+  const shopItems =
+    guidesRaw?.map((guide) => ({
+      id: guide.id,
+      title: guide.title,
+      description: guide.description,
+      cover_url: guide.cover_url,
+      priceLabel: formatPrice(guide.price_cents, guide.currency),
+      type: guide.type,
+    })) ?? [];
 
   const profileSafe = profile as ProfileRow | null;
   const role = profileSafe?.role ?? (session ? "student" : "guest");
@@ -334,6 +373,12 @@ export default async function HomePage() {
           )}
         </section>
       </div>
+
+      {shopItems.length > 0 && (
+        <div className="mt-10">
+          <ShopRotator items={shopItems} />
+        </div>
+      )}
     </main>
   );
 }
