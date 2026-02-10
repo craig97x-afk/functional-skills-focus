@@ -39,6 +39,10 @@ export default async function AdminPage() {
           <div className="font-semibold">Manage Workbooks</div>
           <div className="apple-subtle mt-1">Upload files and thumbnails.</div>
         </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/resources">
+          <div className="font-semibold">Manage Resources</div>
+          <div className="apple-subtle mt-1">Exam mocks and question sets.</div>
+        </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/widgets">
           <div className="font-semibold">Widget Gallery</div>
           <div className="apple-subtle mt-1">Preview lesson visuals and templates.</div>

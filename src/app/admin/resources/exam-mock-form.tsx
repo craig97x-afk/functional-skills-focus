@@ -1,0 +1,186 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+const levelOptions = [
+  { value: "entry-1", label: "Entry Level 1" },
+  { value: "entry-2", label: "Entry Level 2" },
+  { value: "entry-3", label: "Entry Level 3" },
+  { value: "fs-1", label: "Functional Skills Level 1" },
+  { value: "fs-2", label: "Functional Skills Level 2" },
+];
+
+export default function ExamMockForm() {
+  const supabase = useMemo(() => createClient(), []);
+  const [subject, setSubject] = useState("maths");
+  const [levelSlug, setLevelSlug] = useState("entry-3");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [cover, setCover] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [published, setPublished] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function createMock() {
+    setLoading(true);
+    setMsg(null);
+
+    if (!title.trim()) {
+      setMsg("Add a title.");
+      setLoading(false);
+      return;
+    }
+
+    let coverUrl: string | null = null;
+    let filePath: string | null = null;
+    let fileUrl: string | null = null;
+
+    if (cover) {
+      const safeName = cover.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `exam-mocks/covers/${Date.now()}-${safeName}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("exam-mocks")
+        .upload(path, cover, { upsert: false });
+
+      if (uploadErr) {
+        setMsg(uploadErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const { data: publicUrl } = supabase.storage
+        .from("exam-mocks")
+        .getPublicUrl(path);
+      coverUrl = publicUrl.publicUrl;
+    }
+
+    if (file) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `exam-mocks/files/${Date.now()}-${safeName}`;
+      const { error: uploadErr } = await supabase.storage
+        .from("exam-mocks")
+        .upload(path, file, { upsert: false });
+
+      if (uploadErr) {
+        setMsg(uploadErr.message);
+        setLoading(false);
+        return;
+      }
+
+      const { data: publicUrl } = supabase.storage
+        .from("exam-mocks")
+        .getPublicUrl(path);
+      filePath = path;
+      fileUrl = publicUrl.publicUrl;
+    }
+
+    const { error } = await supabase.from("exam_mocks").insert({
+      subject,
+      level_slug: levelSlug,
+      title: title.trim(),
+      description: description || null,
+      cover_url: coverUrl,
+      file_path: filePath,
+      file_url: fileUrl,
+      is_published: published,
+    });
+
+    setLoading(false);
+    setMsg(error ? error.message : "Exam mock created. Refreshing...");
+    if (!error) window.location.reload();
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Subject</span>
+          <select
+            className="mt-1 w-full rounded-md border p-2"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          >
+            <option value="maths">Maths</option>
+            <option value="english">English</option>
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-sm">Level</span>
+          <select
+            className="mt-1 w-full rounded-md border p-2"
+            value={levelSlug}
+            onChange={(e) => setLevelSlug(e.target.value)}
+          >
+            {levelOptions.map((level) => (
+              <option key={level.value} value={level.value}>
+                {level.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <label className="block">
+        <span className="text-sm">Title</span>
+        <input
+          className="mt-1 w-full rounded-md border p-2"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Mock paper title"
+        />
+      </label>
+
+      <label className="block">
+        <span className="text-sm">Description</span>
+        <textarea
+          className="mt-1 w-full rounded-md border p-2 min-h-[100px]"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Short summary of the mock paper."
+        />
+      </label>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Cover image</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setCover(e.target.files?.[0] ?? null)}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Mock file (PDF or Word)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="file"
+            accept="application/pdf,.pdf,application/msword,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+      </div>
+
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={published}
+          onChange={(e) => setPublished(e.target.checked)}
+        />
+        <span className="text-sm">Published</span>
+      </label>
+
+      <button
+        className="rounded-md border px-3 py-2"
+        onClick={createMock}
+        disabled={loading || !title.trim()}
+      >
+        {loading ? "Saving..." : "Create exam mock"}
+      </button>
+
+      {msg && <p className="text-sm">{msg}</p>}
+    </div>
+  );
+}
