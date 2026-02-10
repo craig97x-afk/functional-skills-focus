@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 export default function CreateAccountPage() {
   const supabase = createClient();
-  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [dob, setDob] = useState("");
   const [email, setEmail] = useState("");
@@ -114,22 +112,12 @@ export default function CreateAccountPage() {
         : `Guardian email not sent (email not configured). Code: ${result.code}`;
     }
 
-    // Attempt auto-login if session is available (or email confirmation is off).
-    let session = data?.session ?? null;
-    if (!session) {
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({ email, password });
-      if (!signInError) {
-        session = signInData.session;
-      }
+    // Require verification before sign-in; clear any auto session from signUp.
+    if (data?.session) {
+      await supabase.auth.signOut();
     }
 
     setLoading(false);
-
-    if (session) {
-      router.push("/");
-      return;
-    }
 
     if (needsGuardian && guardianNotice) {
       setMsg(

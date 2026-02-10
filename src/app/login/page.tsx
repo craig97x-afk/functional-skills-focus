@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [linkLoading, setLinkLoading] = useState(false);
 
   const fieldClass =
     "mt-1 w-full rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 " +
@@ -29,6 +30,28 @@ export default function LoginPage() {
     }
 
     window.location.href = "/";
+  }
+
+  async function sendMagicLink() {
+    setLinkLoading(true);
+    setMsg(null);
+
+    const redirectTo =
+      typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectTo },
+    });
+
+    setLinkLoading(false);
+
+    if (error) {
+      setMsg(error.message);
+      return;
+    }
+
+    setMsg("Magic link sent. Check your email to sign in.");
   }
 
   return (
@@ -93,8 +116,23 @@ export default function LoginPage() {
             <Link href="/forgot-password" className="text-sm text-slate-600 hover:text-slate-900">
               Forgot password?
             </Link>
+
+            <Link href="/guardian" className="text-sm text-slate-600 hover:text-slate-900">
+              Guardian access
+            </Link>
           </div>
         </form>
+
+        <div className="border-t border-[color:var(--border)] pt-5">
+          <div className="text-sm text-slate-600">Or sign in with a magic link</div>
+          <button
+            className="apple-pill mt-3"
+            onClick={sendMagicLink}
+            disabled={linkLoading || !email}
+          >
+            {linkLoading ? "Sending..." : "Send magic link"}
+          </button>
+        </div>
 
         {msg && <p className="text-sm text-slate-600">{msg}</p>}
 
