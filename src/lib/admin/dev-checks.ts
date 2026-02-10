@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CheckItem, DevCheckResult } from "@/lib/admin/dev-checks-types";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 async function checkTable(
   supabase: SupabaseClient,
@@ -111,21 +112,38 @@ export async function runDevChecks(
     contentTables.map((table) => checkContentTable(supabase, table))
   );
 
-  const { data: guidesBucket, error: guidesBucketError } =
-    await supabase.storage.getBucket("guides");
-  const { data: workbooksBucket, error: workbooksBucketError } =
-    await supabase.storage.getBucket("workbooks");
+  const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+  const storageClient = hasServiceKey ? createAdminClient() : supabase;
+  const { data: buckets, error: bucketsError } =
+    await storageClient.storage.listBuckets();
+  const bucketNames = new Set(
+    (buckets ?? []).map((bucket) => bucket.id ?? bucket.name)
+  );
+  const bucketsErrorDetail =
+    bucketsError?.message ?? (!hasServiceKey ? "Requires service role key" : undefined);
 
   const storageChecks: CheckItem[] = [
     {
       label: "storage: guides bucket",
-      status: guidesBucketError || !guidesBucket ? "warn" : "ok",
-      detail: guidesBucketError?.message,
+      status: bucketsError
+        ? "warn"
+        : bucketNames.has("guides")
+          ? "ok"
+          : "warn",
+      detail:
+        bucketsErrorDetail ??
+        (bucketNames.has("guides") ? undefined : "Missing"),
     },
     {
       label: "storage: workbooks bucket",
-      status: workbooksBucketError || !workbooksBucket ? "warn" : "ok",
-      detail: workbooksBucketError?.message,
+      status: bucketsError
+        ? "warn"
+        : bucketNames.has("workbooks")
+          ? "ok"
+          : "warn",
+      detail:
+        bucketsErrorDetail ??
+        (bucketNames.has("workbooks") ? undefined : "Missing"),
     },
   ];
 

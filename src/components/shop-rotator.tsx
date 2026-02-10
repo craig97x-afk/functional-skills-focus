@@ -66,7 +66,7 @@ export default function ShopRotator({
             )}
             <div className="flex flex-wrap items-center gap-3">
               <span className="apple-pill">{item.priceLabel}</span>
-              <Link className="apple-button" href={`/guides/${item.id}`}>
+              <Link className="apple-button text-white" href={`/guides/${item.id}`}>
                 View guide
               </Link>
             </div>

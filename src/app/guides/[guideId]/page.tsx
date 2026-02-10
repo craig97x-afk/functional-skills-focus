@@ -109,7 +109,7 @@ export default async function GuideDetailPage({
           {session ? (
             <form action="/api/stripe/guide-checkout" method="post">
               <input type="hidden" name="guideId" value={guide.id} />
-              <button className="apple-button" type="submit">
+              <button className="apple-button text-white" type="submit">
                 Buy for {priceLabel}
               </button>
             </form>
@@ -133,7 +133,7 @@ export default async function GuideDetailPage({
 
           {guide.type === "pdf" && resolvedFileUrl && (
             <div className="space-y-3">
-              <a className="apple-button" href={resolvedFileUrl} target="_blank">
+              <a className="apple-button text-white" href={resolvedFileUrl} target="_blank">
                 Download PDF
               </a>
               <iframe
@@ -146,7 +146,7 @@ export default async function GuideDetailPage({
 
           {guide.type === "video" && resolvedFileUrl && (
             <div className="space-y-3">
-              <a className="apple-button" href={resolvedFileUrl} target="_blank">
+              <a className="apple-button text-white" href={resolvedFileUrl} target="_blank">
                 Open video
               </a>
               <video

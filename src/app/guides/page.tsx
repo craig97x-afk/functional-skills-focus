@@ -100,13 +100,13 @@ export default async function GuidesPage() {
 
               <div>
                 {hasAccess ? (
-                  <Link className="apple-button" href={`/guides/${guide.id}`}>
+                  <Link className="apple-button text-white" href={`/guides/${guide.id}`}>
                     Open guide
                   </Link>
                 ) : session ? (
                   <form action="/api/stripe/guide-checkout" method="post">
                     <input type="hidden" name="guideId" value={guide.id} />
-                    <button className="apple-button" type="submit">
+                    <button className="apple-button text-white" type="submit">
                       Buy for {priceLabel}
                     </button>
                   </form>

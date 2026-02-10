@@ -16,3 +16,9 @@ Template
 - Change summary: Fixed mobile nav close behavior, improved shop text contrast, and relaxed login spacing.
 - Impact: Mobile menu no longer sticks; shop buttons/labels readable in dark mode; sign-in form has more breathing room.
 - Follow-ups: Verify mobile nav close on all routes and shop readability on both themes.
+
+- Date: 2026-02-10
+- Version/Commit: pending
+- Change summary: Forced shop guide buttons to render white text and improved storage bucket checks.
+- Impact: Shop CTAs stay readable across themes; dev checks correctly validate buckets when service role key is present.
+- Follow-ups: Confirm bucket warnings clear in the Dev checks after redeploy.
