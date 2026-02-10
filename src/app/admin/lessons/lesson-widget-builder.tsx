@@ -7,6 +7,7 @@ type Props = {
   onInsert: (nextBody: string) => void;
 };
 
+// Build the markdown widget fence expected by lesson renderer.
 function buildWidgetBlock(lines: string[]) {
   const block = ["```widget", ...lines, "```"].join("\n");
   return block;
@@ -77,6 +78,7 @@ export default function LessonWidgetBuilder({ body, onInsert }: Props) {
   const [shapeHeight, setShapeHeight] = useState("90");
 
   function insertWidget() {
+    // Map UI inputs -> widget config lines.
     let lines: string[] = [];
 
     if (type === "clock") {

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function getUser() {
   const supabase = await createClient();
 
+  // Server-side auth fetch for session + profile (used in layout/pages).
   const {
     data: { user },
   } = await supabase.auth.getUser();

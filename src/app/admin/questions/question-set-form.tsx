@@ -28,6 +28,7 @@ export default function QuestionSetForm() {
   const [loading, setLoading] = useState(false);
 
   async function createSet() {
+    // Upload optional assets first, then save metadata in question_sets.
     setLoading(true);
     setMsg(null);
 
@@ -41,6 +42,7 @@ export default function QuestionSetForm() {
     let finalResourceUrl: string | null = resourceUrl.trim() || null;
 
     if (cover) {
+      // Store cover in exam-mocks bucket and keep public URL only.
       const safeName = cover.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `exam-mocks/question-set-covers/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage
@@ -60,6 +62,7 @@ export default function QuestionSetForm() {
     }
 
     if (resourceFile) {
+      // Optional CSV/JSON upload for admins who want file-based sets.
       const safeName = resourceFile.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `exam-mocks/question-sets/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage

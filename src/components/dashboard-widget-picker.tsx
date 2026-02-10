@@ -37,6 +37,7 @@ export default function DashboardWidgetPicker({
 
   async function save() {
     setSaving(true);
+    // Persist one row per widget so toggles are user-specific.
     const rows = options.map((opt) => ({
       user_id: userId,
       widget_key: opt.key,

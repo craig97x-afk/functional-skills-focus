@@ -22,20 +22,6 @@ export default async function MathsLevelsPage() {
         <p className="apple-subtle">
           Levels are organised into topic categories so you can find the right material quickly.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-            href="/maths/levels/resources"
-          >
-            Resources
-          </Link>
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href="/maths/levels"
-          >
-            Levels
-          </Link>
-        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,6 +39,17 @@ export default async function MathsLevelsPage() {
             </div>
           </Link>
         ))}
+        <Link
+          href="/maths/levels/resources"
+          className="apple-card p-5 hover:shadow-md transition"
+        >
+          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Resources</div>
+          <div className="text-lg font-semibold mt-2">Exam mocks & question sets</div>
+          <div className="apple-subtle mt-2">Free mocks and printable packs.</div>
+          <div className="mt-3 inline-flex rounded-full border px-3 py-1 text-xs text-[color:var(--muted-foreground)]">
+            Available
+          </div>
+        </Link>
       </section>
     </main>
   );

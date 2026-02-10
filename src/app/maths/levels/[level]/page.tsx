@@ -205,8 +205,6 @@ export default async function MathsLevelDetailPage({
       summary: "We’re preparing content for this level. Check back soon.",
       comingSoon: true,
     } as const);
-  const basePath = `/maths/levels/${levelKey}`;
-
   return (
     <main className="space-y-8">
       <div className="space-y-3">
@@ -216,20 +214,6 @@ export default async function MathsLevelDetailPage({
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Maths</div>
         <h1 className="text-3xl font-semibold tracking-tight">{level.title}</h1>
         <p className="apple-subtle">{level.summary}</p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href={basePath}
-          >
-            Workbooks
-          </Link>
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-            href={`${basePath}/resources`}
-          >
-            Resources
-          </Link>
-        </div>
       </div>
 
       {level.comingSoon ? (

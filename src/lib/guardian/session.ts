@@ -8,6 +8,7 @@ export async function getGuardianSession() {
   const sessionId = cookieStore.get(COOKIE_NAME)?.value;
   if (!sessionId) return null;
 
+  // Admin client so guardians can read limited student data without auth user.
   const supabase = createAdminClient();
   const { data: session, error } = await supabase
     .from("guardian_sessions")
@@ -16,6 +17,7 @@ export async function getGuardianSession() {
     .maybeSingle();
 
   if (error || !session) return null;
+  // Hard expiry guardrail for guardian access.
   if (new Date(session.expires_at) < new Date()) return null;
 
   const { data: link } = await supabase

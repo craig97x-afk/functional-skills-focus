@@ -24,20 +24,6 @@ export default async function EnglishResourcesLevelsPage() {
         <p className="apple-subtle">
           Exam mocks, reading packs, and question resources organised by level.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href="/english/levels/resources"
-          >
-            Resources
-          </Link>
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-            href="/english/levels"
-          >
-            Levels
-          </Link>
-        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -13,6 +13,7 @@ const chartColors = [
 const chartGridColor = "rgba(148, 163, 184, 0.25)";
 const chartAxisColor = "rgba(148, 163, 184, 0.65)";
 
+// Parses the simple key:value lines from ```widget markdown blocks.
 function parseWidget(value: string): WidgetConfig {
   const config: WidgetConfig = {};
   value
@@ -40,6 +41,7 @@ function toBoolean(value: string | undefined, fallback: boolean) {
   return fallback;
 }
 
+// Shared parsing helpers for widget data strings (e.g. "A=3, B=5").
 function parseDataPairs(data: string): { label: string; value: number }[] {
   return data
     .split(",")

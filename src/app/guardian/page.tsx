@@ -18,6 +18,7 @@ export default function GuardianLoginPage() {
     setLoading(true);
     setMsg(null);
 
+    // Guardian login is name + access code; session cookie is set server-side.
     const res = await fetch("/api/guardian/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

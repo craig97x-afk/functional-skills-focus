@@ -12,6 +12,7 @@ export default function GuardianLogoutButton() {
       disabled={isPending}
       onClick={() =>
         startTransition(async () => {
+          // Clear guardian session cookie server-side, then return to login.
           await fetch("/api/guardian/logout", { method: "POST" });
           window.location.href = "/guardian";
         })

@@ -36,6 +36,7 @@ export default function CreateAccountPage() {
   }
 
   const age = getAge(dob);
+  // Under-16 signups require guardian details and access code flow.
   const needsGuardian = age !== null && age < 16;
 
   async function signUp() {
@@ -77,6 +78,7 @@ export default function CreateAccountPage() {
     }
 
     if (needsGuardian) {
+      // Create guardian link + email code after student signup succeeds.
       const studentId = data?.user?.id;
       if (!studentId) {
         setLoading(false);

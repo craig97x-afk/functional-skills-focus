@@ -6,9 +6,11 @@ export default async function GuardianDashboardPage() {
   const session = await getGuardianSession();
   if (!session) redirect("/guardian");
 
+  // Admin client for read-only guardian reporting (no student auth required).
   const supabase = createAdminClient();
   const studentId = session.link.student_id;
 
+  // Aggregate practice attempts for basic accuracy stats.
   const { data: attempts } = await supabase
     .from("practice_attempts")
     .select("is_correct")
@@ -25,6 +27,7 @@ export default async function GuardianDashboardPage() {
   start.setDate(today.getDate() - 6);
   const startDate = start.toISOString().slice(0, 10);
 
+  // Last 7 days activity minutes for time-on-task.
   const { data: minutesRows } = await supabase
     .from("user_activity_minutes")
     .select("activity_date, minutes")
@@ -34,6 +37,7 @@ export default async function GuardianDashboardPage() {
   const totalMinutes =
     minutesRows?.reduce((sum, row) => sum + (row.minutes ?? 0), 0) ?? 0;
 
+  // Lesson view history -> distinct topics read.
   const { data: views } = await supabase
     .from("lesson_views")
     .select("lesson_id, lessons (id, title, topic_id, topics (id, title))")

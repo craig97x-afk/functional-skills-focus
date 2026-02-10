@@ -236,9 +236,6 @@ export default async function Header() {
                 Maths
               </button>
             <div className="apple-nav-menu">
-              <Link className="apple-nav-menu-item" href="/maths/levels/resources">
-                Resources
-              </Link>
               <Link className="apple-nav-menu-item" href="/maths/levels">
                 Levels
               </Link>
@@ -260,9 +257,6 @@ export default async function Header() {
               English
             </button>
             <div className="apple-nav-menu">
-              <Link className="apple-nav-menu-item" href="/english/levels/resources">
-                Resources
-              </Link>
               <Link className="apple-nav-menu-item" href="/english/levels">
                 Levels
               </Link>
@@ -492,9 +486,6 @@ export default async function Header() {
                 <details className="mobile-nav-group">
                   <summary className="apple-nav-menu-item cursor-pointer">Maths</summary>
                   <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/maths/levels/resources">
-                      Resources
-                    </Link>
                     <Link className="apple-nav-menu-item" href="/maths/levels">
                       Levels
                     </Link>
@@ -513,9 +504,6 @@ export default async function Header() {
                 <details className="mobile-nav-group">
                   <summary className="apple-nav-menu-item cursor-pointer">English</summary>
                   <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/english/levels/resources">
-                      Resources
-                    </Link>
                     <Link className="apple-nav-menu-item" href="/english/levels">
                       Levels
                     </Link>

@@ -18,6 +18,7 @@ export async function sendGuardianInvite({
   const from = process.env.RESEND_FROM;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL;
 
+  // Guard against missing email config in dev/staging.
   if (!apiKey || !from) {
     return {
       sent: false,
@@ -25,6 +26,7 @@ export async function sendGuardianInvite({
     };
   }
 
+  // Normalize site URL so links work in both local and prod.
   const guardianUrl = siteUrl
     ? `${siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`}/guardian`
     : undefined;
@@ -32,6 +34,7 @@ export async function sendGuardianInvite({
   const subject = "Functional Skills Focus – Guardian access code";
   const body = `Hi ${guardianName},\n\nYou have been granted guardian access for ${studentName}.\n\nYour access code: ${code}\n\nUse this code with the student's full name to view progress.${guardianUrl ? `\n\nOpen the guardian portal: ${guardianUrl}` : ""}\n\nIf you did not request this, you can ignore this email.`;
 
+  // Send via Resend API.
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {

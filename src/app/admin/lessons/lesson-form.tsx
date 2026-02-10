@@ -81,6 +81,7 @@ export default function LessonForm({ topics }: { topics: Topic[] }) {
         />
       </label>
 
+      {/* Helpers insert structured blocks into the markdown body. */}
       <LessonSectionBuilder body={body} onInsert={setBody} />
       <LessonWidgetBuilder body={body} onInsert={setBody} />
 

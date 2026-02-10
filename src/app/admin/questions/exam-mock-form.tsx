@@ -24,6 +24,7 @@ export default function ExamMockForm() {
   const [loading, setLoading] = useState(false);
 
   async function createMock() {
+    // Upload assets first so we can store public URLs in exam_mocks.
     setLoading(true);
     setMsg(null);
 
@@ -38,6 +39,7 @@ export default function ExamMockForm() {
     let fileUrl: string | null = null;
 
     if (cover) {
+      // Cover images live in storage; only the public URL is saved.
       const safeName = cover.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `exam-mocks/covers/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage
@@ -57,6 +59,7 @@ export default function ExamMockForm() {
     }
 
     if (file) {
+      // Store the mock PDF/DOC in storage for download.
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `exam-mocks/files/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage

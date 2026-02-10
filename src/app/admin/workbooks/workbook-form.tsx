@@ -142,6 +142,7 @@ export default function WorkbookForm() {
   const [loading, setLoading] = useState(false);
 
   async function createWorkbook() {
+    // Upload assets first so workbook rows point to public storage URLs.
     setLoading(true);
     setMsg(null);
 
@@ -157,6 +158,7 @@ export default function WorkbookForm() {
     let fileUrl: string | null = null;
 
     if (thumbnail) {
+      // Thumbnail stored in workbooks bucket and surfaced in the UI.
       const safeName = thumbnail.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `workbooks/thumbnails/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage
@@ -177,6 +179,7 @@ export default function WorkbookForm() {
     }
 
     if (file) {
+      // Optional workbook file for download/preview.
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
       const path = `workbooks/files/${Date.now()}-${safeName}`;
       const { error: uploadErr } = await supabase.storage

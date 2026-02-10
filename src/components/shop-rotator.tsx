@@ -22,6 +22,7 @@ export default function ShopRotator({
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // Auto-advance the hero every intervalMs to cycle featured products.
     if (items.length <= 1) return;
     const timer = setInterval(() => {
       setIndex((current) => (current + 1) % items.length);

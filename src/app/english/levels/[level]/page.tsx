@@ -17,8 +17,6 @@ export default async function EnglishLevelDetailPage({
 }) {
   const { level } = await params;
   const title = levelLabels[level] ?? "English Level";
-  const basePath = `/english/levels/${level}`;
-
   return (
     <main className="space-y-8">
       <div className="space-y-3">
@@ -31,20 +29,6 @@ export default async function EnglishLevelDetailPage({
           English content is being built. This level will include reading, writing, and
           communication tasks.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href={basePath}
-          >
-            Workbooks
-          </Link>
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-            href={`${basePath}/resources`}
-          >
-            Resources
-          </Link>
-        </div>
       </div>
 
       <section className="apple-card p-6 space-y-3">

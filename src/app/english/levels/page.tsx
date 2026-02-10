@@ -22,20 +22,6 @@ export default async function EnglishLevelsPage() {
         <p className="apple-subtle">
           English content is being prepared. Choose a level to see what’s coming next.
         </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-            href="/english/levels/resources"
-          >
-            Resources
-          </Link>
-          <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href="/english/levels"
-          >
-            Levels
-          </Link>
-        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -50,6 +36,14 @@ export default async function EnglishLevelsPage() {
             <div className="apple-subtle mt-2">Coming soon</div>
           </Link>
         ))}
+        <Link
+          href="/english/levels/resources"
+          className="apple-card p-5 hover:shadow-md transition"
+        >
+          <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Resources</div>
+          <div className="text-lg font-semibold mt-2">Exam mocks & question sets</div>
+          <div className="apple-subtle mt-2">Printable papers and reading packs.</div>
+        </Link>
       </section>
     </main>
   );

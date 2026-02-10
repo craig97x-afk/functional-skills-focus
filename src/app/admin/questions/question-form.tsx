@@ -47,6 +47,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
   const topicLessons = lessons.filter((l) => l.topic_id === topicId);
 
   async function createQuestion() {
+    // Insert base question first, then add options/short-answer details.
     setLoading(true);
     setMsg(null);
 
@@ -71,6 +72,7 @@ export default function QuestionForm({ topics, lessons }: { topics: Topic[]; les
     }
 
     if (type === "mcq") {
+      // Filter out empty options before inserting.
       const opts = [optA, optB, optC, optD]
         .map((label, i) => ({
           question_id: q.id,

@@ -146,6 +146,7 @@ export default async function HomePage() {
   const widgetPrefs = (widgetPrefsRaw ?? []) as WidgetPrefRow[];
   const recentAchievement = recentAchievementsRaw?.[0] ?? null;
 
+  // Flatten guide rows into the rotator-friendly shape.
   const shopItems = guides.map((guide) => ({
     id: guide.id,
     title: guide.title,
@@ -155,6 +156,7 @@ export default async function HomePage() {
     type: guide.type,
   }));
 
+  // Widget registry for the dashboard picker UI.
   const widgetOptions = [
     { key: "account", label: "Account" },
     { key: "quick_actions", label: "Quick actions" },
@@ -166,6 +168,7 @@ export default async function HomePage() {
   ];
 
   const defaultWidgetKeys = widgetOptions.map((opt) => opt.key);
+  // If user hasn't customized widgets, show all defaults.
   const enabledWidgetKeys = new Set(
     widgetPrefs.length
       ? widgetPrefs

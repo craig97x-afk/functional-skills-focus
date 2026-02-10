@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing guardian details." }, { status: 400 });
     }
 
+    // Admin client needed to validate the student identity and write guardian link.
     const supabase = createAdminClient();
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
       studentId
@@ -25,12 +26,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Student not found." }, { status: 404 });
     }
 
+    // Extra safety: guardian access must match the student's actual auth email.
     const emailMatches =
       userData.user.email?.toLowerCase() === studentEmail.toLowerCase();
     if (!emailMatches) {
       return NextResponse.json({ error: "Student email mismatch." }, { status: 400 });
     }
 
+    // Store only the hash; raw code is only ever sent to the guardian.
     const code = generateGuardianCode();
     const codeHash = hashGuardianCode(code);
     const last4 = code.slice(-4);
@@ -62,6 +65,7 @@ export async function POST(req: Request) {
       code,
     });
 
+    // Only return the code if we couldn't send email (dev fallback).
     return NextResponse.json({
       ok: true,
       emailed: emailResult.sent,

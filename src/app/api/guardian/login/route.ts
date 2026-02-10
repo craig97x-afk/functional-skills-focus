@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
+    // Hash incoming code so we can match against stored hashes.
     const hashed = hashGuardianCode(code.trim());
 
     const { data: links, error } = await supabase
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid code." }, { status: 401 });
     }
 
+    // Require full name match to reduce accidental access collisions.
     const match = links.find((link) =>
       link.student_name.toLowerCase().trim() === studentName.toLowerCase().trim()
     );
@@ -55,6 +57,7 @@ export async function POST(req: Request) {
     }
 
     const res = NextResponse.json({ ok: true });
+    // Guardian session is a separate cookie scoped to /guardian.
     res.cookies.set({
       name: COOKIE_NAME,
       value: sessionRow.id,
