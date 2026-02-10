@@ -8,10 +8,11 @@ Template
 - Change summary:
 - Impact:
 - Follow-ups:
+ 
+ --------------------
 
-Example
 - Date: 2026-02-10
-- Version/Commit: abc1234
-- Change summary: Added guardian access flow and email notifications.
-- Impact: Guardians can view progress reports.
-- Follow-ups: Confirm deliverability on production domain.
+- Version/Commit: pending
+- Change summary: Fixed mobile nav close behavior, improved shop text contrast, and relaxed login spacing.
+- Impact: Mobile menu no longer sticks; shop buttons/labels readable in dark mode; sign-in form has more breathing room.
+- Follow-ups: Verify mobile nav close on all routes and shop readability on both themes.

@@ -59,7 +59,7 @@ export default async function GuidesPage() {
   return (
     <main className="space-y-10">
       <div className="max-w-3xl">
-        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+        <div className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
           Shop
         </div>
         <h1 className="text-3xl font-semibold tracking-tight mt-2">Shop</h1>
@@ -81,7 +81,7 @@ export default async function GuidesPage() {
             <div key={guide.id} className="apple-card p-6 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-400">
+                  <div className="text-sm uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
                     {guide.type}
                   </div>
                   <h2 className="text-xl font-semibold mt-2">{guide.title}</h2>
@@ -93,7 +93,7 @@ export default async function GuidesPage() {
               </div>
 
               {isSubscriber && guide.price_cents > 0 && (
-                <div className="text-xs text-slate-500">
+                <div className="text-xs text-[color:var(--muted-foreground)]">
                   Included with subscription.
                 </div>
               )}
@@ -121,7 +121,7 @@ export default async function GuidesPage() {
         })}
 
         {(!guides || guides.length === 0) && (
-          <div className="text-sm text-slate-500">
+          <div className="text-sm text-[color:var(--muted-foreground)]">
             No guides available yet. Check back soon.
           </div>
         )}

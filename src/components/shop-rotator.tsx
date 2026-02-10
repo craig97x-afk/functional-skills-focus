@@ -36,7 +36,7 @@ export default function ShopRotator({
 
   return (
     <section className="shop-rotator apple-card p-6">
-      <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+      <div className="text-xs uppercase tracking-[0.24em] text-[color:var(--muted-foreground)]">
         Shop highlights
       </div>
       <div key={item.id} className="shop-rotator-slide mt-4">
@@ -54,7 +54,7 @@ export default function ShopRotator({
           </div>
           <div className="space-y-3">
             {item.type && (
-              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
                 {item.type}
               </div>
             )}

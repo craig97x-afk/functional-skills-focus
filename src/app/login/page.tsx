@@ -55,8 +55,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto max-w-lg px-6 py-12">
-      <section className="apple-card p-8 space-y-6">
+    <main className="mx-auto max-w-lg px-6 py-14">
+      <section className="apple-card p-8 space-y-7">
         <div>
           <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
             Account
@@ -67,7 +67,7 @@ export default function LoginPage() {
         </div>
 
         <form
-          className="space-y-6"
+          className="space-y-7"
           onSubmit={(event) => {
             event.preventDefault();
             if (!loading) {

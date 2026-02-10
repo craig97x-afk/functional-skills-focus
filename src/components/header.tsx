@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 import ThemeToggle from "@/components/theme-toggle";
 import GuardianLogoutButton from "@/components/guardian-logout-button";
+import MobileNav from "@/components/mobile-nav";
 
 export default async function Header() {
   const cookieStore = await cookies();
@@ -214,6 +215,9 @@ export default async function Header() {
     "relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] transition hover:bg-[color:var(--surface-muted)]";
   const badgeClass =
     "absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-[color:var(--accent)] px-1 text-[10px] font-semibold text-white flex items-center justify-center";
+  const isLoggedIn = Boolean(session);
+  const isAdmin = session?.profile?.role === "admin";
+  const showPricing = Boolean(session && session.profile?.role !== "admin");
 
   return (
     <header className="apple-header sticky top-0 z-50">
@@ -462,144 +466,17 @@ export default async function Header() {
           <ThemeToggle />
           </nav>
 
-          <details className="relative lg:hidden mobile-nav">
-            <summary className={iconButton} aria-label="Open menu">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </summary>
-            <div className="absolute right-0 mt-3 w-[min(90vw,320px)] rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 shadow-xl text-[color:var(--foreground)]">
-              <div className="text-xs uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                Menu
-              </div>
-              <div className="mt-3 flex flex-col gap-2">
-                <Link className="apple-nav-menu-item" href="/">
-                  Dashboard
-                </Link>
-
-                <details className="mobile-nav-group">
-                  <summary className="apple-nav-menu-item cursor-pointer">Maths</summary>
-                  <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/maths/levels">
-                      Levels
-                    </Link>
-                    {levelLinks.map((level) => (
-                      <Link
-                        key={`mobile-maths-${level.slug}`}
-                        className="apple-nav-menu-item"
-                        href={`/maths/levels/${level.slug}`}
-                      >
-                        {level.label}
-                      </Link>
-                    ))}
-                  </div>
-                </details>
-
-                <details className="mobile-nav-group">
-                  <summary className="apple-nav-menu-item cursor-pointer">English</summary>
-                  <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/english/levels">
-                      Levels
-                    </Link>
-                    {levelLinks.map((level) => (
-                      <Link
-                        key={`mobile-english-${level.slug}`}
-                        className="apple-nav-menu-item"
-                        href={`/english/levels/${level.slug}`}
-                      >
-                        {level.label}
-                      </Link>
-                    ))}
-                  </div>
-                </details>
-
-                {session && (
-                  <>
-                    <details className="mobile-nav-group">
-                      <summary className="apple-nav-menu-item cursor-pointer">Progress</summary>
-                      <div className="mt-2 flex flex-col gap-2 pl-3">
-                        <Link className="apple-nav-menu-item" href="/progress">
-                          Progress
-                        </Link>
-                        <Link className="apple-nav-menu-item" href="/mastery">
-                          Mastery
-                        </Link>
-                        <Link className="apple-nav-menu-item" href="/review">
-                          Review mistakes
-                        </Link>
-                        <Link className="apple-nav-menu-item" href="/progress/report">
-                          Progress report
-                        </Link>
-                      </div>
-                    </details>
-
-                    <details className="mobile-nav-group">
-                      <summary className="apple-nav-menu-item cursor-pointer">Tools</summary>
-                      <div className="mt-2 flex flex-col gap-2 pl-3">
-                        <Link className="apple-nav-menu-item" href="/study-plan">
-                          Study plan
-                        </Link>
-                        <Link className="apple-nav-menu-item" href="/flashcards">
-                          Flashcards
-                        </Link>
-                        <Link className="apple-nav-menu-item" href={messagesHref}>
-                          Messages{unreadMessages > 0 ? ` (${messageBadge})` : ""}
-                        </Link>
-                      </div>
-                    </details>
-                  </>
-                )}
-
-                <Link className="apple-nav-menu-item" href="/guides">
-                  Shop
-                </Link>
-
-                {session && session.profile?.role !== "admin" && (
-                  <Link className="apple-nav-menu-item" href="/pricing">
-                    Pricing
-                  </Link>
-                )}
-
-                {session?.profile?.role === "admin" && (
-                  <Link className="apple-nav-menu-item" href="/admin">
-                    Admin
-                  </Link>
-                )}
-
-                {session && (
-                  <>
-                    <Link className="apple-nav-menu-item" href="/account">
-                      Account
-                    </Link>
-                    <form action={signOut}>
-                      <button
-                        className="apple-nav-menu-item apple-nav-menu-button"
-                        type="submit"
-                      >
-                        Logout
-                      </button>
-                    </form>
-                  </>
-                )}
-
-                {!session && (
-                  <Link className="apple-nav-menu-item" href="/login">
-                    Login
-                  </Link>
-                )}
-
-                <div className="pt-2">
-                  <ThemeToggle />
-                </div>
-              </div>
-            </div>
-          </details>
+          <MobileNav
+            iconButtonClassName={iconButton}
+            levelLinks={levelLinks}
+            isLoggedIn={isLoggedIn}
+            isAdmin={isAdmin}
+            showPricing={showPricing}
+            messagesHref={messagesHref}
+            unreadMessages={unreadMessages}
+            messageBadge={messageBadge}
+            onSignOut={signOut}
+          />
         </div>
       </div>
     </header>
