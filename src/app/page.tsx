@@ -167,8 +167,13 @@ export default async function HomePage() {
     { key: "shop", label: "Shop" },
   ];
 
-  const defaultWidgetKeys = widgetOptions.map((opt) => opt.key);
-  // If user hasn't customized widgets, show all defaults.
+  const defaultWidgetKeys = [
+    "account",
+    "quick_actions",
+    "exam_countdowns",
+    "shop",
+  ];
+  // If user hasn't customized widgets, show default essentials.
   const enabledWidgetKeys = new Set(
     widgetPrefs.length
       ? widgetPrefs
