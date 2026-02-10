@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
-import { createClient } from "@/lib/supabase/server";
-import ThemeSettings from "@/app/admin/theme-settings";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from("app_settings")
-    .select("accent_color, accent_strong")
-    .eq("id", "default")
-    .maybeSingle();
 
   return (
     <main className="space-y-8">
@@ -38,10 +30,6 @@ export default async function AdminPage() {
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/workbooks">
           <div className="font-semibold">Manage Workbooks</div>
           <div className="apple-subtle mt-1">Upload files and thumbnails.</div>
-        </Link>
-        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/resources">
-          <div className="font-semibold">Manage Resources</div>
-          <div className="apple-subtle mt-1">Exam mocks and question sets.</div>
         </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/widgets">
           <div className="font-semibold">Widget Gallery</div>
@@ -72,11 +60,6 @@ export default async function AdminPage() {
           <div className="apple-subtle mt-1">Build checks and runtime status.</div>
         </Link>
       </div>
-
-      <ThemeSettings
-        initialAccent={settings?.accent_color}
-        initialAccentStrong={settings?.accent_strong}
-      />
     </main>
   );
 }

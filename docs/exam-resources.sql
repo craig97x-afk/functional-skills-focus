@@ -22,6 +22,7 @@ create table if not exists public.question_sets (
   title text not null,
   description text,
   cover_url text,
+  content text,
   resource_url text,
   is_published boolean not null default false,
   created_at timestamp with time zone default now(),
@@ -36,6 +37,10 @@ create index if not exists question_sets_subject_level_idx
 
 alter table public.exam_mocks enable row level security;
 alter table public.question_sets enable row level security;
+
+-- Optional content column for interactive sets
+alter table public.question_sets
+  add column if not exists content text;
 
 -- Public can read published mocks and question sets
 drop policy if exists "Public read exam mocks" on public.exam_mocks;

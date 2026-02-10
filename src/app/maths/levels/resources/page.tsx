@@ -8,7 +8,7 @@ const levels = [
   { slug: "fs-2", label: "Functional Skills Level 2", status: "Available" },
 ];
 
-export default async function MathsLevelsPage() {
+export default async function MathsResourcesLevelsPage() {
   return (
     <main className="space-y-8">
       <div className="space-y-3">
@@ -16,21 +16,23 @@ export default async function MathsLevelsPage() {
           ← Maths hub
         </Link>
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
-          Maths levels
+          Maths resources
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight">Choose your level</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Resources by level
+        </h1>
         <p className="apple-subtle">
-          Levels are organised into topic categories so you can find the right material quickly.
+          Exam mocks, question packs, and revision resources organised by level.
         </p>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
             href="/maths/levels/resources"
           >
             Resources
           </Link>
           <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
             href="/maths/levels"
           >
             Levels
@@ -42,12 +44,12 @@ export default async function MathsLevelsPage() {
         {levels.map((level) => (
           <Link
             key={level.slug}
-            href={`/maths/levels/${level.slug}`}
+            href={`/maths/levels/${level.slug}/resources`}
             className="apple-card p-5 hover:shadow-md transition"
           >
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Level</div>
             <div className="text-lg font-semibold mt-2">{level.label}</div>
-            <div className="apple-subtle mt-2">Maths learning topics</div>
+            <div className="apple-subtle mt-2">Exam mocks and question banks</div>
             <div className="mt-3 inline-flex rounded-full border px-3 py-1 text-xs text-[color:var(--muted-foreground)]">
               {level.status}
             </div>

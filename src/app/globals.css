@@ -98,7 +98,7 @@ html[data-theme="dark"] body::before {
   height: 96px;
   width: 96px;
   flex-shrink: 0;
-  transform: translateY(-35%);
+  transform: translateY(-22%);
 }
 
 .brand-mark-img {

@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import LessonSectionBuilder from "../lessons/lesson-section-builder";
+import LessonWidgetBuilder from "../lessons/lesson-widget-builder";
 
 const levelOptions = [
   { value: "entry-1", label: "Entry Level 1" },
@@ -17,6 +19,7 @@ export default function QuestionSetForm() {
   const [levelSlug, setLevelSlug] = useState("entry-3");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [content, setContent] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [cover, setCover] = useState<File | null>(null);
   const [resourceFile, setResourceFile] = useState<File | null>(null);
@@ -81,6 +84,7 @@ export default function QuestionSetForm() {
       title: title.trim(),
       description: description || null,
       cover_url: coverUrl,
+      content: content.trim() || null,
       resource_url: finalResourceUrl,
       is_published: published,
     });
@@ -139,6 +143,26 @@ export default function QuestionSetForm() {
           placeholder="Short summary of the question set."
         />
       </label>
+
+      <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+        <div>
+          <div className="text-sm font-semibold">Interactive content (optional)</div>
+          <p className="text-xs text-[color:var(--muted-foreground)]">
+            Use Markdown and widgets to build an interactive question set. Leave blank
+            if you only want to link a PDF/CSV resource.
+          </p>
+        </div>
+        <textarea
+          className="mt-1 w-full rounded-md border p-2 min-h-[180px]"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Write questions here. Use widget blocks for charts, clocks, tables, etc."
+        />
+        <div className="grid gap-3 md:grid-cols-2">
+          <LessonSectionBuilder body={content} onInsert={(next) => setContent(next)} />
+          <LessonWidgetBuilder body={content} onInsert={(next) => setContent(next)} />
+        </div>
+      </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <label className="block">

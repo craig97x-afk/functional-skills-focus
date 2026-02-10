@@ -8,7 +8,7 @@ const levels = [
   { slug: "fs-2", label: "Functional Skills Level 2" },
 ];
 
-export default async function EnglishLevelsPage() {
+export default async function EnglishResourcesLevelsPage() {
   return (
     <main className="space-y-8">
       <div className="space-y-3">
@@ -16,21 +16,23 @@ export default async function EnglishLevelsPage() {
           ← English hub
         </Link>
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
-          English levels
+          English resources
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight">English levels</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Resources by level
+        </h1>
         <p className="apple-subtle">
-          English content is being prepared. Choose a level to see what’s coming next.
+          Exam mocks, reading packs, and question resources organised by level.
         </p>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
             href="/english/levels/resources"
           >
             Resources
           </Link>
           <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
             href="/english/levels"
           >
             Levels
@@ -42,12 +44,12 @@ export default async function EnglishLevelsPage() {
         {levels.map((level) => (
           <Link
             key={level.slug}
-            href={`/english/levels/${level.slug}`}
+            href={`/english/levels/${level.slug}/resources`}
             className="apple-card p-5 hover:shadow-md transition"
           >
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Level</div>
             <div className="text-lg font-semibold mt-2">{level.label}</div>
-            <div className="apple-subtle mt-2">Coming soon</div>
+            <div className="apple-subtle mt-2">Exam mocks and question banks</div>
           </Link>
         ))}
       </section>

@@ -25,6 +25,7 @@ type QuestionSet = {
   description: string | null;
   cover_url: string | null;
   resource_url: string | null;
+  content: string | null;
 };
 
 export default async function MathsLevelResourcesPage({
@@ -48,7 +49,7 @@ export default async function MathsLevelResourcesPage({
 
   const { data: setsRaw } = (await supabase
     .from("question_sets")
-    .select("id, title, description, cover_url, resource_url")
+    .select("id, title, description, cover_url, resource_url, content")
     .eq("subject", "maths")
     .eq("level_slug", level)
     .eq("is_published", true)
@@ -196,7 +197,26 @@ export default async function MathsLevelResourcesPage({
                       {set.description}
                     </p>
                   )}
-                  {set.resource_url ? (
+                  {set.content ? (
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                        href={`${basePath}/resources/questions/${set.id}`}
+                      >
+                        Open question set
+                      </Link>
+                      {set.resource_url && (
+                        <a
+                          className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface-muted)]"
+                          href={set.resource_url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Download PDF
+                        </a>
+                      )}
+                    </div>
+                  ) : set.resource_url ? (
                     <a
                       className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
                       href={set.resource_url}

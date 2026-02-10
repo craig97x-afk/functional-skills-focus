@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import type { CSSProperties } from "react";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import { createClient } from "@/lib/supabase/server";
 import ActivityTracker from "@/components/activity-tracker";
 
 export const metadata: Metadata = {
@@ -16,26 +14,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: settings } = await supabase
-    .from("app_settings")
-    .select("accent_color, accent_strong")
-    .eq("id", "default")
-    .maybeSingle();
-
-  const themeStyle =
-    settings?.accent_color || settings?.accent_strong
-      ? ({
-          "--accent": settings?.accent_color ?? undefined,
-          "--accent-strong":
-            settings?.accent_strong ??
-            settings?.accent_color ??
-            undefined,
-        } as CSSProperties)
-      : undefined;
-
   return (
-    <html lang="en" className="h-full" style={themeStyle} data-theme="light">
+    <html lang="en" className="h-full" data-theme="light">
       <body className="min-h-screen">
         <div className="min-h-screen flex flex-col">
           <ActivityTracker />

@@ -10,7 +10,7 @@ create table if not exists public.app_settings (
 
 -- Ensure a default row exists
 insert into public.app_settings (id, accent_color, accent_strong)
-values ('default', '#0071e3', '#005cc5')
+values ('default', '#0b2a4a', '#071b31')
 on conflict (id) do nothing;
 
 alter table public.app_settings enable row level security;
@@ -23,34 +23,13 @@ create policy "Public read app settings"
   to public
   using (true);
 
--- Only admins can update theme settings
+-- Remove admin write access (lock theme to defaults)
 drop policy if exists "Admins update app settings" on public.app_settings;
-create policy "Admins update app settings"
-  on public.app_settings
-  for update
-  to authenticated
-  using (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  )
-  with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
-
--- Allow admin upsert via insert
 drop policy if exists "Admins insert app settings" on public.app_settings;
-create policy "Admins insert app settings"
-  on public.app_settings
-  for insert
-  to authenticated
-  with check (
-    exists (
-      select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
-    )
-  );
+
+-- Reset accent colors to the current site defaults
+update public.app_settings
+set accent_color = '#0b2a4a',
+    accent_strong = '#071b31',
+    updated_at = now()
+where id = 'default';
