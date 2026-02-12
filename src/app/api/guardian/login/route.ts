@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashGuardianCode } from "@/lib/guardian/code";
+import { normalizeGuardianName } from "@/lib/guardian/normalize";
 
 const COOKIE_NAME = "guardian_session";
 
@@ -15,22 +16,46 @@ export async function POST(req: Request) {
     }
 
     const supabase = createAdminClient();
-    // Hash incoming code so we can match against stored hashes.
-    const hashed = hashGuardianCode(code.trim());
+    const normalizedName = normalizeGuardianName(studentName);
+    const cleanedCode = code.replace(/\s+/g, "");
 
-    const { data: links, error } = await supabase
-      .from("guardian_links")
-      .select("id, student_id, student_name, expires_at")
-      .eq("access_code_hash", hashed)
-      .limit(5);
+    type GuardianLink = {
+      id: string;
+      student_id: string;
+      student_name: string;
+      expires_at: string | null;
+    };
 
-    if (error || !links?.length) {
+    let links: GuardianLink[] = [];
+    let error: string | null = null;
+
+    if (cleanedCode.length === 4) {
+      const result = await supabase
+        .from("guardian_links")
+        .select("id, student_id, student_name, expires_at")
+        .eq("access_code_last4", cleanedCode)
+        .limit(5);
+      links = (result.data as GuardianLink[] | null) ?? [];
+      error = result.error ? result.error.message : null;
+    } else {
+      // Hash incoming code so we can match against stored hashes.
+      const hashed = hashGuardianCode(cleanedCode.trim());
+      const result = await supabase
+        .from("guardian_links")
+        .select("id, student_id, student_name, expires_at")
+        .eq("access_code_hash", hashed)
+        .limit(5);
+      links = (result.data as GuardianLink[] | null) ?? [];
+      error = result.error ? result.error.message : null;
+    }
+
+    if (error || links.length === 0) {
       return NextResponse.json({ error: "Invalid code." }, { status: 401 });
     }
 
     // Require full name match to reduce accidental access collisions.
-    const match = links.find((link) =>
-      link.student_name.toLowerCase().trim() === studentName.toLowerCase().trim()
+    const match = links.find(
+      (link) => normalizeGuardianName(link.student_name) === normalizedName
     );
 
     if (!match) {
