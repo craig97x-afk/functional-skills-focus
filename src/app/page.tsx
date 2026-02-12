@@ -242,17 +242,17 @@ export default async function HomePage() {
   return (
     <main className="space-y-0">
       <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-6">
-        <div className="mx-auto max-w-6xl px-6 py-5 min-h-[270px] md:min-h-[306px] flex flex-col items-center justify-center text-center gap-1">
+        <div className="mx-auto max-w-6xl px-6 py-5 min-h-[270px] md:min-h-[306px] flex flex-col items-center justify-center text-center gap-0">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"
             className="dashboard-banner-logo"
           />
-          <div className="-mt-1">
+          <div className="-mt-6">
             <div className="text-3xl font-semibold tracking-tight leading-tight">
               Functional Skills Focus
             </div>
-            <div className="mt-1 text-sm text-white/80 leading-snug">
+            <div className="mt-0 text-sm text-white/80 leading-snug">
               Learn, practise, and build confidence with structured Functional Skills
               support.
             </div>
