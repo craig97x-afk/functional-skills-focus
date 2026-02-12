@@ -173,6 +173,7 @@ export default function AccessibilityWidget() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceCount, setVoiceCount] = useState(0);
   const [ttsError, setTtsError] = useState<string | null>(null);
+  const [ttsStatus, setTtsStatus] = useState<string | null>(null);
   const cancelSpeakRef = useRef(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
@@ -245,6 +246,7 @@ export default function AccessibilityWidget() {
       cancelSpeakRef.current = true;
       setIsSpeaking(false);
       setTtsError(null);
+      setTtsStatus(null);
     }
   }, [appliedSettings.reading.textToSpeech]);
 
@@ -280,6 +282,7 @@ export default function AccessibilityWidget() {
     if (typeof window === "undefined") return;
     if (!window.speechSynthesis) {
       setTtsError("Text‑to‑speech isn’t available in this browser.");
+      setTtsStatus("Unavailable");
       return;
     }
 
@@ -308,10 +311,12 @@ export default function AccessibilityWidget() {
     const voices = getVoices();
     setVoiceCount(voices.length);
     setTtsError(null);
+    setTtsStatus("Starting…");
     if (voices.length === 0) {
       setTtsError(
         "No voices available. Check device speech settings or install a voice."
       );
+      setTtsStatus("No voices");
       return;
     }
     const preferredLang = appliedSettings.language || "en";
@@ -320,39 +325,55 @@ export default function AccessibilityWidget() {
       voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
       voices[0];
 
-    window.speechSynthesis.cancel();
-    setIsSpeaking(true);
-
     const speakNext = () => {
       if (cancelSpeakRef.current) return;
       if (index >= chunks.length) {
         setIsSpeaking(false);
+        setTtsStatus("Done");
         return;
       }
       const utterance = new SpeechSynthesisUtterance(chunks[index]);
       utterance.lang = preferredLang;
       if (voiceMatch) utterance.voice = voiceMatch;
       utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      utterance.onstart = () => setTtsStatus("Speaking");
       utterance.onend = () => {
         index += 1;
         speakNext();
       };
       utterance.onerror = () => {
         setIsSpeaking(false);
+        setTtsStatus("Error");
       };
       window.speechSynthesis.speak(utterance);
     };
 
-    speakNext();
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-    }
+    const start = () => {
+      if (cancelSpeakRef.current) return;
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
+        setTimeout(start, 200);
+        return;
+      }
+      setIsSpeaking(true);
+      setTimeout(() => {
+        speakNext();
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }, 200);
+    };
+
+    start();
   };
 
   const speakTest = () => {
     if (typeof window === "undefined") return;
     if (!window.speechSynthesis) {
       setTtsError("Text‑to‑speech isn’t available in this browser.");
+      setTtsStatus("Unavailable");
       return;
     }
     const voices = voicesRef.current.length
@@ -360,10 +381,12 @@ export default function AccessibilityWidget() {
       : window.speechSynthesis.getVoices();
     setVoiceCount(voices.length);
     setTtsError(null);
+    setTtsStatus("Starting…");
     if (voices.length === 0) {
       setTtsError(
         "No voices available. Check device speech settings or install a voice."
       );
+      setTtsStatus("No voices");
       return;
     }
     window.speechSynthesis.cancel();
@@ -377,10 +400,32 @@ export default function AccessibilityWidget() {
     utterance.lang = appliedSettings.language || "en";
     if (voiceMatch) utterance.voice = voiceMatch;
     utterance.rate = 1;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.onstart = () => setTtsStatus("Speaking");
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setTtsStatus("Done");
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setTtsStatus("Error");
+    };
+    const start = () => {
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+        window.speechSynthesis.cancel();
+        setTimeout(start, 200);
+        return;
+      }
+      setIsSpeaking(true);
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }, 200);
+    };
+    start();
   };
 
   const stopSpeaking = () => {
@@ -774,6 +819,7 @@ export default function AccessibilityWidget() {
             {settings.reading.textToSpeech && (
               <div className="text-xs text-[color:var(--muted-foreground)]">
                 Voices available: {voiceCount || 0}
+                {ttsStatus ? ` · ${ttsStatus}` : ""}
                 {ttsError ? ` · ${ttsError}` : ""}
               </div>
             )}
