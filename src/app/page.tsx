@@ -247,7 +247,7 @@ export default async function HomePage() {
             alt="Functional Skills Focus"
             className="dashboard-banner-logo"
           />
-          <div className="-mt-32">
+          <div className="-mt-24">
             <div className="text-3xl font-semibold tracking-tight leading-tight">
               Functional Skills Focus
             </div>
