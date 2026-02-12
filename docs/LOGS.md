@@ -28,3 +28,20 @@ Template
 - Change summary: Dashboard default widgets limited to core blocks (Account, Quick Actions, Exam Countdowns, Shop).
 - Impact: New users see a cleaner dashboard; other widgets remain optional via the picker.
 - Follow-ups: None.
+
+- Date: 2026-02-10
+- Version/Commit: pending
+- Change summary: Guardian access now normalizes names and accepts 4-digit (last-4) codes; header notifications run in parallel and message previews are capped.
+- Impact: Fewer guardian login mismatches; header loads faster with less query overhead.
+- Follow-ups: Consider adding copy to the guardian form explaining 6-digit vs last-4 code.
+- Date: 2026-02-10
+- Version/Commit: pending
+- Change summary: Renamed Progress dropdown item to Overview and added a Mastery tab on the Progress page.
+- Impact: Navigation copy clearer; progress area now links to mastery directly.
+- Follow-ups: None.
+
+- Date: 2026-02-12
+- Version/Commit: pending
+- Change summary: Added an accessibility control widget with reader/support tools and admin quick links on resource pages.
+- Impact: Users can self-serve accessibility preferences; admins get faster access to manage resources.
+- Follow-ups: Confirm accessibility presets feel right on mobile and adjust defaults if needed.

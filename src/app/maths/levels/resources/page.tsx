@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 const levels = [
   { slug: "entry-1", label: "Entry Level 1", status: "Coming soon" },
@@ -9,6 +12,15 @@ const levels = [
 ];
 
 export default async function MathsResourcesLevelsPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const isAdmin = profile?.role === "admin";
+
   return (
     <main className="space-y-8">
       <div className="space-y-3">
@@ -24,6 +36,14 @@ export default async function MathsResourcesLevelsPage() {
         <p className="apple-subtle">
           Exam mocks, question packs, and revision resources organised by level.
         </p>
+        {isAdmin && (
+          <Link
+            className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            href="/admin/questions"
+          >
+            Manage resources
+          </Link>
+        )}
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

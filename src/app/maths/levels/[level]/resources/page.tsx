@@ -36,6 +36,13 @@ export default async function MathsLevelResourcesPage({
   const { level } = await params;
   const label = levelLabels[level] ?? "Level";
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
+    : { data: null };
+  const isAdmin = profile?.role === "admin";
 
   const { data: mocksRaw } = (await supabase
     .from("exam_mocks")
@@ -80,6 +87,14 @@ export default async function MathsLevelResourcesPage({
         <p className="apple-subtle">
           Exam mocks and question packs matched to this level. All mocks are free for now.
         </p>
+        {isAdmin && (
+          <Link
+            className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            href="/admin/questions"
+          >
+            Manage resources
+          </Link>
+        )}
         <div className="flex flex-wrap gap-2">
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"

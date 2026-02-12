@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ActivityTracker from "@/components/activity-tracker";
+import AccessibilityWidget from "@/components/accessibility-widget";
 
 export const metadata: Metadata = {
   title: "Functional Skills Focus",
@@ -24,6 +25,7 @@ export default async function RootLayout({
             {children}
           </div>
           <Footer />
+          <AccessibilityWidget />
         </div>
       </body>
     </html>
