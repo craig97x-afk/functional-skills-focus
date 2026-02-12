@@ -29,6 +29,8 @@ export default function ResourceSearch() {
     const phrases = [
       "Search for resources...",
       "Try “Entry Level 3 fractions”",
+      "Try “Maths level 1”",
+      "Try “English questions”",
       "Search exam mocks",
       "Search question sets",
       "Search workbooks",
