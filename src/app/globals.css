@@ -113,7 +113,7 @@ body[data-a11y-stop-animations="true"] *::after {
 }
 
 body[data-a11y-reader-view="true"] main {
-  max-width: 720px;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
   background: var(--surface);
@@ -163,7 +163,8 @@ body[data-a11y-motor="true"] a {
 
 .a11y-widget {
   position: fixed;
-  bottom: 24px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 60;
 }
 
@@ -175,9 +176,22 @@ body[data-a11y-motor="true"] a {
   background: var(--surface);
   color: var(--foreground);
   box-shadow: var(--shadow);
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.a11y-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+
+.a11y-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .a11y-panel {
@@ -306,6 +320,11 @@ body[data-a11y-widget-size="large"] .a11y-fab {
   height: 64px;
   width: 64px;
   font-size: 0.9rem;
+}
+
+body[data-a11y-widget-size="large"] .a11y-icon {
+  width: 32px;
+  height: 32px;
 }
 
 .brand-link {

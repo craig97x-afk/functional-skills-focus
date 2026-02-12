@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type A11ySettings = {
   position: "left" | "right" | "hidden";
@@ -117,8 +117,8 @@ const applyPresets = (settings: A11ySettings): A11ySettings => {
   }
 
   if (settings.needs.adhd) {
-    next.reading.readerView = true;
     next.reading.stopAnimations = true;
+    next.visual.highlightLinks = true;
   }
 
   if (settings.needs.epileptic) {
@@ -171,6 +171,7 @@ export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const cancelSpeakRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -222,6 +223,7 @@ export default function AccessibilityWidget() {
   useEffect(() => {
     if (!appliedSettings.reading.textToSpeech && typeof window !== "undefined") {
       window.speechSynthesis?.cancel();
+      cancelSpeakRef.current = true;
       setIsSpeaking(false);
     }
   }, [appliedSettings.reading.textToSpeech]);
@@ -262,18 +264,43 @@ export default function AccessibilityWidget() {
     const content = (main?.textContent || document.body.textContent || "").trim();
     if (!content) return;
 
-    const utterance = new SpeechSynthesisUtterance(content.slice(0, 5000));
-    utterance.lang = appliedSettings.language || "en";
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    const maxChunk = 1200;
+    const chunks: string[] = [];
+    for (let i = 0; i < content.length; i += maxChunk) {
+      chunks.push(content.slice(i, i + maxChunk));
+    }
+
+    let index = 0;
+    cancelSpeakRef.current = false;
 
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
     setIsSpeaking(true);
+
+    const speakNext = () => {
+      if (cancelSpeakRef.current) return;
+      if (index >= chunks.length) {
+        setIsSpeaking(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(chunks[index]);
+      utterance.lang = appliedSettings.language || "en";
+      utterance.rate = 1;
+      utterance.onend = () => {
+        index += 1;
+        speakNext();
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+      };
+      window.speechSynthesis.speak(utterance);
+    };
+
+    speakNext();
   };
 
   const stopSpeaking = () => {
     if (typeof window === "undefined") return;
+    cancelSpeakRef.current = true;
     window.speechSynthesis?.cancel();
     setIsSpeaking(false);
   };
@@ -299,7 +326,15 @@ export default function AccessibilityWidget() {
           className="a11y-fab"
           onClick={() => setOpen(true)}
         >
-          A11y
+          <span className="a11y-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img" focusable="false">
+              <path
+                d="M11 3a2 2 0 1 1 2 0 2 2 0 0 1-2 0Zm8.5 6.5-6.5-1.4V11h2.6l2.2 7.2h-1.7l-1.5-5h-1.6v7.3H11V13.2H9.4l-1.5 5H6.2l2.2-7.2H11V8.1L4.5 9.5l-.3-1.4L12 6.3l7.8 1.8-.3 1.4Z"
+                fill="currentColor"
+              />
+            </svg>
+          </span>
+          <span className="sr-only">Accessibility</span>
         </button>
       ) : (
         <div className="a11y-panel" role="dialog" aria-label="Accessibility menu">
