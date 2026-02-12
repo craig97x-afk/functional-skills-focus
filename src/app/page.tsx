@@ -247,11 +247,11 @@ export default async function HomePage() {
             alt="Functional Skills Focus"
             className="dashboard-banner-logo"
           />
-          <div>
+          <div className="-mt-3">
             <div className="text-3xl font-semibold tracking-tight">
               Functional Skills Focus
             </div>
-            <div className="mt-2 text-sm text-white/80">
+            <div className="mt-1 text-sm text-white/80">
               Learn, practise, and build confidence with structured Functional Skills
               support.
             </div>

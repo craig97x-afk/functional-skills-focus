@@ -103,6 +103,15 @@ export default async function ProgressPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Progress</h1>
         <div className="flex flex-wrap gap-2">
+          <span
+            className="apple-pill border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            aria-current="page"
+          >
+            Overview
+          </span>
+          <Link className="apple-pill" href="/mastery">
+            Mastery
+          </Link>
           <Link className="apple-pill" href="/progress/report">
             Progress report
           </Link>

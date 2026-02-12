@@ -33,6 +33,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Student email mismatch." }, { status: 400 });
     }
 
+    const safeStudentName = studentName.trim();
+    const safeGuardianName = guardianName.trim();
+
     // Store only the hash; raw code is only ever sent to the guardian.
     const code = generateGuardianCode();
     const codeHash = hashGuardianCode(code);
@@ -44,9 +47,9 @@ export async function POST(req: Request) {
       .upsert(
         {
           student_id: studentId,
-          student_name: studentName,
-          guardian_name: guardianName,
-          guardian_email: guardianEmail,
+          student_name: safeStudentName,
+          guardian_name: safeGuardianName,
+          guardian_email: guardianEmail.trim(),
           access_code_hash: codeHash,
           access_code_last4: last4,
           expires_at: expiresAt,

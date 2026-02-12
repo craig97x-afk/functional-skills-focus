@@ -57,3 +57,9 @@ Template
 - Change summary: Moved the accessibility widget purchase link into the widget panel and removed the footer link.
 - Impact: Purchase call-to-action now lives inside the widget itself; footer stays clean.
 - Follow-ups: None.
+
+- Date: 2026-02-12
+- Version/Commit: pending
+- Change summary: Capitalized the account role label on the dashboard (Admin/Student).
+- Impact: Cleaner, more polished account widget labeling.
+- Follow-ups: None.

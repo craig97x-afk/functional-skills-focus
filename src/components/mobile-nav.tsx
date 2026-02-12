@@ -120,7 +120,7 @@ export default function MobileNav({
                   <summary className="apple-nav-menu-item cursor-pointer">Progress</summary>
                   <div className="mt-2 flex flex-col gap-2 pl-3">
                     <Link className="apple-nav-menu-item" href="/progress" onClick={closeMenu}>
-                      Progress
+                      Overview
                     </Link>
                     <Link className="apple-nav-menu-item" href="/mastery" onClick={closeMenu}>
                       Mastery

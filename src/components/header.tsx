@@ -60,7 +60,46 @@ export default async function Header() {
   }[] = [];
 
   if (session) {
+    const isStudent = session.profile?.role !== "admin";
     let unreadRowsAll: { conversation_id: string }[] = [];
+
+    const guidesPromise = supabase
+      .from("guides")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .gte("created_at", weekAgoIso);
+
+    const lessonsPromise = supabase
+      .from("lessons")
+      .select("id", { count: "exact", head: true })
+      .eq("published", true)
+      .gte("created_at", weekAgoIso);
+
+    const commentsPromise = isStudent
+      ? supabase
+          .from("progress_comments")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .gte("created_at", weekAgoIso)
+      : Promise.resolve({ count: 0, error: null });
+
+    const examsPromise = isStudent
+      ? supabase
+          .from("user_exams")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .gte("exam_date", todayDate)
+          .lte("exam_date", weekAheadDate)
+      : Promise.resolve({ count: 0, error: null });
+
+    const badgesPromise = isStudent
+      ? supabase
+          .from("user_achievements")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", session.user.id)
+          .gte("earned_at", weekAgoIso)
+      : Promise.resolve({ count: 0, error: null });
+
     const { data: conversations } = await supabase
       .from("support_conversations")
       .select("id")
@@ -93,7 +132,8 @@ export default async function Header() {
         .from("support_messages")
         .select("conversation_id, body, created_at")
         .in("conversation_id", recentConversationIds)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(20);
 
       const previews = new Map<string, string>();
       (recentMessages ?? []).forEach((msg) => {
@@ -118,11 +158,19 @@ export default async function Header() {
       });
     }
 
-    const { count: guidesCount } = await supabase
-      .from("guides")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true)
-      .gte("created_at", weekAgoIso);
+    const [
+      { count: guidesCount },
+      { count: lessonsCount, error: lessonsErr },
+      { count: commentCount },
+      { count: examCount },
+      { count: badgeCount },
+    ] = await Promise.all([
+      guidesPromise,
+      lessonsPromise,
+      commentsPromise,
+      examsPromise,
+      badgesPromise,
+    ]);
 
     if ((guidesCount ?? 0) > 0) {
       notifications.push({
@@ -131,12 +179,6 @@ export default async function Header() {
         count: guidesCount ?? 0,
       });
     }
-
-    const { count: lessonsCount, error: lessonsErr } = await supabase
-      .from("lessons")
-      .select("id", { count: "exact", head: true })
-      .eq("published", true)
-      .gte("created_at", weekAgoIso);
 
     if (!lessonsErr && (lessonsCount ?? 0) > 0) {
       notifications.push({
@@ -154,13 +196,7 @@ export default async function Header() {
       });
     }
 
-    if (session.profile?.role !== "admin") {
-      const { count: commentCount } = await supabase
-        .from("progress_comments")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", session.user.id)
-        .gte("created_at", weekAgoIso);
-
+    if (isStudent) {
       if ((commentCount ?? 0) > 0) {
         notifications.push({
           label: `New tutor feedback`,
@@ -169,13 +205,6 @@ export default async function Header() {
         });
       }
 
-      const { count: examCount } = await supabase
-        .from("user_exams")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", session.user.id)
-        .gte("exam_date", todayDate)
-        .lte("exam_date", weekAheadDate);
-
       if ((examCount ?? 0) > 0) {
         notifications.push({
           label: `${examCount} upcoming exam${examCount === 1 ? "" : "s"}`,
@@ -183,12 +212,6 @@ export default async function Header() {
           count: examCount ?? 0,
         });
       }
-
-      const { count: badgeCount } = await supabase
-        .from("user_achievements")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", session.user.id)
-        .gte("earned_at", weekAgoIso);
 
       if ((badgeCount ?? 0) > 0) {
         notifications.push({
@@ -285,7 +308,7 @@ export default async function Header() {
                 </button>
                 <div className="apple-nav-menu">
                   <Link className="apple-nav-menu-item" href="/progress">
-                    Progress
+                    Overview
                   </Link>
                   <Link className="apple-nav-menu-item" href="/mastery">
                     Mastery
