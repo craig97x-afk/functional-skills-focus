@@ -26,9 +26,9 @@ export default async function RootLayout({
             {children}
           </div>
           <Footer />
-          <AccessibilityWidget />
-          <SpeedInsights />
         </div>
+        <AccessibilityWidget />
+        <SpeedInsights />
       </body>
     </html>
   );

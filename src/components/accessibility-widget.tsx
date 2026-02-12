@@ -280,39 +280,14 @@ export default function AccessibilityWidget() {
     const content = (main?.textContent || document.body.textContent || "").trim();
     if (!content) return;
 
-    const getVoices = () =>
-      new Promise<SpeechSynthesisVoice[]>((resolve) => {
-        if (voicesRef.current.length > 0) {
-          resolve(voicesRef.current);
-          return;
-        }
-        const voices = window.speechSynthesis.getVoices();
-        if (voices.length > 0) {
-          voicesRef.current = voices;
-          resolve(voices);
-          return;
-        }
-        const handleVoices = () => {
-          const nextVoices = window.speechSynthesis.getVoices();
-          voicesRef.current = nextVoices;
-          resolve(nextVoices);
-          window.speechSynthesis.removeEventListener("voiceschanged", handleVoices);
-        };
-        window.speechSynthesis.addEventListener("voiceschanged", handleVoices);
-        setTimeout(() => {
-          const fallbackVoices = window.speechSynthesis.getVoices();
-          if (fallbackVoices.length > 0) {
-            window.speechSynthesis.removeEventListener(
-              "voiceschanged",
-              handleVoices
-            );
-            voicesRef.current = fallbackVoices;
-            resolve(fallbackVoices);
-          } else {
-            resolve([]);
-          }
-        }, 1200);
-      });
+    const getVoices = () => {
+      if (voicesRef.current.length > 0) return voicesRef.current;
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        voicesRef.current = voices;
+      }
+      return voices;
+    };
 
     const maxChunk = 1200;
     const chunks: string[] = [];
@@ -323,48 +298,40 @@ export default function AccessibilityWidget() {
     let index = 0;
     cancelSpeakRef.current = false;
 
-    const startSpeaking = async () => {
-      const voices = await getVoices();
-      const preferredLang = appliedSettings.language || "en";
-      const voiceMatch =
-        voices.find((voice) =>
-          voice.lang?.toLowerCase().startsWith(preferredLang)
-        ) ||
-        voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
-        voices[0];
+    const voices = getVoices();
+    const preferredLang = appliedSettings.language || "en";
+    const voiceMatch =
+      voices.find((voice) => voice.lang?.toLowerCase().startsWith(preferredLang)) ||
+      voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
+      voices[0];
 
-      window.speechSynthesis.cancel();
-      setIsSpeaking(true);
+    window.speechSynthesis.cancel();
+    setIsSpeaking(true);
 
-      const speakNext = () => {
-        if (cancelSpeakRef.current) return;
-        if (index >= chunks.length) {
-          setIsSpeaking(false);
-          return;
-        }
-        const utterance = new SpeechSynthesisUtterance(chunks[index]);
-        utterance.lang = preferredLang;
-        if (voiceMatch) utterance.voice = voiceMatch;
-        utterance.rate = 1;
-        utterance.onend = () => {
-          index += 1;
-          speakNext();
-        };
-        utterance.onerror = () => {
-          setIsSpeaking(false);
-        };
-        window.speechSynthesis.speak(utterance);
-      };
-
-      setTimeout(() => {
+    const speakNext = () => {
+      if (cancelSpeakRef.current) return;
+      if (index >= chunks.length) {
+        setIsSpeaking(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(chunks[index]);
+      utterance.lang = preferredLang;
+      if (voiceMatch) utterance.voice = voiceMatch;
+      utterance.rate = 1;
+      utterance.onend = () => {
+        index += 1;
         speakNext();
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-      }, 250);
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+      };
+      window.speechSynthesis.speak(utterance);
     };
 
-    startSpeaking();
+    speakNext();
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
   };
 
   const stopSpeaking = () => {
