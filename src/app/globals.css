@@ -389,10 +389,31 @@ body[data-a11y-widget-size="large"] .a11y-icon {
 }
 
 .dashboard-banner-logo {
-  height: 268px;
-  width: 268px;
+  height: 290px;
+  width: 290px;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
+  transform-origin: center;
+  animation: bannerLogoSpin 2s ease-in-out both;
+  will-change: transform;
+}
+
+@keyframes bannerLogoSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-banner-logo {
+    animation: none;
+  }
 }
 
 .shop-rotator {
