@@ -248,7 +248,7 @@ export default async function HomePage() {
             alt="Functional Skills Focus"
             className="dashboard-banner-logo"
           />
-          <div style={{ marginTop: "-1.25rem" }}>
+          <div className="-mt-10">
             <div className="text-3xl font-semibold tracking-tight leading-tight">
               Functional Skills Focus
             </div>
