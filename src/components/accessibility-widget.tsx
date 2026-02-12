@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type A11ySettings = {
@@ -75,8 +76,15 @@ const defaultSettings: A11ySettings = {
 const languageOptions = [
   { value: "en", label: "English" },
   { value: "cy", label: "Welsh" },
-  { value: "pl", label: "Polish" },
-  { value: "ur", label: "Urdu" },
+  { value: "fr-FR", label: "French" },
+  { value: "es-ES", label: "Spanish" },
+  { value: "de-DE", label: "German" },
+  { value: "it-IT", label: "Italian" },
+  { value: "pt-PT", label: "Portuguese" },
+  { value: "nl-NL", label: "Dutch" },
+  { value: "pl-PL", label: "Polish" },
+  { value: "ro-RO", label: "Romanian" },
+  { value: "sv-SE", label: "Swedish" },
 ];
 
 const clamp = (value: number, min: number, max: number) =>
@@ -561,6 +569,9 @@ export default function AccessibilityWidget() {
                 </option>
               ))}
             </select>
+            <div className="text-xs text-[color:var(--muted-foreground)] mt-2">
+              Language is used for text-to-speech and screen readers.
+            </div>
           </div>
 
           <div className="a11y-section">
@@ -843,6 +854,9 @@ export default function AccessibilityWidget() {
             <button type="button" className="a11y-reset" onClick={resetDefaults}>
               Reset to defaults
             </button>
+            <Link className="a11y-link" href="/accessibility-widget">
+              Buy this accessibility widget
+            </Link>
           </div>
         </div>
       )}

@@ -51,3 +51,9 @@ Template
 - Change summary: Added a dedicated Accessibility Widget sales page and footer link.
 - Impact: Users can discover and purchase the widget from a single landing page.
 - Follow-ups: Set NEXT_PUBLIC_WIDGET_BUY_URL to the live checkout link.
+
+- Date: 2026-02-12
+- Version/Commit: pending
+- Change summary: Moved the accessibility widget purchase link into the widget panel and removed the footer link.
+- Impact: Purchase call-to-action now lives inside the widget itself; footer stays clean.
+- Follow-ups: None.

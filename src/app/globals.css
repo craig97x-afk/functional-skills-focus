@@ -303,6 +303,11 @@ body[data-a11y-motor="true"] a {
 
 .a11y-section-footer {
   border-top: 1px solid var(--border);
+  margin-top: 16px;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .a11y-reset {
@@ -313,6 +318,18 @@ body[data-a11y-motor="true"] a {
   font-size: 0.8rem;
   color: var(--muted-foreground);
   background: transparent;
+}
+
+.a11y-link {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  text-decoration: none;
+  align-self: flex-start;
+}
+
+.a11y-link:hover {
+  color: var(--foreground);
+  text-decoration: underline;
 }
 
 body[data-a11y-widget-size="large"] .a11y-panel {

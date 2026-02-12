@@ -1,8 +1,7 @@
 import Link from "next/link";
 
-const buyUrl =
-  process.env.NEXT_PUBLIC_WIDGET_BUY_URL ??
-  "/contact?subject=Accessibility%20Widget";
+const buyUrl = process.env.NEXT_PUBLIC_WIDGET_BUY_URL;
+const hasBuyUrl = Boolean(buyUrl);
 
 export default function AccessibilityWidgetPage() {
   return (
@@ -27,12 +26,20 @@ export default function AccessibilityWidgetPage() {
 
         <div className="mt-8 flex flex-wrap items-center gap-4">
           <div className="text-2xl font-semibold">£2.99</div>
-          <Link className="apple-button text-white" href={buyUrl}>
-            Buy the widget
-          </Link>
+          {hasBuyUrl ? (
+            <Link className="apple-button text-white" href={buyUrl as string}>
+              Buy the widget
+            </Link>
+          ) : (
+            <button className="apple-button text-white" type="button" disabled>
+              Buy link not set
+            </button>
+          )}
         </div>
         <div className="text-xs text-[color:var(--muted-foreground)] mt-3">
-          You will receive the widget files and setup instructions after purchase.
+          {hasBuyUrl
+            ? "You will receive the widget files and setup instructions after purchase."
+            : "Set NEXT_PUBLIC_WIDGET_BUY_URL to your checkout link."}
         </div>
       </section>
 

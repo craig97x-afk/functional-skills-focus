@@ -20,9 +20,6 @@ export default async function Footer() {
         <Link className="transition" href="/legal/refunds">
           Refunds
         </Link>
-        <Link className="transition" href="/accessibility-widget">
-          Accessibility Widget
-        </Link>
         <Link className="transition" href="/legal/safeguarding">
           Safeguarding
         </Link>
