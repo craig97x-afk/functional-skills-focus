@@ -352,7 +352,7 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   gap: 16px;
-  padding-left: 108px;
+  padding-left: 88px;
   min-height: 56px;
 }
 
@@ -367,15 +367,15 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 96px;
-  width: 96px;
+  height: 72px;
+  width: 72px;
   flex-shrink: 0;
   transform: translateY(-30%);
 }
 
 .brand-mark-img {
-  height: 96px;
-  width: 96px;
+  height: 72px;
+  width: 72px;
   display: block;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
@@ -389,8 +389,8 @@ body[data-a11y-widget-size="large"] .a11y-icon {
 }
 
 .dashboard-banner-logo {
-  height: 120px;
-  width: 120px;
+  height: 96px;
+  width: 96px;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
 }
