@@ -241,17 +241,17 @@ export default async function HomePage() {
   return (
     <main className="space-y-0">
       <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-8">
-        <div className="mx-auto max-w-6xl px-6 py-0 flex flex-col items-center text-center gap-0">
+        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col items-center text-center gap-3">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"
             className="dashboard-banner-logo"
           />
-          <div className="-mt-24">
+          <div>
             <div className="text-3xl font-semibold tracking-tight leading-tight">
               Functional Skills Focus
             </div>
-            <div className="mt-0 text-sm text-white/80 leading-snug">
+            <div className="mt-1 text-sm text-white/80 leading-snug">
               Learn, practise, and build confidence with structured Functional Skills
               support.
             </div>
@@ -285,7 +285,7 @@ export default async function HomePage() {
               <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
                 Account
               </div>
-              <div className="text-lg font-semibold">{role}</div>
+              <div className="text-lg font-semibold">{roleLabel}</div>
               <div className="apple-subtle">
                 Sign in to manage your account and unlock full access.
               </div>
