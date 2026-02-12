@@ -352,7 +352,7 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   gap: 16px;
-  padding-left: 200px;
+  padding-left: 188px;
   min-height: 56px;
 }
 
@@ -389,8 +389,8 @@ body[data-a11y-widget-size="large"] .a11y-icon {
 }
 
 .dashboard-banner-logo {
-  height: 134px;
-  width: 134px;
+  height: 268px;
+  width: 268px;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
 }
