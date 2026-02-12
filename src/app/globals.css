@@ -352,7 +352,7 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   gap: 16px;
-  padding-left: 72px;
+  padding-left: 92px;
   min-height: 56px;
 }
 
@@ -367,15 +367,15 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
-  width: 56px;
+  height: 78px;
+  width: 78px;
   flex-shrink: 0;
   transform: translateY(-40%);
 }
 
 .brand-mark-img {
-  height: 56px;
-  width: 56px;
+  height: 78px;
+  width: 78px;
   display: block;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
