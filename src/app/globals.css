@@ -55,6 +55,9 @@ body {
   position: relative;
   line-height: var(--a11y-line-height);
   letter-spacing: var(--a11y-letter-spacing);
+}
+
+.app-shell {
   filter: saturate(var(--a11y-saturation)) contrast(var(--a11y-contrast));
 }
 

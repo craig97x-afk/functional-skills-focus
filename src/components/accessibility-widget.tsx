@@ -172,6 +172,7 @@ export default function AccessibilityWidget() {
   const [mounted, setMounted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const cancelSpeakRef = useRef(false);
+  const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     try {
@@ -184,6 +185,21 @@ export default function AccessibilityWidget() {
       setSettings(defaultSettings);
     }
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.speechSynthesis) return;
+
+    const loadVoices = () => {
+      voicesRef.current = window.speechSynthesis.getVoices();
+    };
+
+    loadVoices();
+    window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+    };
   }, []);
 
   const appliedSettings = useMemo(() => applyPresets(settings), [settings]);
@@ -266,13 +282,20 @@ export default function AccessibilityWidget() {
 
     const getVoices = () =>
       new Promise<SpeechSynthesisVoice[]>((resolve) => {
+        if (voicesRef.current.length > 0) {
+          resolve(voicesRef.current);
+          return;
+        }
         const voices = window.speechSynthesis.getVoices();
         if (voices.length > 0) {
+          voicesRef.current = voices;
           resolve(voices);
           return;
         }
         const handleVoices = () => {
-          resolve(window.speechSynthesis.getVoices());
+          const nextVoices = window.speechSynthesis.getVoices();
+          voicesRef.current = nextVoices;
+          resolve(nextVoices);
           window.speechSynthesis.removeEventListener("voiceschanged", handleVoices);
         };
         window.speechSynthesis.addEventListener("voiceschanged", handleVoices);
@@ -283,9 +306,12 @@ export default function AccessibilityWidget() {
               "voiceschanged",
               handleVoices
             );
+            voicesRef.current = fallbackVoices;
             resolve(fallbackVoices);
+          } else {
+            resolve([]);
           }
-        }, 1000);
+        }, 1200);
       });
 
     const maxChunk = 1200;
@@ -301,7 +327,9 @@ export default function AccessibilityWidget() {
       const voices = await getVoices();
       const preferredLang = appliedSettings.language || "en";
       const voiceMatch =
-        voices.find((voice) => voice.lang?.toLowerCase().startsWith(preferredLang)) ||
+        voices.find((voice) =>
+          voice.lang?.toLowerCase().startsWith(preferredLang)
+        ) ||
         voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
         voices[0];
 
@@ -333,7 +361,7 @@ export default function AccessibilityWidget() {
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
-      }, 150);
+      }, 250);
     };
 
     startSpeaking();
@@ -370,7 +398,7 @@ export default function AccessibilityWidget() {
           <span className="a11y-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" role="img" focusable="false">
               <path
-                d="M11 3a2 2 0 1 1 2 0 2 2 0 0 1-2 0Zm8.5 6.5-6.5-1.4V11h2.6l2.2 7.2h-1.7l-1.5-5h-1.6v7.3H11V13.2H9.4l-1.5 5H6.2l2.2-7.2H11V8.1L4.5 9.5l-.3-1.4L12 6.3l7.8 1.8-.3 1.4Z"
+                d="M12 4.5a2.25 2.25 0 1 1 0 4.5 2.25 2.25 0 0 1 0-4.5Zm-7 6.75a.75.75 0 0 1 .75-.75h12.5a.75.75 0 0 1 .75.75v.5a.75.75 0 0 1-.54.72l-3.46 1.05v6.98a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-4.5h-1.5v4.5a.75.75 0 0 1-.75.75h-1a.75.75 0 0 1-.75-.75v-6.98l-3.46-1.05a.75.75 0 0 1-.54-.72v-.5Z"
                 fill="currentColor"
               />
             </svg>
