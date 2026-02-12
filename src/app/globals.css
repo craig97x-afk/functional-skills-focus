@@ -367,8 +367,8 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 72px;
-  width: 72px;
+  height: 62px;
+  width: 62px;
   flex-shrink: 0;
   transform: translateY(-30%);
 }
