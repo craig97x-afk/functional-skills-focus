@@ -184,6 +184,7 @@ export default async function HomePage() {
 
   const profileSafe = profile as ProfileRow | null;
   const role = profileSafe?.role ?? (session ? "student" : "guest");
+  const roleLabel = role ? `${role[0].toUpperCase()}${role.slice(1)}` : "";
   const hasAccess = Boolean(
     session &&
       (role === "admin" ||
@@ -240,7 +241,7 @@ export default async function HomePage() {
   return (
     <main className="space-y-0">
       <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-8">
-        <div className="mx-auto max-w-6xl px-6 py-12 flex flex-col items-center text-center gap-4">
+        <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col items-center text-center gap-3">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"
@@ -358,7 +359,7 @@ export default async function HomePage() {
                 <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
                   Account
                 </div>
-                <div className="text-lg font-semibold">{role}</div>
+                <div className="text-lg font-semibold">{roleLabel}</div>
                 <div className="apple-subtle">
                   {hasAccess
                     ? "You have access to lessons, practice, progress and mastery."
