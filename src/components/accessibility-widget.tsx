@@ -287,8 +287,13 @@ export default function AccessibilityWidget() {
     }
 
     const main = document.querySelector("main");
-    const content = (main?.textContent || document.body.textContent || "").trim();
-    if (!content) return;
+    const rawContent = (main?.textContent || document.body.textContent || "").trim();
+    const content = rawContent.replace(/\s+/g, " ").trim();
+    if (!content) {
+      setTtsError("No readable text found on this page.");
+      setTtsStatus("No text");
+      return;
+    }
 
     const getVoices = () => {
       if (voicesRef.current.length > 0) return voicesRef.current;
@@ -299,10 +304,12 @@ export default function AccessibilityWidget() {
       return voices;
     };
 
-    const maxChunk = 1200;
+    const maxChunk = 700;
     const chunks: string[] = [];
-    for (let i = 0; i < content.length; i += maxChunk) {
-      chunks.push(content.slice(i, i + maxChunk));
+    const maxChars = 6000;
+    const limited = content.slice(0, maxChars);
+    for (let i = 0; i < limited.length; i += maxChunk) {
+      chunks.push(limited.slice(i, i + maxChunk));
     }
 
     let index = 0;
@@ -363,7 +370,14 @@ export default function AccessibilityWidget() {
         if (window.speechSynthesis.paused) {
           window.speechSynthesis.resume();
         }
-      }, 200);
+        setTimeout(() => {
+          if (!window.speechSynthesis.speaking) {
+            setTtsStatus("Retrying…");
+            window.speechSynthesis.cancel();
+            setTimeout(speakNext, 150);
+          }
+        }, 800);
+      }, 250);
     };
 
     start();
