@@ -45,3 +45,9 @@ Template
 - Change summary: Added an accessibility control widget with reader/support tools and admin quick links on resource pages.
 - Impact: Users can self-serve accessibility preferences; admins get faster access to manage resources.
 - Follow-ups: Confirm accessibility presets feel right on mobile and adjust defaults if needed.
+
+- Date: 2026-02-12
+- Version/Commit: pending
+- Change summary: Added a dedicated Accessibility Widget sales page and footer link.
+- Impact: Users can discover and purchase the widget from a single landing page.
+- Follow-ups: Set NEXT_PUBLIC_WIDGET_BUY_URL to the live checkout link.
