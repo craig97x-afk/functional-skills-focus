@@ -264,6 +264,30 @@ export default function AccessibilityWidget() {
     const content = (main?.textContent || document.body.textContent || "").trim();
     if (!content) return;
 
+    const getVoices = () =>
+      new Promise<SpeechSynthesisVoice[]>((resolve) => {
+        const voices = window.speechSynthesis.getVoices();
+        if (voices.length > 0) {
+          resolve(voices);
+          return;
+        }
+        const handleVoices = () => {
+          resolve(window.speechSynthesis.getVoices());
+          window.speechSynthesis.removeEventListener("voiceschanged", handleVoices);
+        };
+        window.speechSynthesis.addEventListener("voiceschanged", handleVoices);
+        setTimeout(() => {
+          const fallbackVoices = window.speechSynthesis.getVoices();
+          if (fallbackVoices.length > 0) {
+            window.speechSynthesis.removeEventListener(
+              "voiceschanged",
+              handleVoices
+            );
+            resolve(fallbackVoices);
+          }
+        }, 1000);
+      });
+
     const maxChunk = 1200;
     const chunks: string[] = [];
     for (let i = 0; i < content.length; i += maxChunk) {
@@ -273,29 +297,46 @@ export default function AccessibilityWidget() {
     let index = 0;
     cancelSpeakRef.current = false;
 
-    window.speechSynthesis.cancel();
-    setIsSpeaking(true);
+    const startSpeaking = async () => {
+      const voices = await getVoices();
+      const preferredLang = appliedSettings.language || "en";
+      const voiceMatch =
+        voices.find((voice) => voice.lang?.toLowerCase().startsWith(preferredLang)) ||
+        voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
+        voices[0];
 
-    const speakNext = () => {
-      if (cancelSpeakRef.current) return;
-      if (index >= chunks.length) {
-        setIsSpeaking(false);
-        return;
-      }
-      const utterance = new SpeechSynthesisUtterance(chunks[index]);
-      utterance.lang = appliedSettings.language || "en";
-      utterance.rate = 1;
-      utterance.onend = () => {
-        index += 1;
+      window.speechSynthesis.cancel();
+      setIsSpeaking(true);
+
+      const speakNext = () => {
+        if (cancelSpeakRef.current) return;
+        if (index >= chunks.length) {
+          setIsSpeaking(false);
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(chunks[index]);
+        utterance.lang = preferredLang;
+        if (voiceMatch) utterance.voice = voiceMatch;
+        utterance.rate = 1;
+        utterance.onend = () => {
+          index += 1;
+          speakNext();
+        };
+        utterance.onerror = () => {
+          setIsSpeaking(false);
+        };
+        window.speechSynthesis.speak(utterance);
+      };
+
+      setTimeout(() => {
         speakNext();
-      };
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-      };
-      window.speechSynthesis.speak(utterance);
+        if (window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }, 150);
     };
 
-    speakNext();
+    startSpeaking();
   };
 
   const stopSpeaking = () => {
