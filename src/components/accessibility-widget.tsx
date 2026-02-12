@@ -173,7 +173,7 @@ export default function AccessibilityWidget() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceCount, setVoiceCount] = useState(0);
   const [ttsError, setTtsError] = useState<string | null>(null);
-  const [ttsStatus, setTtsStatus] = useState<string | null>(null);
+  const [ttsStatus, setTtsStatus] = useState<string>("Idle");
   const cancelSpeakRef = useRef(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
@@ -246,7 +246,7 @@ export default function AccessibilityWidget() {
       cancelSpeakRef.current = true;
       setIsSpeaking(false);
       setTtsError(null);
-      setTtsStatus(null);
+      setTtsStatus("Idle");
     }
   }, [appliedSettings.reading.textToSpeech]);
 
@@ -280,7 +280,8 @@ export default function AccessibilityWidget() {
 
   const speakPage = () => {
     if (typeof window === "undefined") return;
-    if (!window.speechSynthesis) {
+    const synth = window.speechSynthesis;
+    if (!synth) {
       setTtsError("Text‑to‑speech isn’t available in this browser.");
       setTtsStatus("Unavailable");
       return;
@@ -305,20 +306,17 @@ export default function AccessibilityWidget() {
     };
 
     const maxChunk = 700;
-    const chunks: string[] = [];
     const maxChars = 6000;
     const limited = content.slice(0, maxChars);
+    const chunks: string[] = [];
     for (let i = 0; i < limited.length; i += maxChunk) {
       chunks.push(limited.slice(i, i + maxChunk));
     }
 
-    let index = 0;
-    cancelSpeakRef.current = false;
-
     const voices = getVoices();
     setVoiceCount(voices.length);
     setTtsError(null);
-    setTtsStatus("Starting…");
+    setTtsStatus("Preparing…");
     if (voices.length === 0) {
       setTtsError(
         "No voices available. Check device speech settings or install a voice."
@@ -326,61 +324,57 @@ export default function AccessibilityWidget() {
       setTtsStatus("No voices");
       return;
     }
+
     const preferredLang = appliedSettings.language || "en";
     const voiceMatch =
       voices.find((voice) => voice.lang?.toLowerCase().startsWith(preferredLang)) ||
       voices.find((voice) => voice.lang?.toLowerCase().startsWith("en")) ||
       voices[0];
 
-    const speakNext = () => {
+    cancelSpeakRef.current = false;
+    synth.cancel();
+
+    let index = 0;
+    const speakChunk = () => {
       if (cancelSpeakRef.current) return;
       if (index >= chunks.length) {
         setIsSpeaking(false);
         setTtsStatus("Done");
         return;
       }
+
       const utterance = new SpeechSynthesisUtterance(chunks[index]);
       utterance.lang = preferredLang;
       if (voiceMatch) utterance.voice = voiceMatch;
       utterance.rate = 1;
       utterance.pitch = 1;
       utterance.volume = 1;
-      utterance.onstart = () => setTtsStatus("Speaking");
+      utterance.onstart = () =>
+        setTtsStatus(`Speaking ${index + 1}/${chunks.length}`);
       utterance.onend = () => {
         index += 1;
-        speakNext();
+        requestAnimationFrame(speakChunk);
       };
-      utterance.onerror = () => {
+      utterance.onerror = (event) => {
         setIsSpeaking(false);
         setTtsStatus("Error");
+        setTtsError(
+          `Speech error${event.error ? `: ${event.error}` : ""}. Try again.`
+        );
       };
-      window.speechSynthesis.speak(utterance);
-    };
 
-    const start = () => {
-      if (cancelSpeakRef.current) return;
-      if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
-        window.speechSynthesis.cancel();
-        setTimeout(start, 200);
-        return;
+      try {
+        setIsSpeaking(true);
+        synth.speak(utterance);
+        if (synth.paused) synth.resume();
+      } catch (error) {
+        setIsSpeaking(false);
+        setTtsStatus("Error");
+        setTtsError("Speech failed to start. Please try again.");
       }
-      setIsSpeaking(true);
-      setTimeout(() => {
-        speakNext();
-        if (window.speechSynthesis.paused) {
-          window.speechSynthesis.resume();
-        }
-        setTimeout(() => {
-          if (!window.speechSynthesis.speaking) {
-            setTtsStatus("Retrying…");
-            window.speechSynthesis.cancel();
-            setTimeout(speakNext, 150);
-          }
-        }, 800);
-      }, 250);
     };
 
-    start();
+    speakChunk();
   };
 
   const speakTest = () => {
@@ -395,7 +389,7 @@ export default function AccessibilityWidget() {
       : window.speechSynthesis.getVoices();
     setVoiceCount(voices.length);
     setTtsError(null);
-    setTtsStatus("Starting…");
+    setTtsStatus("Preparing…");
     if (voices.length === 0) {
       setTtsError(
         "No voices available. Check device speech settings or install a voice."
@@ -408,9 +402,7 @@ export default function AccessibilityWidget() {
       voices.find((voice) =>
         voice.lang?.toLowerCase().startsWith(appliedSettings.language || "en")
       ) || voices[0];
-    const utterance = new SpeechSynthesisUtterance(
-      "Accessibility speech test."
-    );
+    const utterance = new SpeechSynthesisUtterance("Accessibility speech test.");
     utterance.lang = appliedSettings.language || "en";
     if (voiceMatch) utterance.voice = voiceMatch;
     utterance.rate = 1;
@@ -447,6 +439,7 @@ export default function AccessibilityWidget() {
     cancelSpeakRef.current = true;
     window.speechSynthesis?.cancel();
     setIsSpeaking(false);
+    setTtsStatus("Stopped");
   };
 
   const resetDefaults = () => {
@@ -457,14 +450,22 @@ export default function AccessibilityWidget() {
     return null;
   }
 
-  const sideClass = settings.position === "left" ? "left-6" : "right-6";
+  const sideStyle =
+    settings.position === "left"
+      ? { left: "1.5rem", right: "auto" }
+      : { right: "1.5rem", left: "auto" };
   const optionClass = (active: boolean) =>
     `a11y-option ${active ? "a11y-option-active" : ""}`;
 
   return (
     <div
-      className={`a11y-widget ${sideClass}`}
-      style={{ position: "fixed", top: "50%", transform: "translateY(-50%)" }}
+      className="a11y-widget"
+      style={{
+        position: "fixed",
+        top: "50%",
+        transform: "translateY(-50%)",
+        ...sideStyle,
+      }}
     >
       {!open ? (
         <button
@@ -832,8 +833,7 @@ export default function AccessibilityWidget() {
             </div>
             {settings.reading.textToSpeech && (
               <div className="text-xs text-[color:var(--muted-foreground)]">
-                Voices available: {voiceCount || 0}
-                {ttsStatus ? ` · ${ttsStatus}` : ""}
+                Voices available: {voiceCount || 0} · {ttsStatus}
                 {ttsError ? ` · ${ttsError}` : ""}
               </div>
             )}
