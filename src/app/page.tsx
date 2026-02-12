@@ -243,18 +243,20 @@ export default async function HomePage() {
     <main className="space-y-0">
       <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-6">
         <div className="mx-auto max-w-6xl px-6 py-5 min-h-[270px] md:min-h-[306px] flex flex-col items-center justify-center text-center gap-0">
-          <img
-            src="/brand/logo-mark.png"
-            alt="Functional Skills Focus"
-            className="dashboard-banner-logo" 
-          />
-          <div className="-mt-30">
-            <div className="text-3xl font-semibold tracking-tight leading-tight">
-              Functional Skills Focus
-            </div>
-            <div className="mt-0 text-sm text-white/80 leading-snug">
-              Learn, practise, and build confidence with structured Functional Skills
-              support.
+          <div className="flex flex-col items-center text-center gap-0 translate-y-6">
+            <img
+              src="/brand/logo-mark.png"
+              alt="Functional Skills Focus"
+              className="dashboard-banner-logo"
+            />
+            <div style={{ marginTop: "-2rem" }}>
+              <div className="text-3xl font-semibold tracking-tight leading-tight">
+                Functional Skills Focus
+              </div>
+              <div className="mt-0 text-sm text-white/80 leading-snug">
+                Learn, practise, and build confidence with structured Functional Skills
+                support.
+              </div>
             </div>
           </div>
         </div>
