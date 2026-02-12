@@ -18,6 +18,54 @@ export default function ResourceSearch() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [placeholder, setPlaceholder] = useState("Search for resources...");
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      return;
+    }
+
+    const phrases = [
+      "Search for resources...",
+      "Try “Entry Level 3 fractions”",
+      "Search exam mocks",
+      "Search question sets",
+      "Search workbooks",
+      "Search guides",
+    ];
+    let phraseIndex = 0;
+    let charIndex = 0;
+    let direction: "forward" | "back" = "forward";
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      const phrase = phrases[phraseIndex];
+      if (direction === "forward") {
+        charIndex += 1;
+        if (charIndex >= phrase.length) {
+          direction = "back";
+          timeoutId = setTimeout(tick, 1200);
+          setPlaceholder(phrase);
+          return;
+        }
+      } else {
+        charIndex -= 1;
+        if (charIndex <= 0) {
+          direction = "forward";
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+        }
+      }
+
+      setPlaceholder(phrase.slice(0, Math.max(charIndex, 0)));
+      timeoutId = setTimeout(tick, direction === "forward" ? 70 : 30);
+    };
+
+    timeoutId = setTimeout(tick, 400);
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [isFocused]);
 
   useEffect(() => {
     const trimmed = query.trim();
@@ -64,9 +112,11 @@ export default function ResourceSearch() {
         </label>
         <input
           className="w-full bg-transparent text-lg text-[color:var(--foreground)] placeholder:text-slate-400/70 focus:outline-none"
-          placeholder="Search for resources, exam mocks, workbooks, or guides..."
+          placeholder={placeholder}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           type="search"
         />
       </div>
