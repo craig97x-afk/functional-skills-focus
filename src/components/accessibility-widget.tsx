@@ -231,19 +231,27 @@ export default function AccessibilityWidget() {
   };
 
   const toggleNeed = (key: keyof A11ySettings["needs"]) => {
-    updateSettings({ needs: { [key]: !settings.needs[key] } });
+    updateSettings({
+      needs: { ...settings.needs, [key]: !settings.needs[key] },
+    });
   };
 
   const toggleReading = (key: keyof A11ySettings["reading"]) => {
-    updateSettings({ reading: { [key]: !settings.reading[key] } });
+    updateSettings({
+      reading: { ...settings.reading, [key]: !settings.reading[key] },
+    });
   };
 
   const toggleVisual = (key: keyof A11ySettings["visual"]) => {
-    updateSettings({ visual: { [key]: !settings.visual[key] } });
+    updateSettings({
+      visual: { ...settings.visual, [key]: !settings.visual[key] },
+    });
   };
 
   const toggleContent = (key: keyof A11ySettings["content"]) => {
-    updateSettings({ content: { [key]: !settings.content[key] } });
+    updateSettings({
+      content: { ...settings.content, [key]: !settings.content[key] },
+    });
   };
 
   const speakPage = () => {
@@ -429,7 +437,12 @@ export default function AccessibilityWidget() {
                 className="a11y-select"
                 value={settings.visual.contrast}
                 onChange={(event) =>
-                  updateSettings({ visual: { contrast: Number(event.target.value) } })
+                  updateSettings({
+                    visual: {
+                      ...settings.visual,
+                      contrast: Number(event.target.value),
+                    },
+                  })
                 }
               >
                 <option value={1}>Normal</option>
@@ -445,7 +458,12 @@ export default function AccessibilityWidget() {
                 className="a11y-select"
                 value={settings.visual.saturation}
                 onChange={(event) =>
-                  updateSettings({ visual: { saturation: Number(event.target.value) } })
+                  updateSettings({
+                    visual: {
+                      ...settings.visual,
+                      saturation: Number(event.target.value),
+                    },
+                  })
                 }
               >
                 <option value={0.9}>Low</option>
@@ -472,7 +490,12 @@ export default function AccessibilityWidget() {
                 className="a11y-select"
                 value={settings.content.textScale}
                 onChange={(event) =>
-                  updateSettings({ content: { textScale: Number(event.target.value) } })
+                  updateSettings({
+                    content: {
+                      ...settings.content,
+                      textScale: Number(event.target.value),
+                    },
+                  })
                 }
               >
                 <option value={1}>Normal</option>
@@ -490,6 +513,7 @@ export default function AccessibilityWidget() {
                 onChange={(event) =>
                   updateSettings({
                     content: {
+                      ...settings.content,
                       textAlign: event.target.value as A11ySettings["content"]["textAlign"],
                     },
                   })
@@ -509,7 +533,10 @@ export default function AccessibilityWidget() {
                 value={settings.content.letterSpacing}
                 onChange={(event) =>
                   updateSettings({
-                    content: { letterSpacing: Number(event.target.value) },
+                    content: {
+                      ...settings.content,
+                      letterSpacing: Number(event.target.value),
+                    },
                   })
                 }
               >
@@ -527,7 +554,10 @@ export default function AccessibilityWidget() {
                 value={settings.content.lineSpacing}
                 onChange={(event) =>
                   updateSettings({
-                    content: { lineSpacing: Number(event.target.value) },
+                    content: {
+                      ...settings.content,
+                      lineSpacing: Number(event.target.value),
+                    },
                   })
                 }
               >
