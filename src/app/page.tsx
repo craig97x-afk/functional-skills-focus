@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
 import ShopRotator from "@/components/shop-rotator";
+import ResourceSearch from "@/components/resource-search";
 import DashboardWidgetPicker from "@/components/dashboard-widget-picker";
 
 function formatPrice(priceCents: number, currency: string) {
@@ -240,8 +241,8 @@ export default async function HomePage() {
 
   return (
     <main className="space-y-0">
-      <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-8">
-        <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col items-center text-center gap-3">
+      <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-6">
+        <div className="mx-auto max-w-6xl px-6 py-6 min-h-[300px] md:min-h-[340px] flex flex-col items-center justify-center text-center gap-2">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"
@@ -258,6 +259,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <div className="mx-auto w-full max-w-5xl px-6 mb-10">
+        <ResourceSearch />
+      </div>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
