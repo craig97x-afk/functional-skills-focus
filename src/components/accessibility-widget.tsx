@@ -171,6 +171,8 @@ export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceCount, setVoiceCount] = useState(0);
+  const [ttsError, setTtsError] = useState<string | null>(null);
   const cancelSpeakRef = useRef(false);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
@@ -193,6 +195,7 @@ export default function AccessibilityWidget() {
 
     const loadVoices = () => {
       voicesRef.current = window.speechSynthesis.getVoices();
+      setVoiceCount(voicesRef.current.length);
     };
 
     loadVoices();
@@ -241,6 +244,7 @@ export default function AccessibilityWidget() {
       window.speechSynthesis?.cancel();
       cancelSpeakRef.current = true;
       setIsSpeaking(false);
+      setTtsError(null);
     }
   }, [appliedSettings.reading.textToSpeech]);
 
@@ -274,7 +278,10 @@ export default function AccessibilityWidget() {
 
   const speakPage = () => {
     if (typeof window === "undefined") return;
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis) {
+      setTtsError("Text‑to‑speech isn’t available in this browser.");
+      return;
+    }
 
     const main = document.querySelector("main");
     const content = (main?.textContent || document.body.textContent || "").trim();
@@ -299,6 +306,14 @@ export default function AccessibilityWidget() {
     cancelSpeakRef.current = false;
 
     const voices = getVoices();
+    setVoiceCount(voices.length);
+    setTtsError(null);
+    if (voices.length === 0) {
+      setTtsError(
+        "No voices available. Check device speech settings or install a voice."
+      );
+      return;
+    }
     const preferredLang = appliedSettings.language || "en";
     const voiceMatch =
       voices.find((voice) => voice.lang?.toLowerCase().startsWith(preferredLang)) ||
@@ -334,6 +349,40 @@ export default function AccessibilityWidget() {
     }
   };
 
+  const speakTest = () => {
+    if (typeof window === "undefined") return;
+    if (!window.speechSynthesis) {
+      setTtsError("Text‑to‑speech isn’t available in this browser.");
+      return;
+    }
+    const voices = voicesRef.current.length
+      ? voicesRef.current
+      : window.speechSynthesis.getVoices();
+    setVoiceCount(voices.length);
+    setTtsError(null);
+    if (voices.length === 0) {
+      setTtsError(
+        "No voices available. Check device speech settings or install a voice."
+      );
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const voiceMatch =
+      voices.find((voice) =>
+        voice.lang?.toLowerCase().startsWith(appliedSettings.language || "en")
+      ) || voices[0];
+    const utterance = new SpeechSynthesisUtterance(
+      "Accessibility speech test."
+    );
+    utterance.lang = appliedSettings.language || "en";
+    if (voiceMatch) utterance.voice = voiceMatch;
+    utterance.rate = 1;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
   const stopSpeaking = () => {
     if (typeof window === "undefined") return;
     cancelSpeakRef.current = true;
@@ -354,7 +403,10 @@ export default function AccessibilityWidget() {
     `a11y-option ${active ? "a11y-option-active" : ""}`;
 
   return (
-    <div className={`a11y-widget ${sideClass}`}>
+    <div
+      className={`a11y-widget ${sideClass}`}
+      style={{ position: "fixed", top: "50%", transform: "translateY(-50%)" }}
+    >
       {!open ? (
         <button
           type="button"
@@ -710,7 +762,21 @@ export default function AccessibilityWidget() {
               >
                 Stop
               </button>
+              <button
+                type="button"
+                className={optionClass(false)}
+                onClick={speakTest}
+                disabled={!settings.reading.textToSpeech}
+              >
+                Test voice
+              </button>
             </div>
+            {settings.reading.textToSpeech && (
+              <div className="text-xs text-[color:var(--muted-foreground)]">
+                Voices available: {voiceCount || 0}
+                {ttsError ? ` · ${ttsError}` : ""}
+              </div>
+            )}
           </div>
 
           <div className="a11y-section a11y-section-footer">
