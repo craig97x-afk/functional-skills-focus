@@ -808,7 +808,7 @@ export default function AccessibilityWidget() {
             <div className="a11y-option-row">
               <button
                 type="button"
-                className={optionClass(settings.reading.textToSpeech && !isSpeaking)}
+                className={optionClass(isSpeaking)}
                 onClick={speakPage}
                 disabled={!settings.reading.textToSpeech}
               >
