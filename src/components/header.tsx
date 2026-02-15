@@ -322,22 +322,24 @@ export default async function Header() {
                 </div>
               </div>
 
-              <div className="apple-nav-group">
-                <button className={navItem} type="button">
-                  Tools
-                </button>
-                <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/study-plan">
-                    Study plan
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/flashcards">
-                    Flashcards
-                  </Link>
-                  <Link className="apple-nav-menu-item" href={messagesHref}>
-                    Messages
-                  </Link>
+              {session.profile?.role !== "admin" && (
+                <div className="apple-nav-group">
+                  <button className={navItem} type="button">
+                    Tools
+                  </button>
+                  <div className="apple-nav-menu">
+                    <Link className="apple-nav-menu-item" href="/study-plan">
+                      Study plan
+                    </Link>
+                    <Link className="apple-nav-menu-item" href="/flashcards">
+                      Flashcards
+                    </Link>
+                    <Link className="apple-nav-menu-item" href={messagesHref}>
+                      Messages
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
 
@@ -464,8 +466,18 @@ export default async function Header() {
 
           {session && (
             <div className="apple-nav-group">
-              <button className={navItem} type="button">
-                <span>Account</span>
+              <button className={navItem} type="button" aria-label="Account">
+                <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+                  <path
+                    d="M12 12.5a4 4 0 1 0-4-4 4 4 0 0 0 4 4ZM4.5 20a7.5 7.5 0 0 1 15 0"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="sr-only">Account</span>
               </button>
               <div className="apple-nav-menu apple-nav-menu-right">
                 <Link className="apple-nav-menu-item" href="/account">

@@ -138,20 +138,22 @@ export default function MobileNav({
                   </div>
                 </details>
 
-                <details className="mobile-nav-group">
-                  <summary className="apple-nav-menu-item cursor-pointer">Tools</summary>
-                  <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/study-plan" onClick={closeMenu}>
-                      Study plan
-                    </Link>
-                    <Link className="apple-nav-menu-item" href="/flashcards" onClick={closeMenu}>
-                      Flashcards
-                    </Link>
-                    <Link className="apple-nav-menu-item" href={messagesHref} onClick={closeMenu}>
-                      Messages{unreadMessages > 0 ? ` (${messageBadge})` : ""}
-                    </Link>
-                  </div>
-                </details>
+                {!isAdmin && (
+                  <details className="mobile-nav-group">
+                    <summary className="apple-nav-menu-item cursor-pointer">Tools</summary>
+                    <div className="mt-2 flex flex-col gap-2 pl-3">
+                      <Link className="apple-nav-menu-item" href="/study-plan" onClick={closeMenu}>
+                        Study plan
+                      </Link>
+                      <Link className="apple-nav-menu-item" href="/flashcards" onClick={closeMenu}>
+                        Flashcards
+                      </Link>
+                      <Link className="apple-nav-menu-item" href={messagesHref} onClick={closeMenu}>
+                        Messages{unreadMessages > 0 ? ` (${messageBadge})` : ""}
+                      </Link>
+                    </div>
+                  </details>
+                )}
               </>
             )}
 

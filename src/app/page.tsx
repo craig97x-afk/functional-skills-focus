@@ -158,7 +158,7 @@ export default async function HomePage() {
   }));
 
   // Widget registry for the dashboard picker UI.
-  const widgetOptions = [
+  const baseWidgetOptions = [
     { key: "account", label: "Account" },
     { key: "quick_actions", label: "Quick actions" },
     { key: "exam_countdowns", label: "Exam countdowns" },
@@ -186,6 +186,7 @@ export default async function HomePage() {
   const profileSafe = profile as ProfileRow | null;
   const role = profileSafe?.role ?? (session ? "student" : "guest");
   const roleLabel = role ? `${role[0].toUpperCase()}${role.slice(1)}` : "";
+  const isAdmin = role === "admin";
   const hasAccess = Boolean(
     session &&
       (role === "admin" ||
@@ -391,17 +392,21 @@ export default async function HomePage() {
                   <Link href="/guides" className="apple-pill">
                     Shop
                   </Link>
-                  {hasAccess && (
+                  {!isAdmin && hasAccess && (
                     <Link href="/maths/practice" className="apple-pill">
                       Practice
                     </Link>
                   )}
-                  <Link href="/study-plan" className="apple-pill">
-                    Study plan
-                  </Link>
-                  <Link href="/flashcards" className="apple-pill">
-                    Flashcards
-                  </Link>
+                  {!isAdmin && (
+                    <>
+                      <Link href="/study-plan" className="apple-pill">
+                        Study plan
+                      </Link>
+                      <Link href="/flashcards" className="apple-pill">
+                        Flashcards
+                      </Link>
+                    </>
+                  )}
                   {hasAccess ? (
                     <>
                       <Link href="/progress" className="apple-pill">
@@ -466,7 +471,7 @@ export default async function HomePage() {
               </section>
             )}
 
-            {enabledWidgetKeys.has("flashcards") && (
+            {enabledWidgetKeys.has("flashcards") && !isAdmin && (
               <section className="apple-card p-6 space-y-4">
                 <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
                   Flashcards
@@ -560,3 +565,6 @@ export default async function HomePage() {
     </main>
   );
 }
+  const widgetOptions = isAdmin
+    ? baseWidgetOptions.filter((option) => option.key !== "flashcards")
+    : baseWidgetOptions;

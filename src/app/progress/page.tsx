@@ -2,16 +2,69 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
+import AdminStudentProgressList from "@/components/admin-student-progress-list";
 
 type TopicRow = { id: string; title: string; sort_order: number };
 type AttemptRow = { question_id: string; is_correct: boolean | null; created_at: string };
 type QuestionRow = { id: string; topic_id: string };
+type StudentRow = {
+  id: string;
+  full_name: string | null;
+  role: string | null;
+};
+
+const alphabetize = (a: StudentRow, b: StudentRow) => {
+  const aName = (a.full_name ?? "").toLowerCase();
+  const bName = (b.full_name ?? "").toLowerCase();
+  if (aName && bName) return aName.localeCompare(bName);
+  if (aName) return -1;
+  if (bName) return 1;
+  return a.id.localeCompare(b.id);
+};
 
 export default async function ProgressPage() {
   const session = await getUser();
   if (!session) redirect("/login");
 
   const supabase = await createClient();
+  const isAdmin = session.profile?.role === "admin";
+
+  if (isAdmin) {
+    const { data: studentsRaw, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, role")
+      .or("role.is.null,role.eq.student")
+      .order("full_name", { ascending: true });
+
+    if (error) {
+      return (
+        <main className="p-6 space-y-4">
+          <h1 className="text-2xl font-bold">Progress</h1>
+          <p className="text-sm text-red-500">Failed to load students: {error.message}</p>
+        </main>
+      );
+    }
+
+    const students = (studentsRaw ?? [])
+      .filter((row: StudentRow) => row.role !== "admin")
+      .sort(alphabetize);
+
+    return (
+      <main className="p-6 space-y-6">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            Admin
+          </div>
+          <h1 className="text-2xl font-bold mt-2">Student progress</h1>
+          <p className="apple-subtle mt-2">
+            Pick a student to view their progress overview and attempts.
+          </p>
+        </div>
+
+        <AdminStudentProgressList students={students} />
+      </main>
+    );
+  }
 
   const { data: topicsRaw } = await supabase
     .from("topics")
