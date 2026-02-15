@@ -123,7 +123,8 @@ export async function GET(request: Request) {
   ]);
   const wantsMocks = isKeyword(["mock", "mocks", "exam", "paper", "papers", "test"]);
   const wantsQuestions = isKeyword(["question", "questions", "quiz", "practice"]);
-  const wantsResources = isKeyword(["resource", "resources"]);
+  const wantsLevels = isKeyword(["level", "levels"]);
+  const wantsResources = isKeyword(["resource", "resources"]) || wantsLevels;
 
   const subjectFilter = normalized.includes("math")
     ? "maths"
@@ -134,16 +135,25 @@ export async function GET(request: Request) {
   const levelMatch = normalized.match(
     /(entry\s*level\s*[123]|entry\s*[123]|e[123]|fs\s*[12]|functional\s*skills\s*level\s*[12])/
   );
-  let levelFilter: string | null = null;
+  let levelFilters: string[] | null = null;
   if (levelMatch) {
     const value = levelMatch[0];
     if (value.includes("entry") || value.startsWith("e")) {
-      if (value.includes("1")) levelFilter = "entry-1";
-      if (value.includes("2")) levelFilter = "entry-2";
-      if (value.includes("3")) levelFilter = "entry-3";
+      if (value.includes("1")) levelFilters = ["entry-1"];
+      if (value.includes("2")) levelFilters = ["entry-2"];
+      if (value.includes("3")) levelFilters = ["entry-3"];
     } else if (value.includes("fs") || value.includes("functional")) {
-      if (value.includes("1")) levelFilter = "fs-1";
-      if (value.includes("2")) levelFilter = "fs-2";
+      if (value.includes("1")) levelFilters = ["fs-1"];
+      if (value.includes("2")) levelFilters = ["fs-2"];
+    }
+  }
+  if (!levelFilters) {
+    const genericLevelMatch = normalized.match(/level\s*([1-3])/);
+    if (genericLevelMatch) {
+      const value = genericLevelMatch[1];
+      if (value === "1") levelFilters = ["entry-1", "fs-1"];
+      if (value === "2") levelFilters = ["entry-2", "fs-2"];
+      if (value === "3") levelFilters = ["entry-3"];
     }
   }
 
@@ -170,7 +180,7 @@ export async function GET(request: Request) {
     )
     .eq("is_published", true);
   if (subjectFilter) workbookQuery.eq("subject", subjectFilter);
-  if (levelFilter) workbookQuery.eq("level_slug", levelFilter);
+  if (levelFilters) workbookQuery.in("level_slug", levelFilters);
 
   const workbookOr = buildOr(["title", "description", "topic", "category"]);
   if (!(wantsWorkbooks || wantsResources || wantsGuides) && workbookOr) {
@@ -182,7 +192,7 @@ export async function GET(request: Request) {
     .select("id, subject, level_slug, title, description, file_url")
     .eq("is_published", true);
   if (subjectFilter) mockQuery.eq("subject", subjectFilter);
-  if (levelFilter) mockQuery.eq("level_slug", levelFilter);
+  if (levelFilters) mockQuery.in("level_slug", levelFilters);
 
   const mockOr = buildOr(["title", "description"]);
   if (!(wantsMocks || wantsResources) && mockOr) {
@@ -194,7 +204,7 @@ export async function GET(request: Request) {
     .select("id, subject, level_slug, title, description, resource_url")
     .eq("is_published", true);
   if (subjectFilter) setQuery.eq("subject", subjectFilter);
-  if (levelFilter) setQuery.eq("level_slug", levelFilter);
+  if (levelFilters) setQuery.in("level_slug", levelFilters);
 
   const setOr = buildOr(["title", "description"]);
   if (!(wantsQuestions || wantsResources) && setOr) {
