@@ -187,6 +187,9 @@ export default async function HomePage() {
   const role = profileSafe?.role ?? (session ? "student" : "guest");
   const roleLabel = role ? `${role[0].toUpperCase()}${role.slice(1)}` : "";
   const isAdmin = role === "admin";
+  const widgetOptions = isAdmin
+    ? baseWidgetOptions.filter((option) => option.key !== "flashcards")
+    : baseWidgetOptions;
   const hasAccess = Boolean(
     session &&
       (role === "admin" ||
@@ -565,6 +568,3 @@ export default async function HomePage() {
     </main>
   );
 }
-  const widgetOptions = isAdmin
-    ? baseWidgetOptions.filter((option) => option.key !== "flashcards")
-    : baseWidgetOptions;
