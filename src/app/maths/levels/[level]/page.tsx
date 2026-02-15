@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
 import LevelTabs from "./level-tabs";
+import WorkbookForm from "@/app/admin/workbooks/workbook-form";
+import ExamMockForm from "@/app/admin/questions/exam-mock-form";
+import QuestionSetForm from "@/app/admin/questions/question-set-form";
 
 export const dynamic = "force-dynamic";
 
@@ -197,6 +200,7 @@ export default async function MathsLevelDetailPage({
       session?.profile?.is_subscribed ||
       session?.profile?.access_override
   );
+  const isAdmin = session?.profile?.role === "admin";
 
   const { level: levelKey } = await params;
   const level =
@@ -226,12 +230,64 @@ export default async function MathsLevelDetailPage({
           </p>
         </section>
       ) : (
-        <LevelTabs
-          categories={level.categories ?? []}
-          subject="maths"
-          levelSlug={levelKey}
-          hasAccess={hasAccess}
-        />
+        <>
+          {isAdmin && (
+            <section className="apple-card p-6 space-y-4">
+              <div>
+                <div className="text-xs uppercase tracking-[0.24em] text-slate-500">Admin</div>
+                <h2 className="text-xl font-semibold mt-2">Manage worksheets & resources</h2>
+                <p className="apple-subtle mt-2">
+                  Add worksheets, exam mocks, and question sets for this level without leaving the page.
+                </p>
+              </div>
+              <div className="grid gap-4 lg:grid-cols-2">
+                <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    Add a worksheet
+                  </summary>
+                  <div className="mt-4">
+                    <WorkbookForm
+                      defaultSubject="maths"
+                      defaultLevel={levelKey}
+                      lockSubjectLevel
+                    />
+                  </div>
+                </details>
+                <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    Add resources
+                  </summary>
+                  <div className="mt-4 space-y-6">
+                    <div>
+                      <div className="text-sm font-semibold mb-2">Exam mock</div>
+                      <ExamMockForm
+                        defaultSubject="maths"
+                        defaultLevel={levelKey}
+                        lockSubjectLevel
+                      />
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold mb-2">Question set</div>
+                      <QuestionSetForm
+                        defaultSubject="maths"
+                        defaultLevel={levelKey}
+                        lockSubjectLevel
+                      />
+                    </div>
+                  </div>
+                </details>
+              </div>
+            </section>
+          )}
+
+          <LevelTabs
+            categories={level.categories ?? []}
+            subject="maths"
+            levelSlug={levelKey}
+            hasAccess={hasAccess}
+            isAdmin={isAdmin}
+          />
+        </>
       )}
     </main>
   );

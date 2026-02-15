@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import AdminRowActions from "@/components/admin-row-actions";
 
 type Category = {
   title: string;
@@ -16,6 +17,7 @@ type WorkbookRow = {
   topic: string;
   thumbnail_url: string | null;
   file_url: string | null;
+  is_published: boolean;
 };
 
 type DisplayWorkbook = {
@@ -25,13 +27,14 @@ type DisplayWorkbook = {
   thumbnail_url?: string | null;
   file_url?: string | null;
   isPlaceholder?: boolean;
+  is_published?: boolean;
 };
 
-const workbookTemplates = [
-  { title: "Workbook 1 - Core Skills", detail: "Key ideas and definitions." },
-  { title: "Workbook 2 - Guided Practice", detail: "Worked examples + hints." },
-  { title: "Workbook 3 - Exam Style", detail: "Exam-style questions." },
-  { title: "Workbook 4 - Mixed Revision", detail: "Short mixed practice set." },
+const worksheetTemplates = [
+  { title: "Worksheet 1 - Core Skills", detail: "Key ideas and definitions." },
+  { title: "Worksheet 2 - Guided Practice", detail: "Worked examples + hints." },
+  { title: "Worksheet 3 - Exam Style", detail: "Exam-style questions." },
+  { title: "Worksheet 4 - Mixed Revision", detail: "Short mixed practice set." },
 ];
 
 const bannerGradientStyle = {
@@ -43,11 +46,13 @@ export default function LevelTabs({
   subject,
   levelSlug,
   hasAccess,
+  isAdmin,
 }: {
   categories: Category[];
   subject: string;
   levelSlug: string;
   hasAccess: boolean;
+  isAdmin: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -62,13 +67,20 @@ export default function LevelTabs({
     let ignore = false;
 
     async function loadWorkbooks() {
-      const { data } = await supabase
+      let query = supabase
         .from("workbooks")
-        .select("id, title, description, category, topic, thumbnail_url, file_url")
+        .select(
+          "id, title, description, category, topic, thumbnail_url, file_url, is_published"
+        )
         .eq("subject", subject)
         .eq("level_slug", levelSlug)
-        .eq("is_published", true)
         .order("created_at", { ascending: false });
+
+      if (!isAdmin) {
+        query = query.eq("is_published", true);
+      }
+
+      const { data } = await query;
 
       if (!ignore && data) {
         setWorkbooks(data as WorkbookRow[]);
@@ -140,11 +152,13 @@ export default function LevelTabs({
               ? actual.map((workbook) => ({
                   id: workbook.id,
                   title: workbook.title,
-                  detail: workbook.description || "Workbook material.",
+                  detail: workbook.description || "Worksheet material.",
                   thumbnail_url: workbook.thumbnail_url,
                   file_url: workbook.file_url,
+                  isPlaceholder: false,
+                  is_published: workbook.is_published,
                 }))
-              : workbookTemplates.map((workbook, templateIndex) => ({
+              : worksheetTemplates.map((workbook, templateIndex) => ({
                   id: `placeholder-${key}-${templateIndex}`,
                   title: workbook.title,
                   detail: workbook.detail,
@@ -165,7 +179,7 @@ export default function LevelTabs({
 
               <div className="mt-6 space-y-4">
                 <p className="apple-subtle text-base">
-                  Workbooks, lesson packs, and revision sheets for {topic}.
+                  Worksheets, lesson packs, and revision sheets for {topic}.
                 </p>
                 <div className="grid gap-4">
                   {display.map((workbook, workbookIndex) => {
@@ -188,7 +202,7 @@ export default function LevelTabs({
                           />
                         ) : (
                           <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-200">
-                            Workbook
+                            Worksheet
                           </div>
                         )}
                       </div>
@@ -197,6 +211,15 @@ export default function LevelTabs({
                         <div className="text-sm text-[color:var(--muted-foreground)]">
                           {workbook.detail}
                         </div>
+                        {isAdmin && !workbook.isPlaceholder && (
+                          <div className="pt-2">
+                            <AdminRowActions
+                              table="workbooks"
+                              id={workbook.id}
+                              initialPublished={Boolean(workbook.is_published)}
+                            />
+                          </div>
+                        )}
                         {isLocked ? (
                           <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
                             Subscription user only
@@ -208,7 +231,7 @@ export default function LevelTabs({
                             target="_blank"
                             rel="noreferrer"
                           >
-                            Open workbook
+                            Open worksheet
                           </a>
                         ) : (
                           <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">

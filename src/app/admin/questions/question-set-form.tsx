@@ -13,10 +13,20 @@ const levelOptions = [
   { value: "fs-2", label: "Functional Skills Level 2" },
 ];
 
-export default function QuestionSetForm() {
+type QuestionSetFormProps = {
+  defaultSubject?: string;
+  defaultLevel?: string;
+  lockSubjectLevel?: boolean;
+};
+
+export default function QuestionSetForm({
+  defaultSubject = "maths",
+  defaultLevel = "entry-3",
+  lockSubjectLevel = false,
+}: QuestionSetFormProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [subject, setSubject] = useState("maths");
-  const [levelSlug, setLevelSlug] = useState("entry-3");
+  const [subject, setSubject] = useState(defaultSubject);
+  const [levelSlug, setLevelSlug] = useState(defaultLevel);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -106,6 +116,7 @@ export default function QuestionSetForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             <option value="maths">Maths</option>
             <option value="english">English</option>
@@ -117,6 +128,7 @@ export default function QuestionSetForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={levelSlug}
             onChange={(e) => setLevelSlug(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             {levelOptions.map((level) => (
               <option key={level.value} value={level.value}>

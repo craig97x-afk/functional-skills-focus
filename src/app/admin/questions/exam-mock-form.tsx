@@ -11,10 +11,20 @@ const levelOptions = [
   { value: "fs-2", label: "Functional Skills Level 2" },
 ];
 
-export default function ExamMockForm() {
+type ExamMockFormProps = {
+  defaultSubject?: string;
+  defaultLevel?: string;
+  lockSubjectLevel?: boolean;
+};
+
+export default function ExamMockForm({
+  defaultSubject = "maths",
+  defaultLevel = "entry-3",
+  lockSubjectLevel = false,
+}: ExamMockFormProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [subject, setSubject] = useState("maths");
-  const [levelSlug, setLevelSlug] = useState("entry-3");
+  const [subject, setSubject] = useState(defaultSubject);
+  const [levelSlug, setLevelSlug] = useState(defaultLevel);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [cover, setCover] = useState<File | null>(null);
@@ -104,6 +114,7 @@ export default function ExamMockForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             <option value="maths">Maths</option>
             <option value="english">English</option>
@@ -115,6 +126,7 @@ export default function ExamMockForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={levelSlug}
             onChange={(e) => setLevelSlug(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             {levelOptions.map((level) => (
               <option key={level.value} value={level.value}>

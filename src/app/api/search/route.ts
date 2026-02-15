@@ -31,23 +31,66 @@ export async function GET(request: Request) {
   const synonymMap: Record<string, string[]> = {
     times: ["multiplication", "times tables"],
     multiply: ["multiplication"],
+    multiplication: ["times tables"],
     divide: ["division"],
-    add: ["addition"],
-    plus: ["addition"],
-    minus: ["subtraction"],
+    division: ["divide", "sharing"],
+    share: ["division", "sharing"],
+    sharing: ["division"],
+    add: ["addition", "sum", "total"],
+    plus: ["addition", "sum"],
+    sum: ["addition", "total"],
+    total: ["addition", "sum"],
+    minus: ["subtraction", "difference"],
+    subtract: ["subtraction", "difference"],
+    difference: ["subtraction"],
     takeaway: ["subtraction"],
-    graph: ["graphs", "chart"],
-    charts: ["graph"],
+    graph: ["graphs", "chart", "charts"],
+    charts: ["chart", "graph"],
     percent: ["percentage", "percentages"],
+    percentage: ["percent", "percentages"],
+    fraction: ["fractions"],
     fractions: ["fraction"],
+    decimal: ["decimals"],
     decimals: ["decimal"],
+    ratio: ["ratios"],
+    proportion: ["proportions"],
+    algebra: ["equation", "equations", "expressions"],
+    equation: ["equations"],
+    read: ["reading", "comprehension"],
+    reading: ["read", "comprehension"],
+    write: ["writing"],
+    writing: ["write"],
+    spelling: ["spell"],
+    grammar: ["punctuation"],
+    revise: ["revision", "practice"],
+    revision: ["revise", "practice"],
+    practice: ["revision", "quiz", "test"],
   };
 
-  const expandedTokens = new Set(tokens);
+  const expandedTokens = new Set<string>();
+  const addToken = (value: string) => {
+    const cleaned = value.trim().toLowerCase();
+    if (cleaned.length < 2) return;
+    expandedTokens.add(cleaned);
+  };
+  const expandToken = (token: string) => {
+    addToken(token);
+    if (token.endsWith("ies") && token.length > 4) {
+      addToken(`${token.slice(0, -3)}y`);
+    }
+    if (token.endsWith("s") && token.length > 3) {
+      addToken(token.slice(0, -1));
+    }
+    if (!token.endsWith("s") && token.length > 2) {
+      addToken(`${token}s`);
+    }
+  };
+
   tokens.forEach((token) => {
+    expandToken(token);
     const additions = synonymMap[token];
     if (additions) {
-      additions.forEach((item) => expandedTokens.add(item));
+      additions.forEach((item) => expandToken(item));
     }
   });
 
@@ -67,7 +110,17 @@ export async function GET(request: Request) {
     values.some((value) => normalized.includes(value));
 
   const wantsGuides = isKeyword(["guide", "guides", "shop", "store"]);
-  const wantsWorkbooks = isKeyword(["workbook", "workbooks", "worksheet", "pack"]);
+  const wantsWorkbooks = isKeyword([
+    "workbook",
+    "workbooks",
+    "worksheet",
+    "worksheets",
+    "sheet",
+    "sheets",
+    "pack",
+    "packs",
+    "homework",
+  ]);
   const wantsMocks = isKeyword(["mock", "mocks", "exam", "paper", "papers", "test"]);
   const wantsQuestions = isKeyword(["question", "questions", "quiz", "practice"]);
   const wantsResources = isKeyword(["resource", "resources"]);
@@ -157,10 +210,10 @@ export async function GET(request: Request) {
     guideQuery.or(guideOr);
   }
 
-  workbookQuery.limit(wantsWorkbooks || wantsResources ? 20 : 12);
-  mockQuery.limit(wantsMocks || wantsResources ? 16 : 10);
-  setQuery.limit(wantsQuestions || wantsResources ? 16 : 10);
-  guideQuery.limit(wantsGuides || wantsResources ? 20 : 10);
+  workbookQuery.limit(wantsWorkbooks || wantsResources ? 40 : 20);
+  mockQuery.limit(wantsMocks || wantsResources ? 30 : 16);
+  setQuery.limit(wantsQuestions || wantsResources ? 30 : 16);
+  guideQuery.limit(wantsGuides || wantsResources ? 40 : 16);
 
   const [workbooksRes, mocksRes, setsRes, guidesRes] = await Promise.all([
     workbookQuery,
@@ -175,12 +228,12 @@ export async function GET(request: Request) {
       const levelLabel = labelLevel(workbook.level_slug ?? "");
       const topicLabel = workbook.topic ? ` · ${workbook.topic}` : "";
       const categoryLabel = workbook.category ? ` · ${workbook.category}` : "";
-      const meta = `${subjectLabel} · ${levelLabel} · Workbook${topicLabel}${categoryLabel}`;
+      const meta = `${subjectLabel} · ${levelLabel} · Worksheet${topicLabel}${categoryLabel}`;
       const href =
         workbook.file_url || `/${workbook.subject}/levels/${workbook.level_slug}`;
       return {
         id: workbook.id,
-        type: "Workbook",
+        type: "Worksheet",
         title: workbook.title,
         description: workbook.description,
         href,

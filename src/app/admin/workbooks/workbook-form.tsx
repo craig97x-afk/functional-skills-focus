@@ -127,10 +127,20 @@ const topicSuggestions: Record<string, string[]> = {
   ],
 };
 
-export default function WorkbookForm() {
+type WorkbookFormProps = {
+  defaultSubject?: string;
+  defaultLevel?: string;
+  lockSubjectLevel?: boolean;
+};
+
+export default function WorkbookForm({
+  defaultSubject = "maths",
+  defaultLevel = "entry-3",
+  lockSubjectLevel = false,
+}: WorkbookFormProps) {
   const supabase = useMemo(() => createClient(), []);
-  const [subject, setSubject] = useState("maths");
-  const [levelSlug, setLevelSlug] = useState("entry-3");
+  const [subject, setSubject] = useState(defaultSubject);
+  const [levelSlug, setLevelSlug] = useState(defaultLevel);
   const [category, setCategory] = useState("");
   const [topic, setTopic] = useState("");
   const [title, setTitle] = useState("");
@@ -214,7 +224,7 @@ export default function WorkbookForm() {
     });
 
     setLoading(false);
-    setMsg(error ? error.message : "Workbook created. Refreshing...");
+    setMsg(error ? error.message : "Worksheet created. Refreshing...");
     if (!error) window.location.reload();
   }
 
@@ -229,6 +239,7 @@ export default function WorkbookForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             <option value="maths">Maths</option>
             <option value="english">English</option>
@@ -241,6 +252,7 @@ export default function WorkbookForm() {
             className="mt-1 w-full rounded-md border p-2"
             value={levelSlug}
             onChange={(e) => setLevelSlug(e.target.value)}
+            disabled={lockSubjectLevel}
           >
             {levelOptions.map((level) => (
               <option key={level.value} value={level.value}>
@@ -278,7 +290,7 @@ export default function WorkbookForm() {
           placeholder="Number Basics"
         />
         <div className="text-xs text-[color:var(--muted-foreground)] mt-1">
-          Match the topic name used in the level tabs so the workbook appears in the right
+          Match the topic name used in the level tabs so the worksheet appears in the right
           place.
         </div>
       </label>
@@ -295,7 +307,7 @@ export default function WorkbookForm() {
           className="mt-1 w-full rounded-md border p-2"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Workbook title"
+          placeholder="Worksheet title"
         />
       </label>
 
@@ -305,7 +317,7 @@ export default function WorkbookForm() {
           className="mt-1 w-full rounded-md border p-2 min-h-[100px]"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Short summary of the workbook."
+          placeholder="Short summary of the worksheet."
         />
       </label>
 
@@ -320,7 +332,7 @@ export default function WorkbookForm() {
           />
         </label>
         <label className="block">
-          <span className="text-sm">Workbook file (PDF)</span>
+          <span className="text-sm">Worksheet file (PDF)</span>
           <input
             className="mt-1 w-full rounded-md border p-2"
             type="file"
@@ -344,7 +356,7 @@ export default function WorkbookForm() {
         onClick={createWorkbook}
         disabled={loading || !title.trim()}
       >
-        {loading ? "Saving..." : "Create workbook"}
+        {loading ? "Saving..." : "Create worksheet"}
       </button>
 
       {msg && <p className="text-sm">{msg}</p>}

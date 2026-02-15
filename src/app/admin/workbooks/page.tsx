@@ -31,23 +31,23 @@ export default async function AdminWorkbooksPage() {
     <main className="space-y-8">
       <div>
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
-          Workbooks
+          Worksheets
         </div>
         <h1 className="text-3xl font-semibold tracking-tight mt-2">
-          Manage Workbooks
+          Manage Worksheets
         </h1>
         <p className="apple-subtle mt-2">
-          Upload workbook files, thumbnails, and publish them into the level tabs.
+          Upload worksheet files, thumbnails, and publish them into the level tabs.
         </p>
       </div>
 
       <section className="apple-card p-6">
-        <h2 className="font-semibold mb-4">Create a workbook</h2>
+        <h2 className="font-semibold mb-4">Create a worksheet</h2>
         <WorkbookForm />
       </section>
 
       <section className="apple-card p-6">
-        <h2 className="font-semibold mb-4">Existing workbooks</h2>
+        <h2 className="font-semibold mb-4">Existing worksheets</h2>
         <div className="space-y-3">
           {(workbooks ?? []).map((workbook) => (
             <div key={workbook.id} className="apple-card p-4">
@@ -107,7 +107,7 @@ export default async function AdminWorkbooksPage() {
 
           {(!workbooks || workbooks.length === 0) && (
             <div className="text-sm text-slate-500">
-              No workbooks yet. Add your first one above.
+              No worksheets yet. Add your first one above.
             </div>
           )}
         </div>

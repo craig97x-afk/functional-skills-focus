@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import ExamMockForm from "@/app/admin/questions/exam-mock-form";
+import QuestionSetForm from "@/app/admin/questions/question-set-form";
+import AdminRowActions from "@/components/admin-row-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +20,7 @@ type ExamMock = {
   description: string | null;
   cover_url: string | null;
   file_url: string | null;
+  is_published: boolean;
 };
 
 type QuestionSet = {
@@ -26,6 +30,7 @@ type QuestionSet = {
   cover_url: string | null;
   resource_url: string | null;
   content: string | null;
+  is_published: boolean;
 };
 
 export default async function EnglishLevelResourcesPage({
@@ -44,25 +49,27 @@ export default async function EnglishLevelResourcesPage({
     : { data: null };
   const isAdmin = profile?.role === "admin";
 
-  const { data: mocksRaw } = (await supabase
+  let mocksQuery = supabase
     .from("exam_mocks")
-    .select("id, title, description, cover_url, file_url")
+    .select("id, title, description, cover_url, file_url, is_published")
     .eq("subject", "english")
     .eq("level_slug", level)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })) as {
-    data: ExamMock[] | null;
-  };
+    .order("created_at", { ascending: false });
+  if (!isAdmin) {
+    mocksQuery = mocksQuery.eq("is_published", true);
+  }
+  const { data: mocksRaw } = (await mocksQuery) as { data: ExamMock[] | null };
 
-  const { data: setsRaw } = (await supabase
+  let setsQuery = supabase
     .from("question_sets")
-    .select("id, title, description, cover_url, resource_url, content")
+    .select("id, title, description, cover_url, resource_url, content, is_published")
     .eq("subject", "english")
     .eq("level_slug", level)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false })) as {
-    data: QuestionSet[] | null;
-  };
+    .order("created_at", { ascending: false });
+  if (!isAdmin) {
+    setsQuery = setsQuery.eq("is_published", true);
+  }
+  const { data: setsRaw } = (await setsQuery) as { data: QuestionSet[] | null };
 
   const mocks = mocksRaw ?? [];
   const sets = setsRaw ?? [];
@@ -88,19 +95,56 @@ export default async function EnglishLevelResourcesPage({
           Exam mocks, reading packs, and writing prompts for this level. Mocks are free for now.
         </p>
         {isAdmin && (
-          <Link
-            className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
-            href="/admin/questions"
-          >
-            Manage resources
-          </Link>
+          <section className="apple-card p-6 space-y-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+                Admin
+              </div>
+              <h2 className="text-xl font-semibold mt-2">Add resources</h2>
+              <p className="apple-subtle mt-2">
+                Upload new mocks and question sets for this level.
+              </p>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Add exam mock
+                </summary>
+                <div className="mt-4">
+                  <ExamMockForm
+                    defaultSubject="english"
+                    defaultLevel={level}
+                    lockSubjectLevel
+                  />
+                </div>
+              </details>
+              <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Add question set
+                </summary>
+                <div className="mt-4">
+                  <QuestionSetForm
+                    defaultSubject="english"
+                    defaultLevel={level}
+                    lockSubjectLevel
+                  />
+                </div>
+              </details>
+            </div>
+            <Link
+              className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+              href="/admin/questions"
+            >
+              Open full resources manager
+            </Link>
+          </section>
         )}
         <div className="flex flex-wrap gap-2">
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
             href={basePath}
           >
-            Workbooks
+            Worksheets
           </Link>
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
@@ -160,7 +204,16 @@ export default async function EnglishLevelResourcesPage({
                     </a>
                   ) : (
                     <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                      File coming soon
+                      {mock.is_published ? "File coming soon" : "Draft"}
+                    </div>
+                  )}
+                  {isAdmin && (
+                    <div className="pt-2">
+                      <AdminRowActions
+                        table="exam_mocks"
+                        id={mock.id}
+                        initialPublished={mock.is_published}
+                      />
                     </div>
                   )}
                 </div>
@@ -240,7 +293,16 @@ export default async function EnglishLevelResourcesPage({
                     </a>
                   ) : (
                     <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                      Resource coming soon
+                      {set.is_published ? "Resource coming soon" : "Draft"}
+                    </div>
+                  )}
+                  {isAdmin && (
+                    <div className="pt-2">
+                      <AdminRowActions
+                        table="question_sets"
+                        id={set.id}
+                        initialPublished={set.is_published}
+                      />
                     </div>
                   )}
                 </div>
