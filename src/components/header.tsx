@@ -307,18 +307,26 @@ export default async function Header() {
                   Progress
                 </button>
                 <div className="apple-nav-menu">
-                  <Link className="apple-nav-menu-item" href="/progress">
-                    Overview
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/mastery">
-                    Mastery
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/review">
-                    Review mistakes
-                  </Link>
-                  <Link className="apple-nav-menu-item" href="/progress/report">
-                    Progress report
-                  </Link>
+                  {session.profile?.role === "admin" ? (
+                    <Link className="apple-nav-menu-item" href="/progress">
+                      Student progress
+                    </Link>
+                  ) : (
+                    <>
+                      <Link className="apple-nav-menu-item" href="/progress">
+                        Overview
+                      </Link>
+                      <Link className="apple-nav-menu-item" href="/mastery">
+                        Mastery
+                      </Link>
+                      <Link className="apple-nav-menu-item" href="/review">
+                        Review mistakes
+                      </Link>
+                      <Link className="apple-nav-menu-item" href="/progress/report">
+                        Progress report
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -466,7 +474,7 @@ export default async function Header() {
 
           {session && (
             <div className="apple-nav-group">
-              <button className={navItem} type="button" aria-label="Account">
+              <button className={iconButton} type="button" aria-label="Account">
                 <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
                   <path
                     d="M12 12.5a4 4 0 1 0-4-4 4 4 0 0 0 4 4ZM4.5 20a7.5 7.5 0 0 1 15 0"

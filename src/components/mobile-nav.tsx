@@ -119,22 +119,30 @@ export default function MobileNav({
                 <details className="mobile-nav-group">
                   <summary className="apple-nav-menu-item cursor-pointer">Progress</summary>
                   <div className="mt-2 flex flex-col gap-2 pl-3">
-                    <Link className="apple-nav-menu-item" href="/progress" onClick={closeMenu}>
-                      Overview
-                    </Link>
-                    <Link className="apple-nav-menu-item" href="/mastery" onClick={closeMenu}>
-                      Mastery
-                    </Link>
-                    <Link className="apple-nav-menu-item" href="/review" onClick={closeMenu}>
-                      Review mistakes
-                    </Link>
-                    <Link
-                      className="apple-nav-menu-item"
-                      href="/progress/report"
-                      onClick={closeMenu}
-                    >
-                      Progress report
-                    </Link>
+                    {isAdmin ? (
+                      <Link className="apple-nav-menu-item" href="/progress" onClick={closeMenu}>
+                        Student progress
+                      </Link>
+                    ) : (
+                      <>
+                        <Link className="apple-nav-menu-item" href="/progress" onClick={closeMenu}>
+                          Overview
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/mastery" onClick={closeMenu}>
+                          Mastery
+                        </Link>
+                        <Link className="apple-nav-menu-item" href="/review" onClick={closeMenu}>
+                          Review mistakes
+                        </Link>
+                        <Link
+                          className="apple-nav-menu-item"
+                          href="/progress/report"
+                          onClick={closeMenu}
+                        >
+                          Progress report
+                        </Link>
+                      </>
+                    )}
                   </div>
                 </details>
 
