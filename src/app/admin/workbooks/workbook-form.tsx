@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const levelOptions = [
@@ -131,12 +131,27 @@ type WorkbookFormProps = {
   defaultSubject?: string;
   defaultLevel?: string;
   lockSubjectLevel?: boolean;
+  initialWorkbook?: {
+    id: string;
+    subject: string;
+    level_slug: string;
+    category: string | null;
+    topic: string;
+    title: string;
+    description: string | null;
+    thumbnail_url?: string | null;
+    file_url?: string | null;
+    is_published?: boolean;
+  } | null;
+  onSaved?: () => void;
 };
 
 export default function WorkbookForm({
   defaultSubject = "maths",
   defaultLevel = "entry-3",
   lockSubjectLevel = false,
+  initialWorkbook = null,
+  onSaved,
 }: WorkbookFormProps) {
   const supabase = useMemo(() => createClient(), []);
   const [subject, setSubject] = useState(defaultSubject);
@@ -150,8 +165,22 @@ export default function WorkbookForm({
   const [published, setPublished] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const isEdit = Boolean(initialWorkbook?.id);
 
-  async function createWorkbook() {
+  useEffect(() => {
+    if (!initialWorkbook) return;
+    setSubject(initialWorkbook.subject ?? defaultSubject);
+    setLevelSlug(initialWorkbook.level_slug ?? defaultLevel);
+    setCategory(initialWorkbook.category ?? "");
+    setTopic(initialWorkbook.topic ?? "");
+    setTitle(initialWorkbook.title ?? "");
+    setDescription(initialWorkbook.description ?? "");
+    setPublished(Boolean(initialWorkbook.is_published));
+    setThumbnail(null);
+    setFile(null);
+  }, [initialWorkbook, defaultSubject, defaultLevel]);
+
+  async function saveWorkbook() {
     // Upload assets first so workbook rows point to public storage URLs.
     setLoading(true);
     setMsg(null);
@@ -209,23 +238,45 @@ export default function WorkbookForm({
       fileUrl = publicUrl.publicUrl;
     }
 
-    const { error } = await supabase.from("workbooks").insert({
+    const updates: Record<string, unknown> = {
       subject,
       level_slug: levelSlug,
       category: category || null,
       topic: topic.trim(),
       title: title.trim(),
       description: description || null,
-      thumbnail_path: thumbnailPath,
-      thumbnail_url: thumbnailUrl,
-      file_path: filePath,
-      file_url: fileUrl,
       is_published: published,
-    });
+    };
+
+    if (thumbnailPath && thumbnailUrl) {
+      updates.thumbnail_path = thumbnailPath;
+      updates.thumbnail_url = thumbnailUrl;
+    }
+
+    if (filePath && fileUrl) {
+      updates.file_path = filePath;
+      updates.file_url = fileUrl;
+    }
+
+    if (isEdit && !initialWorkbook?.id) {
+      setMsg("Missing worksheet id.");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = isEdit
+      ? await supabase.from("workbooks").update(updates).eq("id", initialWorkbook.id)
+      : await supabase.from("workbooks").insert(updates);
 
     setLoading(false);
-    setMsg(error ? error.message : "Worksheet created. Refreshing...");
-    if (!error) window.location.reload();
+    setMsg(error ? error.message : isEdit ? "Worksheet updated." : "Worksheet created.");
+    if (!error) {
+      if (onSaved) {
+        onSaved();
+      } else {
+        window.location.reload();
+      }
+    }
   }
 
   const topicList = subject === "maths" ? topicSuggestions[levelSlug] ?? [] : [];
@@ -332,7 +383,9 @@ export default function WorkbookForm({
           />
         </label>
         <label className="block">
-          <span className="text-sm">Worksheet file (PDF)</span>
+          <span className="text-sm">
+            {isEdit ? "Replace worksheet file (PDF)" : "Worksheet file (PDF)"}
+          </span>
           <input
             className="mt-1 w-full rounded-md border p-2"
             type="file"
@@ -353,10 +406,10 @@ export default function WorkbookForm({
 
       <button
         className="rounded-md border px-3 py-2"
-        onClick={createWorkbook}
+        onClick={saveWorkbook}
         disabled={loading || !title.trim()}
       >
-        {loading ? "Saving..." : "Create worksheet"}
+        {loading ? "Saving..." : isEdit ? "Save changes" : "Create worksheet"}
       </button>
 
       {msg && <p className="text-sm">{msg}</p>}

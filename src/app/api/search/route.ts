@@ -9,6 +9,14 @@ const levelLabels: Record<string, string> = {
   "fs-2": "Functional Skills Level 2",
 };
 
+const levelCatalog = [
+  { slug: "entry-1", label: "Entry Level 1" },
+  { slug: "entry-2", label: "Entry Level 2" },
+  { slug: "entry-3", label: "Entry Level 3" },
+  { slug: "fs-1", label: "Functional Skills Level 1" },
+  { slug: "fs-2", label: "Functional Skills Level 2" },
+];
+
 const toTitle = (value: string) =>
   value ? value.charAt(0).toUpperCase() + value.slice(1) : value;
 
@@ -157,6 +165,11 @@ export async function GET(request: Request) {
     }
   }
 
+  const subjectOptions = subjectFilter ? [subjectFilter] : ["maths", "english"];
+  const levelOptions =
+    levelFilters ??
+    (wantsLevels ? levelCatalog.map((level) => level.slug) : []);
+
   const buildOr = (fields: string[]) => {
     if (searchTokens.length === 0) {
       return null;
@@ -232,7 +245,36 @@ export async function GET(request: Request) {
     guideQuery,
   ]);
 
+  const levelResults =
+    levelOptions.length > 0
+      ? subjectOptions.flatMap((subject) =>
+          levelOptions.flatMap((slug) => {
+            const label = labelLevel(slug);
+            const subjectLabel = toTitle(subject);
+            return [
+              {
+                id: `${subject}-${slug}-level`,
+                type: "Level",
+                title: `${label} · ${subjectLabel}`,
+                description: `Browse ${subjectLabel} topics and worksheets.`,
+                href: `/${subject}/levels/${slug}`,
+                meta: `${subjectLabel} · Levels`,
+              },
+              {
+                id: `${subject}-${slug}-resources`,
+                type: "Resources",
+                title: `${label} resources · ${subjectLabel}`,
+                description: "Exam mocks and question sets.",
+                href: `/${subject}/levels/${slug}/resources`,
+                meta: `${subjectLabel} · Resources`,
+              },
+            ];
+          })
+        )
+      : [];
+
   const results = [
+    ...levelResults,
     ...(workbooksRes.data ?? []).map((workbook) => {
       const subjectLabel = toTitle(workbook.subject ?? "Subject");
       const levelLabel = labelLevel(workbook.level_slug ?? "");

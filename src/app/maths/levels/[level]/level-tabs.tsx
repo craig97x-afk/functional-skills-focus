@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import AdminRowActions from "@/components/admin-row-actions";
+import WorkbookForm from "@/app/admin/workbooks/workbook-form";
 
 type Category = {
   title: string;
@@ -24,6 +25,9 @@ type DisplayWorkbook = {
   id: string;
   title: string;
   detail: string;
+  description?: string | null;
+  category?: string | null;
+  topic?: string;
   thumbnail_url?: string | null;
   file_url?: string | null;
   isPlaceholder?: boolean;
@@ -153,15 +157,22 @@ export default function LevelTabs({
                   id: workbook.id,
                   title: workbook.title,
                   detail: workbook.description || "Worksheet material.",
+                  description: workbook.description,
+                  category: workbook.category,
+                  topic: workbook.topic,
                   thumbnail_url: workbook.thumbnail_url,
                   file_url: workbook.file_url,
                   isPlaceholder: false,
                   is_published: workbook.is_published,
                 }))
+              : isAdmin
+              ? []
               : worksheetTemplates.map((workbook, templateIndex) => ({
                   id: `placeholder-${key}-${templateIndex}`,
                   title: workbook.title,
                   detail: workbook.detail,
+                  category: null,
+                  topic,
                   isPlaceholder: true,
                 }));
           return (
@@ -181,68 +192,98 @@ export default function LevelTabs({
                 <p className="apple-subtle text-base">
                   Worksheets, lesson packs, and revision sheets for {topic}.
                 </p>
-                <div className="grid gap-4">
-                  {display.map((workbook, workbookIndex) => {
-                    const isLocked = !hasAccess && workbookIndex >= 2;
-                    return (
-                    <div
-                      key={workbook.id}
-                      className={[
-                        "rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center",
-                        isLocked ? "opacity-80" : "",
-                      ].join(" ")}
-                    >
-                      <div className="h-40 w-full lg:h-28 lg:w-64 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
-                        {workbook.thumbnail_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={workbook.thumbnail_url}
-                            alt={workbook.title}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-200">
-                            Worksheet
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        <div className="text-lg font-semibold">{workbook.title}</div>
-                        <div className="text-sm text-[color:var(--muted-foreground)]">
-                          {workbook.detail}
-                        </div>
-                        {isAdmin && !workbook.isPlaceholder && (
-                          <div className="pt-2">
-                            <AdminRowActions
-                              table="workbooks"
-                              id={workbook.id}
-                              initialPublished={Boolean(workbook.is_published)}
+                {display.length === 0 ? (
+                  <div className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 text-sm text-[color:var(--muted-foreground)]">
+                    No worksheets yet for this topic.
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {display.map((workbook, workbookIndex) => {
+                      const isLocked = !hasAccess && workbookIndex >= 2;
+                      return (
+                      <div
+                        key={workbook.id}
+                        className={[
+                          "rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center",
+                          isLocked ? "opacity-80" : "",
+                        ].join(" ")}
+                      >
+                        <div className="h-40 w-full lg:h-28 lg:w-64 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                          {workbook.thumbnail_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={workbook.thumbnail_url}
+                              alt={workbook.title}
+                              className="h-full w-full object-cover"
                             />
+                          ) : (
+                            <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-200">
+                              Worksheet
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="text-lg font-semibold">{workbook.title}</div>
+                          <div className="text-sm text-[color:var(--muted-foreground)]">
+                            {workbook.detail}
                           </div>
-                        )}
-                        {isLocked ? (
-                          <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                            Subscription user only
-                          </span>
-                        ) : workbook.file_url ? (
-                          <a
-                            className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                            href={workbook.file_url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Open worksheet
-                          </a>
-                        ) : (
-                          <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                            {workbook.isPlaceholder ? "Draft" : "No file yet"}
-                          </div>
-                        )}
+                          {isAdmin && !workbook.isPlaceholder && (
+                            <div className="pt-2 space-y-3">
+                              <AdminRowActions
+                                table="workbooks"
+                                id={workbook.id}
+                                initialPublished={Boolean(workbook.is_published)}
+                              />
+                              <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                                <summary className="cursor-pointer text-xs font-semibold">
+                                  Edit worksheet
+                                </summary>
+                                <div className="mt-4">
+                                  <WorkbookForm
+                                    defaultSubject={subject}
+                                    defaultLevel={levelSlug}
+                                    lockSubjectLevel
+                                    initialWorkbook={{
+                                      id: workbook.id,
+                                      subject,
+                                      level_slug: levelSlug,
+                                      category: workbook.category ?? null,
+                                      topic: workbook.topic ?? topic,
+                                      title: workbook.title,
+                                      description: workbook.description ?? null,
+                                      thumbnail_url: workbook.thumbnail_url ?? null,
+                                      file_url: workbook.file_url ?? null,
+                                      is_published: workbook.is_published,
+                                    }}
+                                  />
+                                </div>
+                              </details>
+                            </div>
+                          )}
+                          {isLocked ? (
+                            <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                              Subscription user only
+                            </span>
+                          ) : workbook.file_url ? (
+                            <a
+                              className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                              href={workbook.file_url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Open worksheet
+                            </a>
+                          ) : (
+                            <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                              {workbook.isPlaceholder ? "Draft" : "No file yet"}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-                </div>
+                    );
+                  })}
+                  </div>
+                )}
               </div>
             </article>
           );

@@ -38,7 +38,7 @@ export default async function MathsResourcesLevelsPage() {
         </p>
         {isAdmin && (
           <Link
-            className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white"
+            className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white"
             href="/admin/questions"
           >
             Manage resources

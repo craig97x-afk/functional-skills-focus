@@ -142,6 +142,30 @@ export default async function EnglishLevelDetailPage({
                         id={worksheet.id}
                         initialPublished={worksheet.is_published}
                       />
+                      <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-3 text-left">
+                        <summary className="cursor-pointer text-xs font-semibold">
+                          Edit worksheet
+                        </summary>
+                        <div className="mt-3">
+                          <WorkbookForm
+                            defaultSubject="english"
+                            defaultLevel={level}
+                            lockSubjectLevel
+                            initialWorkbook={{
+                              id: worksheet.id,
+                              subject: "english",
+                              level_slug: level,
+                              category: worksheet.category ?? null,
+                              topic: worksheet.topic,
+                              title: worksheet.title,
+                              description: worksheet.description ?? null,
+                              thumbnail_url: worksheet.thumbnail_url ?? null,
+                              file_url: worksheet.file_url ?? null,
+                              is_published: worksheet.is_published,
+                            }}
+                          />
+                        </div>
+                      </details>
                     </div>
                   </div>
                 ))}
