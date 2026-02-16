@@ -34,7 +34,9 @@ type DisplayWorkbook = {
   description?: string | null;
   category?: string | null;
   topic?: string;
+  thumbnail_path?: string | null;
   thumbnail_url?: string | null;
+  file_path?: string | null;
   file_url?: string | null;
   isPlaceholder?: boolean;
   is_published?: boolean;
