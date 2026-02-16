@@ -389,8 +389,9 @@ body[data-a11y-widget-size="large"] .a11y-icon {
 }
 
 .dashboard-banner-logo {
-  height: 430px;
-  width: 430px;
+  width: min(430px, 72vw);
+  height: auto;
+  aspect-ratio: 1 / 1;
   mix-blend-mode: screen;
   filter: saturate(1.4) drop-shadow(0 0 10px rgba(0, 0, 0, 0.35));
   transform-origin: center;
