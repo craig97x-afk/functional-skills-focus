@@ -19,7 +19,7 @@ type Workbook = {
   sort_order: number | null;
 };
 
-type WorkbookStats = {
+type WorkbookStatsRow = {
   workbook_id: string;
   opens: number | null;
   downloads: number | null;
@@ -46,17 +46,29 @@ export default async function AdminWorkbooksPage() {
   const { data: statsRaw, error: statsError } = (await supabase
     .from("workbook_event_stats")
     .select("workbook_id, opens, downloads, last_opened_at, last_downloaded_at")) as {
-    data: WorkbookStats[] | null;
+    data: WorkbookStatsRow[] | null;
     error?: { message: string } | null;
   };
 
-  const statsById = (statsError ? [] : statsRaw ?? []).reduce<Record<string, WorkbookStats>>(
-    (acc, item) => {
-      acc[item.workbook_id] = item;
-      return acc;
-    },
-    {}
-  );
+  const statsById = (statsError ? [] : statsRaw ?? []).reduce<
+    Record<
+      string,
+      {
+        opens: number;
+        downloads: number;
+        last_opened_at: string | null;
+        last_downloaded_at: string | null;
+      }
+    >
+  >((acc, item) => {
+    acc[item.workbook_id] = {
+      opens: item.opens ?? 0,
+      downloads: item.downloads ?? 0,
+      last_opened_at: item.last_opened_at,
+      last_downloaded_at: item.last_downloaded_at,
+    };
+    return acc;
+  }, {});
 
   return (
     <main className="space-y-8">
