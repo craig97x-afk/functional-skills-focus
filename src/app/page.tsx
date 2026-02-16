@@ -196,6 +196,7 @@ export default async function HomePage() {
         profileSafe?.is_subscribed ||
         profileSafe?.access_override)
   );
+  const showPromo = !isAdmin && !hasAccess;
 
   const today = new Date();
   const startOfToday = new Date(
@@ -267,6 +268,27 @@ export default async function HomePage() {
       <div className="mx-auto w-full max-w-5xl px-6 mb-10">
         <ResourceSearch />
       </div>
+
+      {showPromo && (
+        <div className="mx-auto w-full max-w-5xl px-6 mb-8">
+          <div className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,#0b1f45,#0f2a5f)] p-4 md:p-5 text-white shadow-[0_12px_24px_rgba(2,10,26,0.35)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.28em] text-white/70">
+                Promo
+              </div>
+              <div className="mt-2 text-lg font-semibold">
+                Use code <span className="rounded-full bg-white/10 px-3 py-1 text-sm font-semibold">FSF20</span>
+              </div>
+              <div className="mt-1 text-sm text-white/80">
+                20% off your first month.
+              </div>
+            </div>
+            <Link href="/pricing" className="apple-button">
+              View plans
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

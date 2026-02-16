@@ -81,3 +81,9 @@ Template
 - Change summary: Expanded dashboard resource search coverage, added “View all results” page, and improved broad keyword handling (levels/resources).
 - Impact: Search surfaces more results for common student keywords and offers a full results page.
 - Follow-ups: None.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Added admin user management tools (search, role change, delete) and a dashboard promo callout for new users.
+- Impact: Admins can manage accounts without a dev; learners see a clear discount message on the dashboard.
+- Follow-ups: If needed, wire promo codes into Stripe discounts for real billing logic.
