@@ -261,6 +261,9 @@ export default async function HomePage() {
               Learn, practise, and build confidence with structured Functional Skills
               support.
             </div>
+            <div className="mt-2 text-xs text-white/70 leading-snug">
+              Created by a qualified teacher and designed around real exam requirements.
+            </div>
           </div>
         </div>
       </section>
