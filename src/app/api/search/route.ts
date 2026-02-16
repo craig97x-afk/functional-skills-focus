@@ -119,6 +119,31 @@ export async function GET(request: Request) {
     "fs",
   ]);
   const searchTokens = tokenList.filter((token) => !stopTokens.has(token));
+  const typeTokens = new Set([
+    "worksheet",
+    "worksheets",
+    "workbook",
+    "workbooks",
+    "sheet",
+    "sheets",
+    "guide",
+    "guides",
+    "mock",
+    "mocks",
+    "exam",
+    "exams",
+    "paper",
+    "papers",
+    "question",
+    "questions",
+    "quiz",
+    "quizzes",
+    "set",
+    "sets",
+    "resource",
+    "resources",
+  ]);
+  const contentTokens = searchTokens.filter((token) => !typeTokens.has(token));
   const isKeyword = (values: string[]) =>
     values.some((value) => normalized.includes(value));
 
@@ -138,8 +163,13 @@ export async function GET(request: Request) {
   const wantsQuestions = isKeyword(["question", "questions", "quiz", "practice"]);
   const wantsLevels = isKeyword(["level", "levels"]);
   const wantsResources = isKeyword(["resource", "resources", "all", "everything"]) || wantsLevels;
+  const wantsAnyType = wantsGuides || wantsWorkbooks || wantsMocks || wantsQuestions;
+  const includeWorkbooks = !wantsAnyType || wantsWorkbooks;
+  const includeMocks = !wantsAnyType || wantsMocks;
+  const includeSets = !wantsAnyType || wantsQuestions;
+  const includeGuides = !wantsAnyType || wantsGuides;
   const broadQuery =
-    wantsResources || searchTokens.length === 0;
+    wantsResources || contentTokens.length === 0;
 
   const subjectFilter = normalized.includes("math")
     ? "maths"
@@ -177,12 +207,12 @@ export async function GET(request: Request) {
     levelFilters ??
     (wantsLevels ? levelCatalog.map((level) => level.slug) : []);
 
-  const buildOr = (fields: string[]) => {
-    if (searchTokens.length === 0) {
+  const buildOr = (fields: string[], tokens: string[]) => {
+    if (tokens.length === 0) {
       return null;
     }
     const conditions: string[] = [];
-    searchTokens.forEach((token) => {
+    tokens.forEach((token) => {
       const escaped = token.replace(/[%_]/g, "\\$&");
       fields.forEach((field) => {
         conditions.push(`${field}.ilike.%${escaped}%`);
@@ -193,63 +223,88 @@ export async function GET(request: Request) {
 
   const supabase = await createClient();
 
-  const workbookQuery = supabase
-    .from("workbooks")
-    .select(
-      "id, subject, level_slug, title, description, topic, category, file_url"
-    )
-    .eq("is_published", true);
-  if (subjectFilter) workbookQuery.eq("subject", subjectFilter);
-  if (levelFilters) workbookQuery.in("level_slug", levelFilters);
+  const workbookPromise = includeWorkbooks
+    ? (() => {
+        const workbookQuery = supabase
+          .from("workbooks")
+          .select(
+            "id, subject, level_slug, title, description, topic, category, file_url"
+          )
+          .eq("is_published", true);
+        if (subjectFilter) workbookQuery.eq("subject", subjectFilter);
+        if (levelFilters) workbookQuery.in("level_slug", levelFilters);
 
-  const workbookOr = buildOr(["title", "description", "topic", "category"]);
-  if (!broadQuery && workbookOr) {
-    workbookQuery.or(workbookOr);
-  }
+        const workbookOr = buildOr(
+          ["title", "description", "topic", "category"],
+          contentTokens
+        );
+        if (!broadQuery && workbookOr) {
+          workbookQuery.or(workbookOr);
+        }
+        workbookQuery.limit(limit);
+        return workbookQuery;
+      })()
+    : Promise.resolve({ data: [] });
 
-  const mockQuery = supabase
-    .from("exam_mocks")
-    .select("id, subject, level_slug, title, description, file_url")
-    .eq("is_published", true);
-  if (subjectFilter) mockQuery.eq("subject", subjectFilter);
-  if (levelFilters) mockQuery.in("level_slug", levelFilters);
+  const mockPromise = includeMocks
+    ? (() => {
+        const mockQuery = supabase
+          .from("exam_mocks")
+          .select("id, subject, level_slug, title, description, file_url")
+          .eq("is_published", true);
+        if (subjectFilter) mockQuery.eq("subject", subjectFilter);
+        if (levelFilters) mockQuery.in("level_slug", levelFilters);
 
-  const mockOr = buildOr(["title", "description"]);
-  if (!broadQuery && mockOr) {
-    mockQuery.or(mockOr);
-  }
+        const mockOr = buildOr(["title", "description"], contentTokens);
+        if (!broadQuery && mockOr) {
+          mockQuery.or(mockOr);
+        }
+        mockQuery.limit(limit);
+        return mockQuery;
+      })()
+    : Promise.resolve({ data: [] });
 
-  const setQuery = supabase
-    .from("question_sets")
-    .select("id, subject, level_slug, title, description, resource_url")
-    .eq("is_published", true);
-  if (subjectFilter) setQuery.eq("subject", subjectFilter);
-  if (levelFilters) setQuery.in("level_slug", levelFilters);
+  const setPromise = includeSets
+    ? (() => {
+        const setQuery = supabase
+          .from("question_sets")
+          .select("id, subject, level_slug, title, description, resource_url")
+          .eq("is_published", true);
+        if (subjectFilter) setQuery.eq("subject", subjectFilter);
+        if (levelFilters) setQuery.in("level_slug", levelFilters);
 
-  const setOr = buildOr(["title", "description"]);
-  if (!broadQuery && setOr) {
-    setQuery.or(setOr);
-  }
+        const setOr = buildOr(["title", "description"], contentTokens);
+        if (!broadQuery && setOr) {
+          setQuery.or(setOr);
+        }
+        setQuery.limit(limit);
+        return setQuery;
+      })()
+    : Promise.resolve({ data: [] });
 
-  const guideQuery = supabase
-    .from("guides")
-    .select("id, title, description, category")
-    .eq("is_published", true);
-  const guideOr = buildOr(["title", "description", "category"]);
-  if (!broadQuery && guideOr) {
-    guideQuery.or(guideOr);
-  }
-
-  workbookQuery.limit(limit);
-  mockQuery.limit(limit);
-  setQuery.limit(limit);
-  guideQuery.limit(limit);
+  const guidePromise = includeGuides
+    ? (() => {
+        const guideQuery = supabase
+          .from("guides")
+          .select("id, title, description, category")
+          .eq("is_published", true);
+        const guideOr = buildOr(
+          ["title", "description", "category"],
+          contentTokens
+        );
+        if (!broadQuery && guideOr) {
+          guideQuery.or(guideOr);
+        }
+        guideQuery.limit(limit);
+        return guideQuery;
+      })()
+    : Promise.resolve({ data: [] });
 
   const [workbooksRes, mocksRes, setsRes, guidesRes] = await Promise.all([
-    workbookQuery,
-    mockQuery,
-    setQuery,
-    guideQuery,
+    workbookPromise,
+    mockPromise,
+    setPromise,
+    guidePromise,
   ]);
 
   const levelResults =

@@ -87,3 +87,9 @@ Template
 - Change summary: Added admin user management tools (search, role change, delete) and a dashboard promo callout for new users.
 - Impact: Admins can manage accounts without a dev; learners see a clear discount message on the dashboard.
 - Follow-ups: If needed, wire promo codes into Stripe discounts for real billing logic.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Improved dashboard search to handle type keywords (worksheets, mocks, guides, questions) and broaden results when only a type is specified.
+- Impact: Searches like “worksheets” now return the full worksheet library instead of empty results.
+- Follow-ups: None.
