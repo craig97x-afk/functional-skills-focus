@@ -1,0 +1,210 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import AdminRowActions from "@/components/admin-row-actions";
+
+type Worksheet = {
+  id: string;
+  subject: string;
+  level_slug: string;
+  category: string | null;
+  topic: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  file_url: string | null;
+  is_published: boolean;
+  is_featured: boolean;
+};
+
+export default function WorksheetBulkTable({
+  initialWorkbooks,
+}: {
+  initialWorkbooks: Worksheet[];
+}) {
+  const supabase = useMemo(() => createClient(), []);
+  const [items, setItems] = useState<Worksheet[]>(initialWorkbooks);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+
+  const allSelected = items.length > 0 && selected.size === items.length;
+
+  const toggleSelected = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (allSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(items.map((item) => item.id)));
+    }
+  };
+
+  const applyBulkUpdate = async (update: Record<string, unknown>) => {
+    if (selected.size === 0) return;
+    setLoading(true);
+    const ids = Array.from(selected);
+    const { error } = await supabase.from("workbooks").update(update).in("id", ids);
+    setLoading(false);
+    if (!error) {
+      setItems((prev) =>
+        prev.map((item) =>
+          ids.includes(item.id) ? ({ ...item, ...update } as Worksheet) : item
+        )
+      );
+      setSelected(new Set());
+    }
+  };
+
+  const bulkDelete = async () => {
+    if (selected.size === 0) return;
+    if (!confirm("Delete selected worksheets? This cannot be undone.")) return;
+    setLoading(true);
+    const ids = Array.from(selected);
+    const { error } = await supabase.from("workbooks").delete().in("id", ids);
+    setLoading(false);
+    if (!error) {
+      setItems((prev) => prev.filter((item) => !ids.includes(item.id)));
+      setSelected(new Set());
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="rounded-full border px-4 py-2 text-xs"
+          onClick={() => applyBulkUpdate({ is_published: true })}
+          disabled={loading || selected.size === 0}
+        >
+          Publish selected
+        </button>
+        <button
+          type="button"
+          className="rounded-full border px-4 py-2 text-xs"
+          onClick={() => applyBulkUpdate({ is_published: false })}
+          disabled={loading || selected.size === 0}
+        >
+          Unpublish selected
+        </button>
+        <button
+          type="button"
+          className="rounded-full border px-4 py-2 text-xs text-red-500"
+          onClick={bulkDelete}
+          disabled={loading || selected.size === 0}
+        >
+          Delete selected
+        </button>
+        <span className="text-xs text-[color:var(--muted-foreground)]">
+          {selected.size > 0 ? `${selected.size} selected` : "Select worksheets to bulk edit"}
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        {items.map((workbook) => (
+          <div key={workbook.id} className="apple-card p-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selected.has(workbook.id)}
+                  onChange={() => toggleSelected(workbook.id)}
+                  className="mt-1"
+                />
+                <div className="h-16 w-24 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                  {workbook.thumbnail_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={workbook.thumbnail_url}
+                      alt={workbook.title}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                      No image
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    {workbook.subject} · {workbook.level_slug}
+                  </div>
+                  <div className="font-medium mt-1 flex items-center gap-2">
+                    {workbook.title}
+                    {workbook.is_featured && (
+                      <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-500 mt-1">
+                    {workbook.category ?? "Category"} · {workbook.topic}
+                  </div>
+                  {workbook.description && (
+                    <div className="text-sm text-slate-500 mt-2">
+                      {workbook.description}
+                    </div>
+                  )}
+                  {workbook.file_url && (
+                    <a
+                      className="text-xs text-[color:var(--accent)] mt-2 inline-block"
+                      href={workbook.file_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View file
+                    </a>
+                  )}
+                </div>
+              </div>
+              <div className="text-right space-y-2">
+                <div className="text-xs text-slate-500">
+                  {workbook.is_published ? "Published" : "Draft"}
+                </div>
+                <AdminRowActions
+                  table="workbooks"
+                  id={workbook.id}
+                  initialPublished={workbook.is_published}
+                  supportsFeatured
+                  initialFeatured={workbook.is_featured}
+                  cloneData={{
+                    subject: workbook.subject,
+                    level_slug: workbook.level_slug,
+                    category: workbook.category,
+                    topic: workbook.topic,
+                    title: `${workbook.title} (copy)`,
+                    description: workbook.description,
+                    thumbnail_url: workbook.thumbnail_url,
+                    file_url: workbook.file_url,
+                    is_published: false,
+                    is_featured: false,
+                  }}
+                  onDone={() => window.location.reload()}
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {items.length === 0 && (
+          <div className="text-sm text-slate-500">
+            No worksheets yet. Add your first one above.
+          </div>
+        )}
+      </div>
+
+      <label className="flex items-center gap-2 text-xs text-[color:var(--muted-foreground)]">
+        <input type="checkbox" checked={allSelected} onChange={toggleAll} />
+        Select all
+      </label>
+    </div>
+  );
+}

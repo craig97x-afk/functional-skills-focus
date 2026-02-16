@@ -23,6 +23,7 @@ type Worksheet = {
   thumbnail_url: string | null;
   file_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
 };
 
 export default async function EnglishLevelDetailPage({
@@ -38,13 +39,22 @@ export default async function EnglishLevelDetailPage({
     ? ((await supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published"
+          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured"
         )
         .eq("subject", "english")
         .eq("level_slug", level)
+        .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })) as { data: Worksheet[] | null })
     : { data: [] as Worksheet[] };
   const worksheets = worksheetsRaw ?? [];
+  const worksheetHealth = isAdmin
+    ? {
+        total: worksheets.length,
+        missingThumbnail: worksheets.filter((w) => !w.thumbnail_url).length,
+        missingFile: worksheets.filter((w) => !w.file_url).length,
+        draft: worksheets.filter((w) => !w.is_published).length,
+      }
+    : null;
   const title = levelLabels[level] ?? "English Level";
   return (
     <main className="space-y-8">
@@ -83,6 +93,19 @@ export default async function EnglishLevelDetailPage({
               </div>
             </details>
           </div>
+          {worksheetHealth && (
+            <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 text-sm">
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                Content health
+              </div>
+              <div className="mt-2 flex flex-wrap gap-4">
+                <div>Total: {worksheetHealth.total}</div>
+                <div>Drafts: {worksheetHealth.draft}</div>
+                <div>Missing files: {worksheetHealth.missingFile}</div>
+                <div>Missing thumbnails: {worksheetHealth.missingThumbnail}</div>
+              </div>
+            </div>
+          )}
           <div className="space-y-3">
             <div className="text-sm font-semibold">Existing worksheets</div>
             {worksheets.length === 0 ? (
@@ -112,7 +135,12 @@ export default async function EnglishLevelDetailPage({
                         )}
                       </div>
                       <div>
-                        <div className="font-medium">{worksheet.title}</div>
+                      <div className="font-medium">{worksheet.title}</div>
+                      {worksheet.is_featured && (
+                        <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)] mt-1">
+                          Featured
+                        </div>
+                      )}
                         <div className="text-xs text-slate-500 mt-1">
                           {worksheet.category ?? "Category"} · {worksheet.topic}
                         </div>
@@ -141,6 +169,8 @@ export default async function EnglishLevelDetailPage({
                         table="workbooks"
                         id={worksheet.id}
                         initialPublished={worksheet.is_published}
+                        supportsFeatured
+                        initialFeatured={worksheet.is_featured}
                       />
                       <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-3 text-left">
                         <summary className="cursor-pointer text-xs font-semibold">
@@ -162,6 +192,7 @@ export default async function EnglishLevelDetailPage({
                               thumbnail_url: worksheet.thumbnail_url ?? null,
                               file_url: worksheet.file_url ?? null,
                               is_published: worksheet.is_published,
+                              is_featured: worksheet.is_featured,
                             }}
                           />
                         </div>

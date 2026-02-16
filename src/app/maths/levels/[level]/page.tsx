@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
+import { createClient } from "@/lib/supabase/server";
 import LevelTabs from "./level-tabs";
 import WorkbookForm from "@/app/admin/workbooks/workbook-form";
 
@@ -201,6 +202,32 @@ export default async function MathsLevelDetailPage({
   const isAdmin = session?.profile?.role === "admin";
 
   const { level: levelKey } = await params;
+  const supabase = await createClient();
+  const { data: adminWorkbooksRaw } = isAdmin
+    ? ((await supabase
+        .from("workbooks")
+        .select("id, thumbnail_url, file_url, is_published")
+        .eq("subject", "maths")
+        .eq("level_slug", levelKey)) as {
+        data:
+          | {
+              id: string;
+              thumbnail_url: string | null;
+              file_url: string | null;
+              is_published: boolean;
+            }[]
+          | null;
+      })
+    : { data: [] as { id: string; thumbnail_url: string | null; file_url: string | null; is_published: boolean }[] };
+  const adminWorkbooks = adminWorkbooksRaw ?? [];
+  const worksheetHealth = isAdmin
+    ? {
+        total: adminWorkbooks.length,
+        missingThumbnail: adminWorkbooks.filter((w) => !w.thumbnail_url).length,
+        missingFile: adminWorkbooks.filter((w) => !w.file_url).length,
+        draft: adminWorkbooks.filter((w) => !w.is_published).length,
+      }
+    : null;
   const level =
     levelContent[levelKey] ?? ({
       title: "Level coming soon",
@@ -252,6 +279,19 @@ export default async function MathsLevelDetailPage({
                   </div>
                 </details>
               </div>
+              {worksheetHealth && (
+                <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 text-sm">
+                  <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Content health
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-4">
+                    <div>Total: {worksheetHealth.total}</div>
+                    <div>Drafts: {worksheetHealth.draft}</div>
+                    <div>Missing files: {worksheetHealth.missingFile}</div>
+                    <div>Missing thumbnails: {worksheetHealth.missingThumbnail}</div>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 

@@ -11,9 +11,14 @@ create table if not exists public.exam_mocks (
   file_path text,
   file_url text,
   is_published boolean not null default false,
+  is_featured boolean not null default false,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
+
+-- Backfill if the column was added later
+alter table public.exam_mocks
+  add column if not exists is_featured boolean not null default false;
 
 create table if not exists public.question_sets (
   id uuid primary key default gen_random_uuid(),

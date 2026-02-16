@@ -14,9 +14,14 @@ create table if not exists public.workbooks (
   file_path text,
   file_url text,
   is_published boolean not null default false,
+  is_featured boolean not null default false,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
+
+-- Backfill if the column was added later
+alter table public.workbooks
+  add column if not exists is_featured boolean not null default false;
 
 create index if not exists workbooks_subject_level_idx
   on public.workbooks (subject, level_slug);

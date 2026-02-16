@@ -21,6 +21,7 @@ type ExamMock = {
   cover_url: string | null;
   file_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
 };
 
 type QuestionSet = {
@@ -51,9 +52,10 @@ export default async function MathsLevelResourcesPage({
 
   let mocksQuery = supabase
     .from("exam_mocks")
-    .select("id, title, description, cover_url, file_url, is_published")
+    .select("id, title, description, cover_url, file_url, is_published, is_featured")
     .eq("subject", "maths")
     .eq("level_slug", level)
+    .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
   if (!isAdmin) {
     mocksQuery = mocksQuery.eq("is_published", true);
@@ -73,6 +75,22 @@ export default async function MathsLevelResourcesPage({
 
   const mocks = mocksRaw ?? [];
   const sets = setsRaw ?? [];
+  const mockHealth = isAdmin
+    ? {
+        total: mocks.length,
+        draft: mocks.filter((mock) => !mock.is_published).length,
+        missingCover: mocks.filter((mock) => !mock.cover_url).length,
+        missingFile: mocks.filter((mock) => !mock.file_url).length,
+      }
+    : null;
+  const setHealth = isAdmin
+    ? {
+        total: sets.length,
+        draft: sets.filter((set) => !set.is_published).length,
+        missingCover: sets.filter((set) => !set.cover_url).length,
+        missingResource: sets.filter((set) => !set.content && !set.resource_url).length,
+      }
+    : null;
   const basePath = `/maths/levels/${level}`;
 
   return (
@@ -139,6 +157,31 @@ export default async function MathsLevelResourcesPage({
             </Link>
           </section>
         )}
+        {isAdmin && (mockHealth || setHealth) && (
+          <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 text-sm">
+            <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
+              Content health
+            </div>
+            <div className="mt-2 flex flex-wrap gap-4">
+              {mockHealth && (
+                <>
+                  <div>Mocks: {mockHealth.total}</div>
+                  <div>Mock drafts: {mockHealth.draft}</div>
+                  <div>Mocks missing covers: {mockHealth.missingCover}</div>
+                  <div>Mocks missing files: {mockHealth.missingFile}</div>
+                </>
+              )}
+              {setHealth && (
+                <>
+                  <div>Question sets: {setHealth.total}</div>
+                  <div>Set drafts: {setHealth.draft}</div>
+                  <div>Sets missing covers: {setHealth.missingCover}</div>
+                  <div>Sets missing resources: {setHealth.missingResource}</div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
@@ -189,7 +232,14 @@ export default async function MathsLevelResourcesPage({
                   )}
                 </div>
                 <div className="space-y-2">
-                  <div className="text-lg font-semibold">{mock.title}</div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="text-lg font-semibold">{mock.title}</div>
+                    {mock.is_featured && (
+                      <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                        Featured
+                      </span>
+                    )}
+                  </div>
                   {mock.description && (
                     <p className="text-sm text-[color:var(--muted-foreground)]">
                       {mock.description}
@@ -215,6 +265,18 @@ export default async function MathsLevelResourcesPage({
                         table="exam_mocks"
                         id={mock.id}
                         initialPublished={mock.is_published}
+                        supportsFeatured
+                        initialFeatured={mock.is_featured}
+                        cloneData={{
+                          subject: "maths",
+                          level_slug: level,
+                          title: `${mock.title} (copy)`,
+                          description: mock.description,
+                          cover_url: mock.cover_url,
+                          file_url: mock.file_url,
+                          is_published: false,
+                          is_featured: false,
+                        }}
                       />
                     </div>
                   )}

@@ -9,13 +9,22 @@ export default function AdminRowActions({
   table,
   id,
   initialPublished,
+  supportsFeatured = false,
+  initialFeatured = false,
+  cloneData,
+  onDone,
 }: {
   table: TableName;
   id: string;
   initialPublished: boolean;
+  supportsFeatured?: boolean;
+  initialFeatured?: boolean;
+  cloneData?: Record<string, unknown>;
+  onDone?: () => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [published, setPublished] = useState(initialPublished);
+  const [featured, setFeatured] = useState(initialFeatured);
   const [loading, setLoading] = useState(false);
 
   async function togglePublished() {
@@ -26,10 +35,31 @@ export default function AdminRowActions({
       .update({ is_published: next })
       .eq("id", id);
 
-    if (!error) {
-      setPublished(next);
-    }
+    if (!error) setPublished(next);
     setLoading(false);
+  }
+
+  async function toggleFeatured() {
+    if (!supportsFeatured) return;
+    setLoading(true);
+    const next = !featured;
+    const { error } = await supabase
+      .from(table)
+      .update({ is_featured: next })
+      .eq("id", id);
+    if (!error) setFeatured(next);
+    setLoading(false);
+  }
+
+  async function duplicateRow() {
+    if (!cloneData) return;
+    setLoading(true);
+    const { error } = await supabase.from(table).insert(cloneData);
+    setLoading(false);
+    if (!error) {
+      if (onDone) onDone();
+      else window.location.reload();
+    }
   }
 
   async function deleteRow() {
@@ -38,7 +68,8 @@ export default function AdminRowActions({
     const { error } = await supabase.from(table).delete().eq("id", id);
     setLoading(false);
     if (!error) {
-      window.location.reload();
+      if (onDone) onDone();
+      else window.location.reload();
     }
   }
 
@@ -52,6 +83,26 @@ export default function AdminRowActions({
       >
         {published ? "Unpublish" : "Publish"}
       </button>
+      {supportsFeatured && (
+        <button
+          type="button"
+          className="text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
+          onClick={toggleFeatured}
+          disabled={loading}
+        >
+          {featured ? "Unfeature" : "Feature"}
+        </button>
+      )}
+      {cloneData && (
+        <button
+          type="button"
+          className="text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
+          onClick={duplicateRow}
+          disabled={loading}
+        >
+          Duplicate
+        </button>
+      )}
       <button
         type="button"
         className="text-red-500 hover:text-red-400"

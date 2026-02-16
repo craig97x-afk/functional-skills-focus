@@ -19,6 +19,7 @@ type WorkbookRow = {
   thumbnail_url: string | null;
   file_url: string | null;
   is_published: boolean;
+  is_featured: boolean;
 };
 
 type DisplayWorkbook = {
@@ -32,6 +33,7 @@ type DisplayWorkbook = {
   file_url?: string | null;
   isPlaceholder?: boolean;
   is_published?: boolean;
+  is_featured?: boolean;
 };
 
 const worksheetTemplates = [
@@ -74,10 +76,11 @@ export default function LevelTabs({
       let query = supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published"
+          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured"
         )
         .eq("subject", subject)
         .eq("level_slug", levelSlug)
+        .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false });
 
       if (!isAdmin) {
@@ -164,6 +167,7 @@ export default function LevelTabs({
                   file_url: workbook.file_url,
                   isPlaceholder: false,
                   is_published: workbook.is_published,
+                  is_featured: workbook.is_featured,
                 }))
               : isAdmin
               ? []
@@ -223,17 +227,26 @@ export default function LevelTabs({
                           )}
                         </div>
                         <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <div className="text-lg font-semibold">{workbook.title}</div>
+                          {workbook.is_featured && (
+                            <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                              Featured
+                            </span>
+                          )}
+                        </div>
                           <div className="text-sm text-[color:var(--muted-foreground)]">
                             {workbook.detail}
                           </div>
                           {isAdmin && !workbook.isPlaceholder && (
-                            <div className="pt-2 space-y-3">
-                              <AdminRowActions
-                                table="workbooks"
-                                id={workbook.id}
-                                initialPublished={Boolean(workbook.is_published)}
-                              />
+                          <div className="pt-2 space-y-3">
+                            <AdminRowActions
+                              table="workbooks"
+                              id={workbook.id}
+                              initialPublished={Boolean(workbook.is_published)}
+                              supportsFeatured
+                              initialFeatured={Boolean(workbook.is_featured)}
+                            />
                               <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
                                 <summary className="cursor-pointer text-xs font-semibold">
                                   Edit worksheet
