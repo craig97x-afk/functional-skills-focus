@@ -38,7 +38,7 @@ create policy "Users read own achievements"
   on public.user_achievements
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 -- Users can insert their own achievements (server-side award logic)
 drop policy if exists "Users insert own achievements" on public.user_achievements;
@@ -46,7 +46,7 @@ create policy "Users insert own achievements"
   on public.user_achievements
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 -- Seed achievements
 insert into public.achievements (id, title, description, icon, points)

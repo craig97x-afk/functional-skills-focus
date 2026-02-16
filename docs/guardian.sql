@@ -43,13 +43,13 @@ create policy "Admins manage guardian links"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -62,12 +62,12 @@ create policy "Admins manage guardian sessions"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );

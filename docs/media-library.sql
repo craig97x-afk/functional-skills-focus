@@ -26,13 +26,13 @@ create policy "Admins manage media assets"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -57,7 +57,7 @@ create policy "Admins insert media files"
     bucket_id = 'media'
     and exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -70,14 +70,14 @@ create policy "Admins update media files"
     bucket_id = 'media'
     and exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     bucket_id = 'media'
     and exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -90,6 +90,6 @@ create policy "Admins delete media files"
     bucket_id = 'media'
     and exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );

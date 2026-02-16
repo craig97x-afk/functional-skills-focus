@@ -24,13 +24,13 @@ create policy "Admins manage progress comments"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -40,4 +40,4 @@ create policy "Users read own progress comments"
   on public.progress_comments
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));

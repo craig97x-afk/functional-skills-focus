@@ -34,14 +34,14 @@ create policy "Users read own lesson views"
   on public.lesson_views
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 drop policy if exists "Users insert own lesson views" on public.lesson_views;
 create policy "Users insert own lesson views"
   on public.lesson_views
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 -- Users manage their own activity minutes
 drop policy if exists "Users read own activity minutes" on public.user_activity_minutes;
@@ -49,19 +49,19 @@ create policy "Users read own activity minutes"
   on public.user_activity_minutes
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 drop policy if exists "Users upsert own activity minutes" on public.user_activity_minutes;
 create policy "Users upsert own activity minutes"
   on public.user_activity_minutes
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users update own activity minutes" on public.user_activity_minutes;
 create policy "Users update own activity minutes"
   on public.user_activity_minutes
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));

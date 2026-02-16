@@ -39,11 +39,11 @@ create policy "Participants read conversations"
   for select
   to authenticated
   using (
-    student_id = auth.uid()
-    or admin_id = auth.uid()
+    student_id = (select auth.uid())
+    or admin_id = (select auth.uid())
     or exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -54,10 +54,10 @@ create policy "Admins create conversations"
   for insert
   to authenticated
   with check (
-    admin_id = auth.uid()
+    admin_id = (select auth.uid())
     and exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -68,7 +68,7 @@ create policy "Students create conversations"
   for insert
   to authenticated
   with check (
-    student_id = auth.uid()
+    student_id = (select auth.uid())
     and exists (
       select 1 from public.profiles p
       where p.id = admin_id and p.role = 'admin'
@@ -82,19 +82,19 @@ create policy "Participants update conversations"
   for update
   to authenticated
   using (
-    student_id = auth.uid()
-    or admin_id = auth.uid()
+    student_id = (select auth.uid())
+    or admin_id = (select auth.uid())
     or exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
-    student_id = auth.uid()
-    or admin_id = auth.uid()
+    student_id = (select auth.uid())
+    or admin_id = (select auth.uid())
     or exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -108,11 +108,11 @@ create policy "Participants read messages"
     exists (
       select 1 from public.support_conversations c
       where c.id = conversation_id
-        and (c.student_id = auth.uid() or c.admin_id = auth.uid())
+        and (c.student_id = (select auth.uid()) or c.admin_id = (select auth.uid()))
     )
     or exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -123,11 +123,11 @@ create policy "Participants send messages"
   for insert
   to authenticated
   with check (
-    sender_id = auth.uid()
+    sender_id = (select auth.uid())
     and exists (
       select 1 from public.support_conversations c
       where c.id = conversation_id
-        and (c.student_id = auth.uid() or c.admin_id = auth.uid())
+        and (c.student_id = (select auth.uid()) or c.admin_id = (select auth.uid()))
     )
   );
 
@@ -141,13 +141,13 @@ create policy "Participants update messages"
     exists (
       select 1 from public.support_conversations c
       where c.id = conversation_id
-        and (c.student_id = auth.uid() or c.admin_id = auth.uid())
+        and (c.student_id = (select auth.uid()) or c.admin_id = (select auth.uid()))
     )
   )
   with check (
     exists (
       select 1 from public.support_conversations c
       where c.id = conversation_id
-        and (c.student_id = auth.uid() or c.admin_id = auth.uid())
+        and (c.student_id = (select auth.uid()) or c.admin_id = (select auth.uid()))
     )
   );

@@ -22,7 +22,7 @@ create policy "Users read plan items"
   on public.study_plan_items
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 -- Users can insert their own plan items
 drop policy if exists "Users insert plan items" on public.study_plan_items;
@@ -30,7 +30,7 @@ create policy "Users insert plan items"
   on public.study_plan_items
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 -- Users can update their own plan items
 drop policy if exists "Users update plan items" on public.study_plan_items;
@@ -38,8 +38,8 @@ create policy "Users update plan items"
   on public.study_plan_items
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
 -- Users can delete their own plan items
 drop policy if exists "Users delete plan items" on public.study_plan_items;
@@ -47,4 +47,4 @@ create policy "Users delete plan items"
   on public.study_plan_items
   for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));

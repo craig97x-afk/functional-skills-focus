@@ -23,29 +23,29 @@ create policy "Users read own notes"
   on public.lesson_notes
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 drop policy if exists "Users insert own notes" on public.lesson_notes;
 create policy "Users insert own notes"
   on public.lesson_notes
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users update own notes" on public.lesson_notes;
 create policy "Users update own notes"
   on public.lesson_notes
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users delete own notes" on public.lesson_notes;
 create policy "Users delete own notes"
   on public.lesson_notes
   for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 create table if not exists public.flashcards (
   id uuid primary key default gen_random_uuid(),
@@ -72,26 +72,26 @@ create policy "Users read own flashcards"
   on public.flashcards
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 drop policy if exists "Users insert own flashcards" on public.flashcards;
 create policy "Users insert own flashcards"
   on public.flashcards
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users update own flashcards" on public.flashcards;
 create policy "Users update own flashcards"
   on public.flashcards
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users delete own flashcards" on public.flashcards;
 create policy "Users delete own flashcards"
   on public.flashcards
   for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));

@@ -22,7 +22,7 @@ create policy "Users read own exams"
   on public.user_exams
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 -- Users can insert their own exams
 drop policy if exists "Users insert own exams" on public.user_exams;
@@ -30,7 +30,7 @@ create policy "Users insert own exams"
   on public.user_exams
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 -- Users can update their own exams
 drop policy if exists "Users update own exams" on public.user_exams;
@@ -38,8 +38,8 @@ create policy "Users update own exams"
   on public.user_exams
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
 -- Users can delete their own exams
 drop policy if exists "Users delete own exams" on public.user_exams;
@@ -47,7 +47,7 @@ create policy "Users delete own exams"
   on public.user_exams
   for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 -- Optional: migrate from legacy single-countdown table if it exists.
 do $$

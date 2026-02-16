@@ -16,26 +16,26 @@ create policy "Users read own dashboard widgets"
   on public.user_dashboard_widgets
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 drop policy if exists "Users insert own dashboard widgets" on public.user_dashboard_widgets;
 create policy "Users insert own dashboard widgets"
   on public.user_dashboard_widgets
   for insert
   to authenticated
-  with check (user_id = auth.uid());
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users update own dashboard widgets" on public.user_dashboard_widgets;
 create policy "Users update own dashboard widgets"
   on public.user_dashboard_widgets
   for update
   to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (user_id = (select auth.uid()))
+  with check (user_id = (select auth.uid()));
 
 drop policy if exists "Users delete own dashboard widgets" on public.user_dashboard_widgets;
 create policy "Users delete own dashboard widgets"
   on public.user_dashboard_widgets
   for delete
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));

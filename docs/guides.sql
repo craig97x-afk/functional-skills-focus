@@ -74,13 +74,13 @@ create policy "Admins manage guides"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -93,13 +93,13 @@ create policy "Admins manage guide assets"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   )
   with check (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid() and p.role = 'admin'
+      where p.id = (select auth.uid()) and p.role = 'admin'
     )
   );
 
@@ -112,12 +112,12 @@ create policy "Users read guide assets"
   using (
     exists (
       select 1 from public.profiles p
-      where p.id = auth.uid()
+      where p.id = (select auth.uid())
         and (p.role = 'admin' or p.is_subscribed or p.access_override)
     )
     or exists (
       select 1 from public.guide_purchases gp
-      where gp.user_id = auth.uid()
+      where gp.user_id = (select auth.uid())
         and gp.guide_id = guide_assets.guide_id
         and gp.status = 'paid'
     )
@@ -129,7 +129,7 @@ create policy "Users read purchases"
   on public.guide_purchases
   for select
   to authenticated
-  using (user_id = auth.uid());
+  using (user_id = (select auth.uid()));
 
 -- Migrate existing guide content into guide_assets, then clear sensitive fields.
 insert into public.guide_assets (guide_id, content, file_path, file_url)
