@@ -417,6 +417,12 @@ body[data-a11y-widget-size="large"] .a11y-icon {
   }
 }
 
+@media (max-width: 640px) {
+  .dashboard-banner-logo {
+    width: min(320px, 50vw);
+  }
+}
+
 .shop-rotator {
   overflow: hidden;
 }

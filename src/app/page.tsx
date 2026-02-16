@@ -246,7 +246,7 @@ export default async function HomePage() {
   return (
     <main className="space-y-0">
       <section className="dashboard-banner relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] -mt-10 mb-6">
-        <div className="mx-auto max-w-6xl px-6 py-4 min-h-[230px] md:min-h-[306px] flex flex-col items-center justify-center text-center gap-2 md:gap-0">
+        <div className="mx-auto max-w-6xl px-6 py-3 min-h-[190px] md:min-h-[306px] flex flex-col items-center justify-center text-center gap-2 md:gap-0">
           <img
             src="/brand/logo-mark.png"
             alt="Functional Skills Focus"

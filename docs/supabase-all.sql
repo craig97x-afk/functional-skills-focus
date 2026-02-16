@@ -1503,3 +1503,51 @@ create policy "Participants update messages"
         and (c.student_id = (select auth.uid()) or c.admin_id = (select auth.uid()))
     )
   );
+
+
+-- ==== perf-fixes.sql ====
+
+-- Performance: add missing FK indexes flagged by Supabase lints.
+-- Requires base schema tables (attempts/questions/lessons/topics) to exist.
+
+create index if not exists admin_audit_log_actor_id_idx
+  on public.admin_audit_log (actor_id);
+
+create index if not exists attempts_question_id_idx
+  on public.attempts (question_id);
+
+create index if not exists attempts_selected_option_id_idx
+  on public.attempts (selected_option_id);
+
+create index if not exists guide_purchases_guide_id_idx
+  on public.guide_purchases (guide_id);
+
+create index if not exists lessons_topic_id_idx
+  on public.lessons (topic_id);
+
+create index if not exists media_assets_created_by_idx
+  on public.media_assets (created_by);
+
+create index if not exists progress_comments_admin_id_idx
+  on public.progress_comments (admin_id);
+
+create index if not exists question_options_question_id_idx
+  on public.question_options (question_id);
+
+create index if not exists questions_lesson_id_idx
+  on public.questions (lesson_id);
+
+create index if not exists support_messages_sender_id_idx
+  on public.support_messages (sender_id);
+
+create index if not exists topics_level_id_idx
+  on public.topics (level_id);
+
+create index if not exists topics_subject_id_idx
+  on public.topics (subject_id);
+
+create index if not exists user_achievements_achievement_id_idx
+  on public.user_achievements (achievement_id);
+
+create index if not exists workbook_versions_created_by_idx
+  on public.workbook_versions (created_by);
