@@ -127,6 +127,128 @@ const topicSuggestions: Record<string, string[]> = {
   ],
 };
 
+const categoryTopics: Record<string, Record<string, string[]>> = {
+  "entry-3": {
+    "Using Numbers": [
+      "Number Basics",
+      "Addition and Subtraction",
+      "Multiplication",
+      "Division",
+      "Rounding and Estimating",
+      "Decimal Basics",
+      "Fraction Basics",
+      "Number Patterns",
+    ],
+    "Common Measures, Shape and Space": [
+      "Money",
+      "Length",
+      "Capacity",
+      "Weight",
+      "Time",
+      "Temperature",
+      "Scales",
+      "Angles",
+      "Symmetry and 2D Shapes",
+      "3D Shape Basics",
+      "Movement and Direction",
+    ],
+    "Handling Information and Data": ["Lists", "Tables", "Tally Charts", "Bar Charts", "Line Graphs"],
+  },
+  "fs-1": {
+    "Using Numbers": [
+      "Numbers and Place Value",
+      "Ordering Numbers",
+      "Addition and Subtraction",
+      "Multiplication",
+      "Division",
+      "BIDMAS",
+      "Fractions",
+      "Decimals",
+      "Rounding and Estimating",
+      "Percentages",
+      "Fractions, Decimals and Percentages",
+      "Ratio",
+      "Proportion",
+      "Formulas",
+    ],
+    "Common Measures, Shape and Space": [
+      "Length",
+      "Capacity",
+      "Weight",
+      "Time",
+      "Problems Involving Money",
+      "Interest",
+      "Perimeter",
+      "Area",
+      "Circles",
+      "3D Shapes",
+      "Volume",
+      "Using Length, Area and Volume in Calculations",
+      "Nets",
+      "Plans and Elevations",
+      "2D Shapes",
+      "Maps and Scale Drawings",
+      "Angles and Bearings",
+    ],
+    "Handling Information and Data": [
+      "Data Tables",
+      "Bar Charts",
+      "Line Graphs",
+      "Pie Charts",
+      "Grouped Data",
+      "Mean and Range",
+      "Probability",
+    ],
+  },
+  "fs-2": {
+    "Using Numbers": [
+      "Numbers and Place Value",
+      "Ordering Numbers",
+      "Addition and Subtraction",
+      "Multiplication",
+      "Division",
+      "BIDMAS",
+      "Fractions",
+      "Decimals",
+      "Rounding and Estimating",
+      "Percentages",
+      "Fractions, Decimals and Percentages",
+      "Ratio",
+      "Proportion",
+      "Formulas",
+    ],
+    "Common Measures, Shape and Space": [
+      "Unit Conversions",
+      "Conversion Graphs",
+      "Problems Involving Money",
+      "Best Buys",
+      "Interest and Compound Interest",
+      "Speed",
+      "Density",
+      "Perimeter",
+      "Area",
+      "Circles",
+      "3D Shapes",
+      "Volume",
+      "Using Length, Area and Volume in Calculations",
+      "Nets",
+      "Surface Area",
+      "Plans and Elevations",
+      "Maps and Scale Drawings",
+      "Coordinates",
+      "Angles in 2D Shapes",
+    ],
+    "Handling Information and Data": [
+      "Mean, Median, Mode and Range",
+      "Comparing Data Sets",
+      "Estimating the Mean",
+      "Probability",
+      "Probability Tables",
+      "Scatter Graphs",
+    ],
+  },
+};
+
 type WorkbookFormProps = {
   defaultSubject?: string;
   defaultLevel?: string;
@@ -344,7 +466,24 @@ export default function WorkbookForm({
     }
   }
 
-  const topicList = subject === "maths" ? topicSuggestions[levelSlug] ?? [] : [];
+  const isMaths = subject === "maths";
+  const categoryKey = category.trim();
+  const topicsForLevel = topicSuggestions[levelSlug] ?? [];
+  const categoryMap = categoryTopics[levelSlug] ?? {};
+  const topicList = isMaths
+    ? categoryKey && categoryMap[categoryKey]
+      ? categoryMap[categoryKey]
+      : topicsForLevel
+    : [];
+
+  useEffect(() => {
+    if (!isMaths) return;
+    if (!categoryKey) return;
+    const allowed = categoryMap[categoryKey];
+    if (allowed && topic && !allowed.includes(topic)) {
+      setTopic("");
+    }
+  }, [isMaths, categoryKey, topic, categoryMap]);
 
   return (
     <div className="space-y-4">

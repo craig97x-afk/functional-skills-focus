@@ -21,6 +21,7 @@ export default function ResourceSearch() {
   const [placeholder, setPlaceholder] = useState("Search for resources...");
   const [isFocused, setIsFocused] = useState(false);
   const isScrollable = results.length > 6;
+  const trimmedQuery = query.trim();
 
   useEffect(() => {
     if (isFocused) {
@@ -84,7 +85,7 @@ export default function ResourceSearch() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}&limit=24`, {
           signal: controller.signal,
         });
         if (!res.ok) {
@@ -134,49 +135,61 @@ export default function ResourceSearch() {
         <div className="text-sm text-red-500">{error}</div>
       )}
 
-      {!loading && query.trim().length >= 2 && results.length === 0 && !error && (
+      {!loading && trimmedQuery.length >= 2 && results.length === 0 && !error && (
         <div className="apple-card px-5 py-4 text-sm text-[color:var(--muted-foreground)]">
           No results yet. Try a different keyword or level.
         </div>
       )}
 
       {results.length > 0 && (
-        <div
-          className={[
-            "apple-card divide-y divide-[color:var(--border)]",
-            isScrollable ? "max-h-[420px] overflow-y-auto" : "",
-          ].join(" ")}
-        >
-          {results.map((result) => (
-            <div key={`${result.type}-${result.id}`} className="p-5 flex flex-col gap-2">
-              <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
-                {result.type}
-              </div>
-              <div className="text-lg font-semibold">{result.title}</div>
-              {result.description && (
-                <div className="text-sm text-[color:var(--muted-foreground)]">
-                  {result.description}
+        <div className="space-y-2">
+          <div
+            className={[
+              "apple-card divide-y divide-[color:var(--border)]",
+              isScrollable ? "max-h-[420px] overflow-y-auto" : "",
+            ].join(" ")}
+          >
+            {results.map((result) => (
+              <div key={`${result.type}-${result.id}`} className="p-5 flex flex-col gap-2">
+                <div className="text-xs uppercase tracking-[0.22em] text-slate-400">
+                  {result.type}
                 </div>
-              )}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-[color:var(--muted-foreground)]">
-                <span>{result.meta}</span>
-                {result.external ? (
-                  <a
-                    href={result.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="apple-pill inline-flex"
-                  >
-                    Open
-                  </a>
-                ) : (
-                  <Link href={result.href} className="apple-pill inline-flex">
-                    View
-                  </Link>
+                <div className="text-lg font-semibold">{result.title}</div>
+                {result.description && (
+                  <div className="text-sm text-[color:var(--muted-foreground)]">
+                    {result.description}
+                  </div>
                 )}
+                <div className="flex flex-wrap items-center gap-3 text-xs text-[color:var(--muted-foreground)]">
+                  <span>{result.meta}</span>
+                  {result.external ? (
+                    <a
+                      href={result.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="apple-pill inline-flex"
+                    >
+                      Open
+                    </a>
+                  ) : (
+                    <Link href={result.href} className="apple-pill inline-flex">
+                      View
+                    </Link>
+                  )}
+                </div>
               </div>
+            ))}
+          </div>
+          {trimmedQuery.length >= 2 && (
+            <div className="flex justify-end">
+              <Link
+                href={`/search?q=${encodeURIComponent(trimmedQuery)}`}
+                className="apple-pill inline-flex"
+              >
+                View all results
+              </Link>
             </div>
-          ))}
+          )}
         </div>
       )}
     </section>

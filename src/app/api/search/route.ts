@@ -29,6 +29,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ results: [] });
   }
 
+  const limitParam = Number.parseInt(searchParams.get("limit") ?? "24", 10);
+  const limit = Number.isFinite(limitParam)
+    ? Math.min(Math.max(limitParam, 6), 200)
+    : 24;
+
   const normalized = queryRaw.toLowerCase();
   const tokens = normalized
     .split(/[^a-z0-9]+/g)
@@ -132,7 +137,9 @@ export async function GET(request: Request) {
   const wantsMocks = isKeyword(["mock", "mocks", "exam", "paper", "papers", "test"]);
   const wantsQuestions = isKeyword(["question", "questions", "quiz", "practice"]);
   const wantsLevels = isKeyword(["level", "levels"]);
-  const wantsResources = isKeyword(["resource", "resources"]) || wantsLevels;
+  const wantsResources = isKeyword(["resource", "resources", "all", "everything"]) || wantsLevels;
+  const broadQuery =
+    wantsResources || searchTokens.length === 0;
 
   const subjectFilter = normalized.includes("math")
     ? "maths"
@@ -196,7 +203,7 @@ export async function GET(request: Request) {
   if (levelFilters) workbookQuery.in("level_slug", levelFilters);
 
   const workbookOr = buildOr(["title", "description", "topic", "category"]);
-  if (!(wantsWorkbooks || wantsResources || wantsGuides) && workbookOr) {
+  if (!broadQuery && workbookOr) {
     workbookQuery.or(workbookOr);
   }
 
@@ -208,7 +215,7 @@ export async function GET(request: Request) {
   if (levelFilters) mockQuery.in("level_slug", levelFilters);
 
   const mockOr = buildOr(["title", "description"]);
-  if (!(wantsMocks || wantsResources) && mockOr) {
+  if (!broadQuery && mockOr) {
     mockQuery.or(mockOr);
   }
 
@@ -220,7 +227,7 @@ export async function GET(request: Request) {
   if (levelFilters) setQuery.in("level_slug", levelFilters);
 
   const setOr = buildOr(["title", "description"]);
-  if (!(wantsQuestions || wantsResources) && setOr) {
+  if (!broadQuery && setOr) {
     setQuery.or(setOr);
   }
 
@@ -229,14 +236,14 @@ export async function GET(request: Request) {
     .select("id, title, description, category")
     .eq("is_published", true);
   const guideOr = buildOr(["title", "description", "category"]);
-  if (!(wantsGuides || wantsResources) && guideOr) {
+  if (!broadQuery && guideOr) {
     guideQuery.or(guideOr);
   }
 
-  workbookQuery.limit(wantsWorkbooks || wantsResources ? 40 : 20);
-  mockQuery.limit(wantsMocks || wantsResources ? 30 : 16);
-  setQuery.limit(wantsQuestions || wantsResources ? 30 : 16);
-  guideQuery.limit(wantsGuides || wantsResources ? 40 : 16);
+  workbookQuery.limit(limit);
+  mockQuery.limit(limit);
+  setQuery.limit(limit);
+  guideQuery.limit(limit);
 
   const [workbooksRes, mocksRes, setsRes, guidesRes] = await Promise.all([
     workbookQuery,
@@ -336,5 +343,5 @@ export async function GET(request: Request) {
     })),
   ];
 
-  return NextResponse.json({ results });
+  return NextResponse.json({ results: results.slice(0, limit) });
 }

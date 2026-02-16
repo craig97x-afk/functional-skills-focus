@@ -75,3 +75,9 @@ Template
 - Change summary: Added media library uploads, worksheet bulk CSV import, worksheet analytics view, version history rollback, and admin audit log with undo.
 - Impact: Admins can reuse assets, batch-create worksheets, track usage, roll back file changes, and undo edits from the audit log.
 - Follow-ups: Run `docs/media-library.sql`, `docs/admin-audit.sql`, and updated `docs/workbooks.sql` for analytics/version tables.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Expanded dashboard resource search coverage, added “View all results” page, and improved broad keyword handling (levels/resources).
+- Impact: Search surfaces more results for common student keywords and offers a full results page.
+- Follow-ups: None.
