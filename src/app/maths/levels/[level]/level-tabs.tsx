@@ -16,7 +16,9 @@ type WorkbookRow = {
   description: string | null;
   category: string | null;
   topic: string;
+  thumbnail_path: string | null;
   thumbnail_url: string | null;
+  file_path: string | null;
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
@@ -74,6 +76,18 @@ export default function LevelTabs({
     return categories[Math.min(activeIndex, categories.length - 1)];
   }, [activeIndex, categories]);
 
+  const logWorkbookEvent = async (workbookId: string, eventType: "open" | "download") => {
+    try {
+      await fetch("/api/workbooks/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ workbookId, eventType }),
+      });
+    } catch {
+      // Ignore analytics failures.
+    }
+  };
+
   useEffect(() => {
     let ignore = false;
 
@@ -81,7 +95,7 @@ export default function LevelTabs({
       let query = supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
+          "id, title, description, category, topic, thumbnail_path, thumbnail_url, file_path, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
         )
         .eq("subject", subject)
         .eq("level_slug", levelSlug)
@@ -272,7 +286,9 @@ export default function LevelTabs({
                                       topic: workbook.topic ?? topic,
                                       title: workbook.title,
                                       description: workbook.description ?? null,
+                                      thumbnail_path: workbook.thumbnail_path ?? null,
                                       thumbnail_url: workbook.thumbnail_url ?? null,
+                                      file_path: workbook.file_path ?? null,
                                       file_url: workbook.file_url ?? null,
                                       is_published: workbook.is_published,
                                       publish_at: workbook.publish_at ?? null,
@@ -293,6 +309,7 @@ export default function LevelTabs({
                               href={workbook.file_url}
                               target="_blank"
                               rel="noreferrer"
+                              onClick={() => logWorkbookEvent(workbook.id, "open")}
                             >
                               Open worksheet
                             </a>

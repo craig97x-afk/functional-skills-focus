@@ -32,6 +32,7 @@ export default function QuestionSetForm({
   const [content, setContent] = useState("");
   const [resourceUrl, setResourceUrl] = useState("");
   const [cover, setCover] = useState<File | null>(null);
+  const [coverUrlInput, setCoverUrlInput] = useState("");
   const [resourceFile, setResourceFile] = useState<File | null>(null);
   const [published, setPublished] = useState(false);
   const [publishAt, setPublishAt] = useState("");
@@ -57,7 +58,7 @@ export default function QuestionSetForm({
       return;
     }
 
-    let coverUrl: string | null = null;
+    let coverUrl: string | null = coverUrlInput.trim() || null;
     let finalResourceUrl: string | null = resourceUrl.trim() || null;
 
     if (cover) {
@@ -210,6 +211,16 @@ export default function QuestionSetForm({
           />
         </label>
       </div>
+
+      <label className="block">
+        <span className="text-sm">Cover URL (optional)</span>
+        <input
+          className="mt-1 w-full rounded-md border p-2"
+          value={coverUrlInput}
+          onChange={(e) => setCoverUrlInput(e.target.value)}
+          placeholder="https://..."
+        />
+      </label>
 
       <label className="block">
         <span className="text-sm">Resource link (optional)</span>

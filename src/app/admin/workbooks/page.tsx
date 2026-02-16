@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import WorkbookForm from "./workbook-form";
 import WorksheetBulkTable from "@/components/admin/worksheet-bulk-table";
+import WorkbookBulkImport from "@/components/admin/workbook-bulk-import";
 
 type Workbook = {
   id: string;
@@ -16,6 +17,14 @@ type Workbook = {
   is_published: boolean;
   is_featured: boolean;
   sort_order: number | null;
+};
+
+type WorkbookStats = {
+  workbook_id: string;
+  opens: number | null;
+  downloads: number | null;
+  last_opened_at: string | null;
+  last_downloaded_at: string | null;
 };
 
 export default async function AdminWorkbooksPage() {
@@ -33,6 +42,21 @@ export default async function AdminWorkbooksPage() {
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })) as { data: Workbook[] | null };
+
+  const { data: statsRaw, error: statsError } = (await supabase
+    .from("workbook_event_stats")
+    .select("workbook_id, opens, downloads, last_opened_at, last_downloaded_at")) as {
+    data: WorkbookStats[] | null;
+    error?: { message: string } | null;
+  };
+
+  const statsById = (statsError ? [] : statsRaw ?? []).reduce<Record<string, WorkbookStats>>(
+    (acc, item) => {
+      acc[item.workbook_id] = item;
+      return acc;
+    },
+    {}
+  );
 
   return (
     <main className="space-y-8">
@@ -54,8 +78,13 @@ export default async function AdminWorkbooksPage() {
       </section>
 
       <section className="apple-card p-6">
+        <h2 className="font-semibold mb-4">Bulk import (CSV)</h2>
+        <WorkbookBulkImport />
+      </section>
+
+      <section className="apple-card p-6">
         <h2 className="font-semibold mb-4">Existing worksheets</h2>
-        <WorksheetBulkTable initialWorkbooks={workbooks ?? []} />
+        <WorksheetBulkTable initialWorkbooks={workbooks ?? []} statsById={statsById} />
       </section>
     </main>
   );

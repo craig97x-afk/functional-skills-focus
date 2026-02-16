@@ -69,3 +69,9 @@ Template
 - Change summary: Added admin drag-and-drop ordering for topics, lessons, and worksheets plus bulk worksheet actions and scheduled publishing fields for worksheets/mocks/question sets.
 - Impact: Admins can reorder content instantly, batch publish/unpublish/delete, and schedule content to go live without manual intervention.
 - Follow-ups: Run the updated SQL in `docs/workbooks.sql` and `docs/exam-resources.sql` to add schedule columns and policy updates.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Added media library uploads, worksheet bulk CSV import, worksheet analytics view, version history rollback, and admin audit log with undo.
+- Impact: Admins can reuse assets, batch-create worksheets, track usage, roll back file changes, and undo edits from the audit log.
+- Follow-ups: Run `docs/media-library.sql`, `docs/admin-audit.sql`, and updated `docs/workbooks.sql` for analytics/version tables.

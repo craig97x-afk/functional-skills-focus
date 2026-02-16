@@ -29,6 +29,8 @@ export default function ExamMockForm({
   const [description, setDescription] = useState("");
   const [cover, setCover] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [coverUrlInput, setCoverUrlInput] = useState("");
+  const [fileUrlInput, setFileUrlInput] = useState("");
   const [published, setPublished] = useState(false);
   const [publishAt, setPublishAt] = useState("");
   const [unpublishAt, setUnpublishAt] = useState("");
@@ -53,9 +55,9 @@ export default function ExamMockForm({
       return;
     }
 
-    let coverUrl: string | null = null;
+    let coverUrl: string | null = coverUrlInput.trim() || null;
     let filePath: string | null = null;
-    let fileUrl: string | null = null;
+    let fileUrl: string | null = fileUrlInput.trim() || null;
 
     if (cover) {
       // Cover images live in storage; only the public URL is saved.
@@ -185,6 +187,27 @@ export default function ExamMockForm({
             type="file"
             accept="application/pdf,.pdf,application/msword,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+        </label>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Cover URL (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            value={coverUrlInput}
+            onChange={(e) => setCoverUrlInput(e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Mock file URL (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            value={fileUrlInput}
+            onChange={(e) => setFileUrlInput(e.target.value)}
+            placeholder="https://..."
           />
         </label>
       </div>

@@ -19,10 +19,28 @@ type Worksheet = {
   sort_order: number | null;
 };
 
+type WorkbookStats = {
+  opens: number;
+  downloads: number;
+  last_opened_at: string | null;
+  last_downloaded_at: string | null;
+};
+
+type WorkbookVersion = {
+  id: string;
+  file_path: string | null;
+  file_url: string | null;
+  thumbnail_path: string | null;
+  thumbnail_url: string | null;
+  created_at: string;
+};
+
 export default function WorksheetBulkTable({
   initialWorkbooks,
+  statsById = {},
 }: {
   initialWorkbooks: Worksheet[];
+  statsById?: Record<string, WorkbookStats>;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const [items, setItems] = useState<Worksheet[]>(initialWorkbooks);
@@ -30,6 +48,8 @@ export default function WorksheetBulkTable({
   const [loading, setLoading] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragGroup, setDragGroup] = useState<string | null>(null);
+  const [versionsById, setVersionsById] = useState<Record<string, WorkbookVersion[]>>({});
+  const [versionLoadingId, setVersionLoadingId] = useState<string | null>(null);
 
   const allSelected = items.length > 0 && selected.size === items.length;
 
@@ -52,6 +72,42 @@ export default function WorksheetBulkTable({
 
   const groupKey = (item: Worksheet) =>
     `${item.subject}|${item.level_slug}|${item.topic}`;
+
+  const formatDate = (value: string | null) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString();
+  };
+
+  const loadVersions = async (workbookId: string) => {
+    if (versionsById[workbookId]) return;
+    setVersionLoadingId(workbookId);
+    const { data } = await supabase
+      .from("workbook_versions")
+      .select("id, file_path, file_url, thumbnail_path, thumbnail_url, created_at")
+      .eq("workbook_id", workbookId)
+      .order("created_at", { ascending: false });
+    setVersionsById((prev) => ({ ...prev, [workbookId]: data ?? [] }));
+    setVersionLoadingId(null);
+  };
+
+  const restoreVersion = async (workbookId: string, version: WorkbookVersion) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from("workbooks")
+      .update({
+        file_path: version.file_path,
+        file_url: version.file_url,
+        thumbnail_path: version.thumbnail_path,
+        thumbnail_url: version.thumbnail_url,
+      })
+      .eq("id", workbookId);
+    setLoading(false);
+    if (!error) {
+      window.location.reload();
+    }
+  };
 
   const moveItem = (list: Worksheet[], fromIndex: number, toIndex: number) => {
     const next = [...list];
@@ -206,6 +262,13 @@ export default function WorksheetBulkTable({
                   <div className="text-xs text-slate-500 mt-1">
                     {workbook.category ?? "Category"} · {workbook.topic}
                   </div>
+                  {statsById[workbook.id] && (
+                    <div className="text-xs text-[color:var(--muted-foreground)] mt-2">
+                      Opens: {statsById[workbook.id].opens ?? 0} · Downloads:{" "}
+                      {statsById[workbook.id].downloads ?? 0} · Last viewed:{" "}
+                      {formatDate(statsById[workbook.id].last_opened_at)}
+                    </div>
+                  )}
                   {workbook.description && (
                     <div className="text-sm text-slate-500 mt-2">
                       {workbook.description}
@@ -223,11 +286,11 @@ export default function WorksheetBulkTable({
                   )}
                 </div>
               </div>
-              <div className="text-right space-y-2">
-                <div className="text-xs text-slate-500">
-                  {workbook.is_published ? "Published" : "Draft"}
-                </div>
-                <AdminRowActions
+                <div className="text-right space-y-2">
+                  <div className="text-xs text-slate-500">
+                    {workbook.is_published ? "Published" : "Draft"}
+                  </div>
+                  <AdminRowActions
                   table="workbooks"
                   id={workbook.id}
                   initialPublished={workbook.is_published}
@@ -246,10 +309,43 @@ export default function WorksheetBulkTable({
                     is_featured: false,
                   }}
                   onDone={() => window.location.reload()}
-                />
+                  />
+                  <details
+                    className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-3 text-left"
+                    onToggle={(event) => {
+                      if (event.currentTarget.open) {
+                        void loadVersions(workbook.id);
+                      }
+                    }}
+                  >
+                    <summary className="cursor-pointer text-xs font-semibold">
+                      Version history
+                    </summary>
+                    <div className="mt-3 space-y-2 text-xs text-[color:var(--muted-foreground)]">
+                      {versionLoadingId === workbook.id && <div>Loading versions…</div>}
+                      {!versionLoadingId && (versionsById[workbook.id]?.length ?? 0) === 0 && (
+                        <div>No versions saved yet.</div>
+                      )}
+                      {versionsById[workbook.id]?.map((version) => (
+                        <div
+                          key={version.id}
+                          className="flex items-center justify-between gap-2"
+                        >
+                          <div>{new Date(version.created_at).toLocaleString()}</div>
+                          <button
+                            type="button"
+                            className="rounded-full border px-3 py-1 text-[10px]"
+                            onClick={() => restoreVersion(workbook.id, version)}
+                          >
+                            Restore
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </div>
               </div>
             </div>
-          </div>
         ))}
 
         {items.length === 0 && (

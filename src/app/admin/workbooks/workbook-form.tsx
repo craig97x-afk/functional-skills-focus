@@ -139,7 +139,9 @@ type WorkbookFormProps = {
     topic: string;
     title: string;
     description: string | null;
+    thumbnail_path?: string | null;
     thumbnail_url?: string | null;
+    file_path?: string | null;
     file_url?: string | null;
     is_published?: boolean;
     is_featured?: boolean;
@@ -163,6 +165,8 @@ export default function WorkbookForm({
   const [topic, setTopic] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [thumbnailUrlInput, setThumbnailUrlInput] = useState("");
+  const [fileUrlInput, setFileUrlInput] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [published, setPublished] = useState(false);
@@ -196,6 +200,8 @@ export default function WorkbookForm({
     setTopic(initialWorkbook.topic ?? "");
     setTitle(initialWorkbook.title ?? "");
     setDescription(initialWorkbook.description ?? "");
+    setThumbnailUrlInput(initialWorkbook.thumbnail_url ?? "");
+    setFileUrlInput(initialWorkbook.file_url ?? "");
     setPublished(Boolean(initialWorkbook.is_published));
     setPublishAt(toLocalInputValue(initialWorkbook.publish_at ?? null));
     setUnpublishAt(toLocalInputValue(initialWorkbook.unpublish_at ?? null));
@@ -214,10 +220,12 @@ export default function WorkbookForm({
       return;
     }
 
-    let thumbnailPath: string | null = null;
-    let thumbnailUrl: string | null = null;
-    let filePath: string | null = null;
-    let fileUrl: string | null = null;
+    let thumbnailPath: string | null = initialWorkbook?.thumbnail_path ?? null;
+    let thumbnailUrl: string | null = initialWorkbook?.thumbnail_url ?? null;
+    let filePath: string | null = initialWorkbook?.file_path ?? null;
+    let fileUrl: string | null = initialWorkbook?.file_url ?? null;
+    const initialThumbnail = initialWorkbook?.thumbnail_url ?? "";
+    const initialFile = initialWorkbook?.file_url ?? "";
 
     if (thumbnail) {
       // Thumbnail stored in workbooks bucket and surfaced in the UI.
@@ -238,6 +246,11 @@ export default function WorkbookForm({
         .getPublicUrl(path);
       thumbnailPath = path;
       thumbnailUrl = publicUrl.publicUrl;
+    }
+
+    if (!thumbnail && thumbnailUrlInput.trim()) {
+      thumbnailUrl = thumbnailUrlInput.trim();
+      thumbnailPath = null;
     }
 
     if (file) {
@@ -261,6 +274,26 @@ export default function WorkbookForm({
       fileUrl = publicUrl.publicUrl;
     }
 
+    if (!file && fileUrlInput.trim()) {
+      fileUrl = fileUrlInput.trim();
+      filePath = null;
+    }
+
+    const thumbnailChanged =
+      Boolean(thumbnail) || thumbnailUrlInput.trim() !== initialThumbnail;
+    const fileChanged = Boolean(file) || fileUrlInput.trim() !== initialFile;
+    const hasVersionChange = isEdit && (thumbnailChanged || fileChanged);
+
+    if (hasVersionChange && initialWorkbook?.id) {
+      await supabase.from("workbook_versions").insert({
+        workbook_id: initialWorkbook.id,
+        file_path: initialWorkbook.file_path ?? null,
+        file_url: initialWorkbook.file_url ?? null,
+        thumbnail_path: initialWorkbook.thumbnail_path ?? null,
+        thumbnail_url: initialWorkbook.thumbnail_url ?? null,
+      });
+    }
+
     const updates: Record<string, unknown> = {
       subject,
       level_slug: levelSlug,
@@ -273,12 +306,12 @@ export default function WorkbookForm({
       unpublish_at: toIsoValue(unpublishAt),
     };
 
-    if (thumbnailPath && thumbnailUrl) {
+    if (!isEdit || thumbnailChanged) {
       updates.thumbnail_path = thumbnailPath;
       updates.thumbnail_url = thumbnailUrl;
     }
 
-    if (filePath && fileUrl) {
+    if (!isEdit || fileChanged) {
       updates.file_path = filePath;
       updates.file_url = fileUrl;
     }
@@ -425,6 +458,32 @@ export default function WorkbookForm({
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
         </label>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Thumbnail URL (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            value={thumbnailUrlInput}
+            onChange={(e) => setThumbnailUrlInput(e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Worksheet file URL (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            value={fileUrlInput}
+            onChange={(e) => setFileUrlInput(e.target.value)}
+            placeholder="https://..."
+          />
+        </label>
+      </div>
+
+      <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 text-xs text-[color:var(--muted-foreground)]">
+        Upload once in <span className="font-semibold text-[color:var(--foreground)]">Admin → Media</span> and
+        paste the URLs here to reuse thumbnails/files.
       </div>
 
       <label className="flex items-center gap-2">

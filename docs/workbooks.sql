@@ -136,3 +136,83 @@ create policy "Admins delete workbook files"
       where p.id = auth.uid() and p.role = 'admin'
     )
   );
+
+-- Workbook file version history (admin rollback)
+create table if not exists public.workbook_versions (
+  id uuid primary key default gen_random_uuid(),
+  workbook_id uuid not null references public.workbooks(id) on delete cascade,
+  file_path text,
+  file_url text,
+  thumbnail_path text,
+  thumbnail_url text,
+  created_by uuid references auth.users(id) on delete set null,
+  created_at timestamp with time zone default now()
+);
+
+create index if not exists workbook_versions_workbook_idx
+  on public.workbook_versions (workbook_id);
+
+alter table public.workbook_versions enable row level security;
+
+drop policy if exists "Admins read workbook versions" on public.workbook_versions;
+create policy "Admins read workbook versions"
+  on public.workbook_versions
+  for select
+  to authenticated
+  using (
+    exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.role = 'admin'
+    )
+  );
+
+drop policy if exists "Admins insert workbook versions" on public.workbook_versions;
+create policy "Admins insert workbook versions"
+  on public.workbook_versions
+  for insert
+  to authenticated
+  with check (
+    exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.role = 'admin'
+    )
+  );
+
+-- Workbook analytics (opens/downloads)
+create table if not exists public.workbook_events (
+  id uuid primary key default gen_random_uuid(),
+  workbook_id uuid not null references public.workbooks(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete set null,
+  event_type text not null check (event_type in ('open', 'download')),
+  created_at timestamp with time zone default now()
+);
+
+create index if not exists workbook_events_workbook_idx
+  on public.workbook_events (workbook_id);
+
+create index if not exists workbook_events_user_idx
+  on public.workbook_events (user_id);
+
+alter table public.workbook_events enable row level security;
+
+drop policy if exists "Admins read workbook events" on public.workbook_events;
+create policy "Admins read workbook events"
+  on public.workbook_events
+  for select
+  to authenticated
+  using (
+    exists (
+      select 1 from public.profiles p
+      where p.id = auth.uid() and p.role = 'admin'
+    )
+  );
+
+create or replace view public.workbook_event_stats as
+select
+  workbook_id,
+  count(*) filter (where event_type = 'open') as opens,
+  count(*) filter (where event_type = 'download') as downloads,
+  max(created_at) filter (where event_type = 'open') as last_opened_at,
+  max(created_at) filter (where event_type = 'download') as last_downloaded_at
+from public.workbook_events
+group by workbook_id;

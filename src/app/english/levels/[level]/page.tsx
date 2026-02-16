@@ -20,7 +20,9 @@ type Worksheet = {
   description: string | null;
   category: string | null;
   topic: string;
+  thumbnail_path: string | null;
   thumbnail_url: string | null;
+  file_path: string | null;
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
@@ -42,7 +44,7 @@ export default async function EnglishLevelDetailPage({
     ? ((await supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
+          "id, title, description, category, topic, thumbnail_path, thumbnail_url, file_path, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
         )
         .eq("subject", "english")
         .eq("level_slug", level)
@@ -193,7 +195,9 @@ export default async function EnglishLevelDetailPage({
                               topic: worksheet.topic,
                               title: worksheet.title,
                               description: worksheet.description ?? null,
+                              thumbnail_path: worksheet.thumbnail_path ?? null,
                               thumbnail_url: worksheet.thumbnail_url ?? null,
+                              file_path: worksheet.file_path ?? null,
                               file_url: worksheet.file_url ?? null,
                               is_published: worksheet.is_published,
                               is_featured: worksheet.is_featured,

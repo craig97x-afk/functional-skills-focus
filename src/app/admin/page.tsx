@@ -31,6 +31,10 @@ export default async function AdminPage() {
           <div className="font-semibold">Manage Worksheets</div>
           <div className="apple-subtle mt-1">Upload files and thumbnails.</div>
         </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/media">
+          <div className="font-semibold">Media Library</div>
+          <div className="apple-subtle mt-1">Upload once and reuse assets.</div>
+        </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/widgets">
           <div className="font-semibold">Widget Gallery</div>
           <div className="apple-subtle mt-1">Preview lesson visuals and templates.</div>
@@ -54,6 +58,10 @@ export default async function AdminPage() {
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/billing">
           <div className="font-semibold">Billing Audit</div>
           <div className="apple-subtle mt-1">Stripe status + resync tools.</div>
+        </Link>
+        <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/audit">
+          <div className="font-semibold">Audit Log</div>
+          <div className="apple-subtle mt-1">Track and undo admin changes.</div>
         </Link>
         <Link className="apple-card p-5 hover:shadow-md transition" href="/admin/dev">
           <div className="font-semibold">Dev Report</div>
