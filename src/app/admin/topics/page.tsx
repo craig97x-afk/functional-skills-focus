@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import TopicForm from "./topic-form";
-import TopicRowActions from "./topic-row-actions";
+import TopicOrderList from "./topic-order-list";
 
 export default async function AdminTopicsPage() {
   await requireAdmin();
@@ -26,29 +26,7 @@ export default async function AdminTopicsPage() {
 
       <section className="rounded-lg border p-4">
         <h2 className="font-semibold mb-3">Existing topics</h2>
-        <div className="space-y-2">
-          {(topics ?? []).map((t: any) => (
-            <div key={t.id} className="flex items-start justify-between rounded-md border p-3">
-              <div>
-                <div className="font-medium">{t.title}</div>
-                <div className="text-xs text-gray-500">
-                  Level: {t.level?.code ?? "?"} · Subject: {t.subject?.slug ?? "?"} · Order:{" "}
-                  {t.sort_order}
-                </div>
-                {t.description ? <div className="text-sm mt-1">{t.description}</div> : null}
-              </div>
-              <div className="shrink-0 flex flex-col items-end gap-2">
-                <Link className="text-sm underline" href={`/admin/topics/${t.id}`}>
-                  Edit
-                </Link>
-                <TopicRowActions topicId={t.id} />
-              </div>
-            </div>
-          ))}
-          {(!topics || topics.length === 0) && (
-            <div className="text-sm text-gray-500">No topics yet. Create your first one above.</div>
-          )}
-        </div>
+        <TopicOrderList topics={(topics ?? []) as any[]} />
       </section>
     </main>
   );

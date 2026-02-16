@@ -15,6 +15,7 @@ type Workbook = {
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  sort_order: number | null;
 };
 
 export default async function AdminWorkbooksPage() {
@@ -24,9 +25,13 @@ export default async function AdminWorkbooksPage() {
   const { data: workbooks } = (await supabase
     .from("workbooks")
     .select(
-      "id, subject, level_slug, category, topic, title, description, thumbnail_url, file_url, is_published, is_featured"
+      "id, subject, level_slug, category, topic, title, description, thumbnail_url, file_url, is_published, is_featured, sort_order"
     )
+    .order("subject", { ascending: true })
+    .order("level_slug", { ascending: true })
+    .order("topic", { ascending: true })
     .order("is_featured", { ascending: false })
+    .order("sort_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })) as { data: Workbook[] | null };
 
   return (

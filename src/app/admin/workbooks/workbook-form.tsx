@@ -142,6 +142,8 @@ type WorkbookFormProps = {
     thumbnail_url?: string | null;
     file_url?: string | null;
     is_published?: boolean;
+    publish_at?: string | null;
+    unpublish_at?: string | null;
   } | null;
   onSaved?: () => void;
 };
@@ -163,9 +165,27 @@ export default function WorkbookForm({
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [published, setPublished] = useState(false);
+  const [publishAt, setPublishAt] = useState("");
+  const [unpublishAt, setUnpublishAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const isEdit = Boolean(initialWorkbook?.id);
+
+  const toLocalInputValue = (value: string | null | undefined) => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    const offset = date.getTimezoneOffset();
+    const local = new Date(date.getTime() - offset * 60000);
+    return local.toISOString().slice(0, 16);
+  };
+
+  const toIsoValue = (value: string) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+  };
 
   useEffect(() => {
     if (!initialWorkbook) return;
@@ -176,6 +196,8 @@ export default function WorkbookForm({
     setTitle(initialWorkbook.title ?? "");
     setDescription(initialWorkbook.description ?? "");
     setPublished(Boolean(initialWorkbook.is_published));
+    setPublishAt(toLocalInputValue(initialWorkbook.publish_at ?? null));
+    setUnpublishAt(toLocalInputValue(initialWorkbook.unpublish_at ?? null));
     setThumbnail(null);
     setFile(null);
   }, [initialWorkbook, defaultSubject, defaultLevel]);
@@ -246,6 +268,8 @@ export default function WorkbookForm({
       title: title.trim(),
       description: description || null,
       is_published: published,
+      publish_at: toIsoValue(publishAt),
+      unpublish_at: toIsoValue(unpublishAt),
     };
 
     if (thumbnailPath && thumbnailUrl) {
@@ -403,6 +427,30 @@ export default function WorkbookForm({
         />
         <span className="text-sm">Published</span>
       </label>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Publish at (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="datetime-local"
+            value={publishAt}
+            onChange={(e) => setPublishAt(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Unpublish at (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="datetime-local"
+            value={unpublishAt}
+            onChange={(e) => setUnpublishAt(e.target.value)}
+          />
+        </label>
+      </div>
+      <p className="text-xs text-[color:var(--muted-foreground)]">
+        Tip: set Published on and choose future dates to schedule automatically.
+      </p>
 
       <button
         className="rounded-md border px-3 py-2"

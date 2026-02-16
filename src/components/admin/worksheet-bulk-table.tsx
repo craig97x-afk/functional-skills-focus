@@ -16,6 +16,7 @@ type Worksheet = {
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  sort_order: number | null;
 };
 
 export default function WorksheetBulkTable({
@@ -27,6 +28,8 @@ export default function WorksheetBulkTable({
   const [items, setItems] = useState<Worksheet[]>(initialWorkbooks);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragGroup, setDragGroup] = useState<string | null>(null);
 
   const allSelected = items.length > 0 && selected.size === items.length;
 
@@ -45,6 +48,44 @@ export default function WorksheetBulkTable({
     } else {
       setSelected(new Set(items.map((item) => item.id)));
     }
+  };
+
+  const groupKey = (item: Worksheet) =>
+    `${item.subject}|${item.level_slug}|${item.topic}`;
+
+  const moveItem = (list: Worksheet[], fromIndex: number, toIndex: number) => {
+    const next = [...list];
+    const [removed] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, removed);
+    return next;
+  };
+
+  const persistGroupOrder = async (nextItems: Worksheet[], group: string) => {
+    const groupItems = nextItems.filter((item) => groupKey(item) === group);
+    if (groupItems.length === 0) return;
+    const updates = groupItems.map((item, index) => ({
+      id: item.id,
+      sort_order: index + 1,
+    }));
+    setLoading(true);
+    await Promise.all(
+      updates.map((update) =>
+        supabase.from("workbooks").update({ sort_order: update.sort_order }).eq("id", update.id)
+      )
+    );
+    setLoading(false);
+  };
+
+  const handleDrop = async (targetId: string) => {
+    if (!dragId || dragId === targetId || !dragGroup) return;
+    const dragIndex = items.findIndex((item) => item.id === dragId);
+    const dropIndex = items.findIndex((item) => item.id === targetId);
+    if (dragIndex === -1 || dropIndex === -1) return;
+    if (groupKey(items[dropIndex]) !== dragGroup) return;
+    const nextItems = moveItem(items, dragIndex, dropIndex);
+    setItems(nextItems);
+    setDragId(null);
+    await persistGroupOrder(nextItems, dragGroup);
   };
 
   const applyBulkUpdate = async (update: Record<string, unknown>) => {
@@ -110,9 +151,26 @@ export default function WorksheetBulkTable({
 
       <div className="space-y-3">
         {items.map((workbook) => (
-          <div key={workbook.id} className="apple-card p-4">
+          <div
+            key={workbook.id}
+            className="apple-card p-4"
+            draggable
+            onDragStart={() => {
+              setDragId(workbook.id);
+              setDragGroup(groupKey(workbook));
+            }}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={() => handleDrop(workbook.id)}
+            onDragEnd={() => {
+              setDragId(null);
+              setDragGroup(null);
+            }}
+          >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-3">
+                <div className="text-lg text-[color:var(--muted-foreground)] cursor-grab px-1 select-none">
+                  ⋮⋮
+                </div>
                 <input
                   type="checkbox"
                   checked={selected.has(workbook.id)}

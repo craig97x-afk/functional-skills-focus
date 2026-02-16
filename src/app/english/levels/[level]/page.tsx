@@ -24,6 +24,9 @@ type Worksheet = {
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  sort_order: number | null;
+  publish_at: string | null;
+  unpublish_at: string | null;
 };
 
 export default async function EnglishLevelDetailPage({
@@ -39,11 +42,12 @@ export default async function EnglishLevelDetailPage({
     ? ((await supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured"
+          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
         )
         .eq("subject", "english")
         .eq("level_slug", level)
         .order("is_featured", { ascending: false })
+        .order("sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false })) as { data: Worksheet[] | null })
     : { data: [] as Worksheet[] };
   const worksheets = worksheetsRaw ?? [];
@@ -193,6 +197,8 @@ export default async function EnglishLevelDetailPage({
                               file_url: worksheet.file_url ?? null,
                               is_published: worksheet.is_published,
                               is_featured: worksheet.is_featured,
+                              publish_at: worksheet.publish_at ?? null,
+                              unpublish_at: worksheet.unpublish_at ?? null,
                             }}
                           />
                         </div>

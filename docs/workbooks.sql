@@ -15,6 +15,9 @@ create table if not exists public.workbooks (
   file_url text,
   is_published boolean not null default false,
   is_featured boolean not null default false,
+  sort_order integer,
+  publish_at timestamp with time zone,
+  unpublish_at timestamp with time zone,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -23,11 +26,23 @@ create table if not exists public.workbooks (
 alter table public.workbooks
   add column if not exists is_featured boolean not null default false;
 
+alter table public.workbooks
+  add column if not exists sort_order integer;
+
+alter table public.workbooks
+  add column if not exists publish_at timestamp with time zone;
+
+alter table public.workbooks
+  add column if not exists unpublish_at timestamp with time zone;
+
 create index if not exists workbooks_subject_level_idx
   on public.workbooks (subject, level_slug);
 
 create index if not exists workbooks_topic_idx
   on public.workbooks (topic);
+
+create index if not exists workbooks_subject_level_sort_idx
+  on public.workbooks (subject, level_slug, sort_order);
 
 alter table public.workbooks enable row level security;
 
@@ -37,7 +52,11 @@ create policy "Public read workbooks"
   on public.workbooks
   for select
   to public
-  using (is_published = true);
+  using (
+    is_published = true
+    and (publish_at is null or publish_at <= now())
+    and (unpublish_at is null or unpublish_at > now())
+  );
 
 -- Admins manage workbooks
 drop policy if exists "Admins manage workbooks" on public.workbooks;

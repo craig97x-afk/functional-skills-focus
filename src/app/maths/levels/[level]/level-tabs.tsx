@@ -20,6 +20,9 @@ type WorkbookRow = {
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  sort_order: number | null;
+  publish_at: string | null;
+  unpublish_at: string | null;
 };
 
 type DisplayWorkbook = {
@@ -34,6 +37,8 @@ type DisplayWorkbook = {
   isPlaceholder?: boolean;
   is_published?: boolean;
   is_featured?: boolean;
+  publish_at?: string | null;
+  unpublish_at?: string | null;
 };
 
 const worksheetTemplates = [
@@ -76,11 +81,12 @@ export default function LevelTabs({
       let query = supabase
         .from("workbooks")
         .select(
-          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured"
+          "id, title, description, category, topic, thumbnail_url, file_url, is_published, is_featured, sort_order, publish_at, unpublish_at"
         )
         .eq("subject", subject)
         .eq("level_slug", levelSlug)
         .order("is_featured", { ascending: false })
+        .order("sort_order", { ascending: true, nullsFirst: false })
         .order("created_at", { ascending: false });
 
       if (!isAdmin) {
@@ -168,6 +174,8 @@ export default function LevelTabs({
                   isPlaceholder: false,
                   is_published: workbook.is_published,
                   is_featured: workbook.is_featured,
+                  publish_at: workbook.publish_at,
+                  unpublish_at: workbook.unpublish_at,
                 }))
               : isAdmin
               ? []
@@ -267,6 +275,8 @@ export default function LevelTabs({
                                       thumbnail_url: workbook.thumbnail_url ?? null,
                                       file_url: workbook.file_url ?? null,
                                       is_published: workbook.is_published,
+                                      publish_at: workbook.publish_at ?? null,
+                                      unpublish_at: workbook.unpublish_at ?? null,
                                     }}
                                   />
                                 </div>

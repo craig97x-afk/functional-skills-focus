@@ -12,6 +12,9 @@ create table if not exists public.exam_mocks (
   file_url text,
   is_published boolean not null default false,
   is_featured boolean not null default false,
+  sort_order integer,
+  publish_at timestamp with time zone,
+  unpublish_at timestamp with time zone,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -19,6 +22,15 @@ create table if not exists public.exam_mocks (
 -- Backfill if the column was added later
 alter table public.exam_mocks
   add column if not exists is_featured boolean not null default false;
+
+alter table public.exam_mocks
+  add column if not exists sort_order integer;
+
+alter table public.exam_mocks
+  add column if not exists publish_at timestamp with time zone;
+
+alter table public.exam_mocks
+  add column if not exists unpublish_at timestamp with time zone;
 
 create table if not exists public.question_sets (
   id uuid primary key default gen_random_uuid(),
@@ -30,6 +42,9 @@ create table if not exists public.question_sets (
   content text,
   resource_url text,
   is_published boolean not null default false,
+  sort_order integer,
+  publish_at timestamp with time zone,
+  unpublish_at timestamp with time zone,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -47,20 +62,37 @@ alter table public.question_sets enable row level security;
 alter table public.question_sets
   add column if not exists content text;
 
+alter table public.question_sets
+  add column if not exists sort_order integer;
+
+alter table public.question_sets
+  add column if not exists publish_at timestamp with time zone;
+
+alter table public.question_sets
+  add column if not exists unpublish_at timestamp with time zone;
+
 -- Public can read published mocks and question sets
 drop policy if exists "Public read exam mocks" on public.exam_mocks;
 create policy "Public read exam mocks"
   on public.exam_mocks
   for select
   to public
-  using (is_published = true);
+  using (
+    is_published = true
+    and (publish_at is null or publish_at <= now())
+    and (unpublish_at is null or unpublish_at > now())
+  );
 
 drop policy if exists "Public read question sets" on public.question_sets;
 create policy "Public read question sets"
   on public.question_sets
   for select
   to public
-  using (is_published = true);
+  using (
+    is_published = true
+    and (publish_at is null or publish_at <= now())
+    and (unpublish_at is null or unpublish_at > now())
+  );
 
 -- Admins manage mocks and question sets
 drop policy if exists "Admins manage exam mocks" on public.exam_mocks;

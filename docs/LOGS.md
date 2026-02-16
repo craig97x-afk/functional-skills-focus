@@ -63,3 +63,9 @@ Template
 - Change summary: Capitalized the account role label on the dashboard (Admin/Student).
 - Impact: Cleaner, more polished account widget labeling.
 - Follow-ups: None.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Added admin drag-and-drop ordering for topics, lessons, and worksheets plus bulk worksheet actions and scheduled publishing fields for worksheets/mocks/question sets.
+- Impact: Admins can reorder content instantly, batch publish/unpublish/delete, and schedule content to go live without manual intervention.
+- Follow-ups: Run the updated SQL in `docs/workbooks.sql` and `docs/exam-resources.sql` to add schedule columns and policy updates.

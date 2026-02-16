@@ -30,8 +30,17 @@ export default function ExamMockForm({
   const [cover, setCover] = useState<File | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [published, setPublished] = useState(false);
+  const [publishAt, setPublishAt] = useState("");
+  const [unpublishAt, setUnpublishAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const toIsoValue = (value: string) => {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date.toISOString();
+  };
 
   async function createMock() {
     // Upload assets first so we can store public URLs in exam_mocks.
@@ -98,6 +107,8 @@ export default function ExamMockForm({
       file_path: filePath,
       file_url: fileUrl,
       is_published: published,
+      publish_at: toIsoValue(publishAt),
+      unpublish_at: toIsoValue(unpublishAt),
     });
 
     setLoading(false);
@@ -186,6 +197,27 @@ export default function ExamMockForm({
         />
         <span className="text-sm">Published</span>
       </label>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="block">
+          <span className="text-sm">Publish at (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="datetime-local"
+            value={publishAt}
+            onChange={(e) => setPublishAt(e.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm">Unpublish at (optional)</span>
+          <input
+            className="mt-1 w-full rounded-md border p-2"
+            type="datetime-local"
+            value={unpublishAt}
+            onChange={(e) => setUnpublishAt(e.target.value)}
+          />
+        </label>
+      </div>
 
       <button
         className="rounded-md border px-3 py-2"

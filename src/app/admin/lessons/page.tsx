@@ -2,8 +2,8 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { createClient } from "@/lib/supabase/server";
 import LessonForm from "./lesson-form";
-import LessonRowActions from "./lesson-row-actions";
 import LessonFilters from "./lesson-filters";
+import LessonOrderList from "./lesson-order-list";
 
 type TopicRow = {
   id: string;
@@ -90,34 +90,7 @@ export default async function AdminLessonsPage({
         <h2 className="font-semibold mb-4">Existing lessons</h2>
         <LessonFilters topics={topics} status={status} topic={topicFilter} />
 
-        <div className="space-y-2">
-          {lessons.map((l) => (
-            <div key={l.id} className="apple-card flex items-start justify-between p-4">
-              <div>
-                <div className="font-medium">{l.title}</div>
-                <div className="text-xs text-[color:var(--muted-foreground)]">
-                  Topic: {l.topics?.title ?? "?"} · Order: {l.sort_order} ·{" "}
-                  {l.published ? "Published" : "Draft"}
-                </div>
-              </div>
-              <div className="shrink-0 flex flex-col items-end gap-2">
-                <Link
-                  className="text-sm text-[color:var(--muted-foreground)] hover:text-[color:var(--foreground)]"
-                  href={`/admin/lessons/${l.id}`}
-                >
-                  Edit
-                </Link>
-                <LessonRowActions lessonId={l.id} initialPublished={l.published} />
-              </div>
-            </div>
-          ))}
-
-          {lessons.length === 0 && (
-            <div className="text-sm text-[color:var(--muted-foreground)]">
-              No lessons yet. Create your first one above.
-            </div>
-          )}
-        </div>
+        <LessonOrderList lessons={lessons} />
       </section>
     </main>
   );
