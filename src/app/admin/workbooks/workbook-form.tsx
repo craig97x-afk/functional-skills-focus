@@ -142,6 +142,7 @@ type WorkbookFormProps = {
     thumbnail_url?: string | null;
     file_url?: string | null;
     is_published?: boolean;
+    is_featured?: boolean;
     publish_at?: string | null;
     unpublish_at?: string | null;
   } | null;
