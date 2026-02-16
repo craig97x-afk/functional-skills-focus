@@ -288,8 +288,15 @@ export default function WorkbookForm({
       return;
     }
 
+    const workbookId = initialWorkbook?.id ?? null;
+    if (isEdit && !workbookId) {
+      setMsg("Missing workbook id.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = isEdit
-      ? await supabase.from("workbooks").update(updates).eq("id", initialWorkbook.id)
+      ? await supabase.from("workbooks").update(updates).eq("id", workbookId)
       : await supabase.from("workbooks").insert(updates);
 
     setLoading(false);
