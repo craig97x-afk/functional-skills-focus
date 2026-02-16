@@ -150,7 +150,7 @@ export default async function MathsLevelResourcesPage({
               </details>
             </div>
             <Link
-              className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white"
+              className="inline-flex rounded-full border px-4 py-2 text-xs transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white !text-white"
               href="/admin/questions"
             >
               Open full resources manager
@@ -190,7 +190,7 @@ export default async function MathsLevelResourcesPage({
             Worksheets
           </Link>
           <Link
-            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white"
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white !text-white"
             href={`${basePath}/resources`}
           >
             Resources
