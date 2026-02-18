@@ -93,3 +93,9 @@ Template
 - Change summary: Improved dashboard search to handle type keywords (worksheets, mocks, guides, questions) and broaden results when only a type is specified.
 - Impact: Searches like “worksheets” now return the full worksheet library instead of empty results.
 - Follow-ups: None.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Added an admin guide with screenshot placeholders for worksheets, questions, exam mocks, and shop guides.
+- Impact: Admins can follow a single walkthrough for content management tasks.
+- Follow-ups: Add screenshots to `docs/ADMIN-GUIDE.md`.
