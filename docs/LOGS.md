@@ -99,3 +99,9 @@ Template
 - Change summary: Added an admin guide with screenshot placeholders for worksheets, questions, exam mocks, and shop guides.
 - Impact: Admins can follow a single walkthrough for content management tasks.
 - Follow-ups: Add screenshots to `docs/ADMIN-GUIDE.md`.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Aligned English level pages to the Maths layout with category tabs and topic-based worksheet views, plus English topic suggestions in the worksheet form.
+- Impact: English levels now have consistent topic navigation and admins can add worksheets using the same structure as Maths.
+- Follow-ups: None.

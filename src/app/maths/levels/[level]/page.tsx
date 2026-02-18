@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getUser } from "@/lib/auth/get-user";
 import { createClient } from "@/lib/supabase/server";
-import LevelTabs from "./level-tabs";
+import LevelTabs from "@/components/level-tabs";
 import WorkbookForm from "@/app/admin/workbooks/workbook-form";
 
 export const dynamic = "force-dynamic";
@@ -188,6 +188,92 @@ const levelContent: Record<
   },
 };
 
+const entryLevel1MathsOutline = [
+  {
+    title: "Using numbers and the number system",
+    items: [
+      "Read, write, order and compare numbers up to 20",
+      "Use whole numbers to count up to 20 items including zero",
+      "Add numbers which total up to 20 and subtract numbers from numbers up to 20",
+      "Recognise and interpret the symbols +, - and = appropriately",
+    ],
+  },
+  {
+    title: "Using common measures, shape and space",
+    items: [
+      "Recognise coins and notes, and write them in numbers with the correct symbols (£ and p), where these involve numbers up to 20",
+      "Read 12-hour digital and analogue clocks in hours",
+      "Know the number, name and sequence of: days in a week; months; the seasons",
+      "Describe and make comparisons in words between measures of items, including: size, length, width, height, weight, capacity",
+      "Identify and recognise common 2-dimensional (2-D) and 3-dimensional (3-D) shapes, including a: circle, cube, rectangle (includes squares), triangle",
+      "Use everyday positional vocabulary to describe position and direction, including: left, right, in front, behind, under, above",
+    ],
+  },
+  {
+    title: "Handling information and data",
+    items: [
+      "Read numerical information from lists",
+      "Sort and classify objects using a single criterion",
+      "Read and draw simple charts and diagrams, including a: tally chart, block diagram, graph",
+    ],
+  },
+  {
+    title: "Solving mathematical problems and decision-making",
+    items: [
+      "Recognise a simple mathematical problem; obtain a solution. (A simple mathematical problem is one that requires working through one step or process.)",
+    ],
+  },
+];
+
+const entryLevel2MathsOutline = [
+  {
+    title: "Using numbers and the number system",
+    items: [
+      "Count reliably up to 100 items",
+      "Read, write, order and compare numbers up to 200",
+      "Recognise and sequence odd and even numbers up to 100",
+      "Recognise and interpret the symbols +, -, x, ÷ and = appropriately",
+      "Add and subtract 2-digit numbers",
+      "Multiply whole numbers in the range 0 x 0 to 12 x 12 using times tables",
+      "Know the number and sequence of: hours in a day; weeks in a year",
+      "Divide 2-digit whole numbers by single-digit whole numbers and express remainders",
+      "Approximate by rounding to the nearest 10, and use this rounded answer to check results",
+      "Recognise simple fractions (halves, quarters and tenths) of: whole numbers; shapes",
+      "Read, write and use decimals to one decimal place",
+    ],
+  },
+  {
+    title: "Using common measures, shape and space",
+    items: [
+      "Calculate money with pence up to one pound and in whole pounds of multiple items, and write the value using the correct symbols (£ or p)",
+      "Read and record time in common date formats, understand hours from a 24-hour digital clock, and read the time displayed on an analogue clock in: hours; half-hours; quarter-hours",
+      "Use metric measures of length, including: millimetres; centimetres; metres; kilometres",
+      "Use measures of weight, including: grams; kilograms",
+      "Use measures of capacity, including: millilitres; litres",
+      "Read and compare positive temperatures",
+      "Read and use simple scales to the nearest labelled division",
+      "Recognise and name 2-D and 3-D shapes, including: pentagons; hexagons; cylinders; cuboids; pyramids; spheres",
+      "Describe the properties of common 2-D and 3-D shapes, including: numbers of sides; corners; edges; faces; angles; base",
+      "Use appropriate positional vocabulary to describe position and direction, including: between; inside; outside; middle; below; on top; forwards; backwards",
+    ],
+  },
+  {
+    title: "Handling information and data",
+    items: [
+      "Extract information from: lists; tables; diagrams; bar charts",
+      "Make numerical comparisons from bar charts",
+      "Sort and classify objects using 2 criteria",
+      "Take information from one format and represent the information in another format, including using a bar chart",
+    ],
+  },
+  {
+    title: "Solving mathematical problems and decision-making",
+    items: [
+      "Recognise a simple mathematical problem; obtain a solution. (A simple mathematical problem is one that requires working through one step or process.)",
+    ],
+  },
+];
+
 export default async function MathsLevelDetailPage({
   params,
 }: {
@@ -244,6 +330,70 @@ export default async function MathsLevelDetailPage({
         <h1 className="text-3xl font-semibold tracking-tight">{level.title}</h1>
         <p className="apple-subtle">{level.summary}</p>
       </div>
+
+      {levelKey === "entry-1" && (
+        <section className="apple-card p-6 space-y-4">
+          <div>
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+              Entry Level 1 outline
+            </div>
+            <h2 className="text-xl font-semibold mt-2">
+              Suggested lesson titles
+            </h2>
+            <p className="apple-subtle mt-2">
+              These lesson names map to Entry Level 1 Functional Skills Maths
+              requirements.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {entryLevel1MathsOutline.map((section) => (
+              <div
+                key={section.title}
+                className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4"
+              >
+                <div className="text-sm font-semibold">{section.title}</div>
+                <ul className="mt-3 space-y-2 text-sm text-[color:var(--muted-foreground)]">
+                  {section.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {levelKey === "entry-2" && (
+        <section className="apple-card p-6 space-y-4">
+          <div>
+            <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+              Entry Level 2 outline
+            </div>
+            <h2 className="text-xl font-semibold mt-2">
+              Suggested lesson titles
+            </h2>
+            <p className="apple-subtle mt-2">
+              These lesson names map to Entry Level 2 Functional Skills Maths
+              requirements.
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {entryLevel2MathsOutline.map((section) => (
+              <div
+                key={section.title}
+                className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4"
+              >
+                <div className="text-sm font-semibold">{section.title}</div>
+                <ul className="mt-3 space-y-2 text-sm text-[color:var(--muted-foreground)]">
+                  {section.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {level.comingSoon ? (
         <section className="apple-card p-6 space-y-3">

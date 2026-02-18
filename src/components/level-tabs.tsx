@@ -78,7 +78,10 @@ export default function LevelTabs({
     return categories[Math.min(activeIndex, categories.length - 1)];
   }, [activeIndex, categories]);
 
-  const logWorkbookEvent = async (workbookId: string, eventType: "open" | "download") => {
+  const logWorkbookEvent = async (
+    workbookId: string,
+    eventType: "open" | "download"
+  ) => {
     try {
       await fetch("/api/workbooks/event", {
         method: "POST",
@@ -120,7 +123,7 @@ export default function LevelTabs({
     return () => {
       ignore = true;
     };
-  }, [supabase, subject, levelSlug]);
+  }, [supabase, subject, levelSlug, isAdmin]);
 
   const workbooksByTopic = useMemo(() => {
     const map = new Map<string, WorkbookRow[]>();
@@ -173,7 +176,7 @@ export default function LevelTabs({
       </div>
 
       <div className="grid gap-6">
-        {activeCategory.topics.map((topic, index) => {
+        {activeCategory.topics.map((topic) => {
           const key = topic.toLowerCase();
           const actual = workbooksByTopic.get(key) ?? [];
           const display: DisplayWorkbook[] =
@@ -229,101 +232,102 @@ export default function LevelTabs({
                     {display.map((workbook, workbookIndex) => {
                       const isLocked = !hasAccess && workbookIndex >= 2;
                       return (
-                      <div
-                        key={workbook.id}
-                        className={[
-                          "rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center",
-                          isLocked ? "opacity-80" : "",
-                        ].join(" ")}
-                      >
-                        <div className="h-40 w-full lg:h-28 lg:w-64 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
-                          {workbook.thumbnail_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={workbook.thumbnail_url}
-                              alt={workbook.title}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-200">
-                              Worksheet
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <div className="text-lg font-semibold">{workbook.title}</div>
-                          {workbook.is_featured && (
-                            <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                              Featured
-                            </span>
-                          )}
-                        </div>
-                          <div className="text-sm text-[color:var(--muted-foreground)]">
-                            {workbook.detail}
+                        <div
+                          key={workbook.id}
+                          className={[
+                            "rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 flex flex-col gap-4 lg:flex-row lg:items-center",
+                            isLocked ? "opacity-80" : "",
+                          ].join(" ")}
+                        >
+                          <div className="h-40 w-full lg:h-28 lg:w-64 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                            {workbook.thumbnail_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={workbook.thumbnail_url}
+                                alt={workbook.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-gradient-to-br from-slate-700/30 to-slate-900/50 flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-200">
+                                Worksheet
+                              </div>
+                            )}
                           </div>
-                          {isAdmin && !workbook.isPlaceholder && (
-                          <div className="pt-2 space-y-3">
-                            <AdminRowActions
-                              table="workbooks"
-                              id={workbook.id}
-                              initialPublished={Boolean(workbook.is_published)}
-                              supportsFeatured
-                              initialFeatured={Boolean(workbook.is_featured)}
-                            />
-                              <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
-                                <summary className="cursor-pointer text-xs font-semibold">
-                                  Edit worksheet
-                                </summary>
-                                <div className="mt-4">
-                                  <WorkbookForm
-                                    defaultSubject={subject}
-                                    defaultLevel={levelSlug}
-                                    lockSubjectLevel
-                                    initialWorkbook={{
-                                      id: workbook.id,
-                                      subject,
-                                      level_slug: levelSlug,
-                                      category: workbook.category ?? null,
-                                      topic: workbook.topic ?? topic,
-                                      title: workbook.title,
-                                      description: workbook.description ?? null,
-                                      thumbnail_path: workbook.thumbnail_path ?? null,
-                                      thumbnail_url: workbook.thumbnail_url ?? null,
-                                      file_path: workbook.file_path ?? null,
-                                      file_url: workbook.file_url ?? null,
-                                      is_published: workbook.is_published,
-                                      publish_at: workbook.publish_at ?? null,
-                                      unpublish_at: workbook.unpublish_at ?? null,
-                                    }}
-                                  />
-                                </div>
-                              </details>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="text-lg font-semibold">{workbook.title}</div>
+                              {workbook.is_featured && (
+                                <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                                  Featured
+                                </span>
+                              )}
                             </div>
-                          )}
-                          {isLocked ? (
-                            <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                              Subscription user only
-                            </span>
-                          ) : workbook.file_url ? (
-                            <a
-                              className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                              href={workbook.file_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={() => logWorkbookEvent(workbook.id, "open")}
-                            >
-                              Open worksheet
-                            </a>
-                          ) : (
-                            <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                              {workbook.isPlaceholder ? "Draft" : "No file yet"}
+                            <div className="text-sm text-[color:var(--muted-foreground)]">
+                              {workbook.detail}
                             </div>
-                          )}
+                            {isAdmin && !workbook.isPlaceholder && (
+                              <div className="pt-2 space-y-3">
+                                <AdminRowActions
+                                  table="workbooks"
+                                  id={workbook.id}
+                                  initialPublished={Boolean(workbook.is_published)}
+                                  supportsFeatured
+                                  initialFeatured={Boolean(workbook.is_featured)}
+                                />
+                                <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                                  <summary className="cursor-pointer text-xs font-semibold">
+                                    Edit worksheet
+                                  </summary>
+                                  <div className="mt-4">
+                                    <WorkbookForm
+                                      defaultSubject={subject}
+                                      defaultLevel={levelSlug}
+                                      lockSubjectLevel
+                                      initialWorkbook={{
+                                        id: workbook.id,
+                                        subject,
+                                        level_slug: levelSlug,
+                                        category: workbook.category ?? null,
+                                        topic: workbook.topic ?? topic,
+                                        title: workbook.title,
+                                        description: workbook.description ?? null,
+                                        thumbnail_path: workbook.thumbnail_path ?? null,
+                                        thumbnail_url: workbook.thumbnail_url ?? null,
+                                        file_path: workbook.file_path ?? null,
+                                        file_url: workbook.file_url ?? null,
+                                        is_published: workbook.is_published,
+                                        is_featured: workbook.is_featured,
+                                        publish_at: workbook.publish_at ?? null,
+                                        unpublish_at: workbook.unpublish_at ?? null,
+                                      }}
+                                    />
+                                  </div>
+                                </details>
+                              </div>
+                            )}
+                            {isLocked ? (
+                              <span className="inline-flex rounded-full border border-[color:var(--border)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                                Subscription user only
+                              </span>
+                            ) : workbook.file_url ? (
+                              <a
+                                className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                                href={workbook.file_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={() => logWorkbookEvent(workbook.id, "open")}
+                              >
+                                Open worksheet
+                              </a>
+                            ) : (
+                              <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                                {workbook.isPlaceholder ? "Draft" : "No file yet"}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   </div>
                 )}
               </div>
