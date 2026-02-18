@@ -286,7 +286,7 @@ export default async function EnglishLevelDetailPage({
     <main className="space-y-8">
       <div className="space-y-3">
         <Link className="apple-subtle inline-flex" href="/english/levels">
-          <- Back to levels
+          Back to levels
         </Link>
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">English</div>
         <h1 className="text-3xl font-semibold tracking-tight">{levelData.title}</h1>
