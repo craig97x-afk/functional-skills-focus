@@ -105,3 +105,9 @@ Template
 - Change summary: Aligned English level pages to the Maths layout with category tabs and topic-based worksheet views, plus English topic suggestions in the worksheet form.
 - Impact: English levels now have consistent topic navigation and admins can add worksheets using the same structure as Maths.
 - Follow-ups: None.
+
+- Date: 2026-02-16
+- Version/Commit: pending
+- Change summary: Added official Entry Level 1/2 Maths topic statements as tabbed categories and expanded Maths worksheet topic suggestions.
+- Impact: Entry Level 1/2 Maths now use the same tabbed topic layout and admins can match worksheet topics to the official statements.
+- Follow-ups: None.
