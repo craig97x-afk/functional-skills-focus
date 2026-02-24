@@ -117,3 +117,9 @@ Template
 - Change summary: Added exam board selection step for English/Maths resources, plus exam_board fields for mocks and question sets.
 - Impact: Learners choose a board before seeing resources; admins can tag resources by board for filtering.
 - Follow-ups: Run the updated `docs/exam-resources.sql` (or `docs/supabase-all.sql`) to add the exam_board columns and indexes.
+
+- Date: 2026-02-24
+- Version/Commit: pending
+- Change summary: Added external exam resource links (schema + admin form + resource list) and expanded exam board options for UK awarding bodies (plus Essential Skills Wales/NI).
+- Impact: Learners can access official sample links; admins can add external links alongside uploads on resource pages.
+- Follow-ups: Run the updated `docs/exam-resources.sql` (or `docs/supabase-all.sql`) to add the exam_resource_links table and policies.

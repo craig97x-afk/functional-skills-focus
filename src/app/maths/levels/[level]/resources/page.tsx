@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
 import ExamMockForm from "@/app/admin/questions/exam-mock-form";
 import QuestionSetForm from "@/app/admin/questions/question-set-form";
 import ExamResourceLinkForm from "@/app/admin/questions/exam-resource-link-form";
 import AdminRowActions from "@/components/admin-row-actions";
+import ExamResourceFilters from "@/components/exam-resource-filters";
+import ExamLinkHealthRunner from "@/components/exam-link-health-runner";
+import { getAuthContext } from "@/lib/auth/get-auth-context";
 import { getExamBoardBySlug, getExamBoardLabel } from "@/lib/exam-boards";
+import { loadLevelResources } from "@/lib/exam-resources/load-level-resources";
+import { getPaperTypeLabel } from "@/lib/exam-resources/metadata";
+import { buildTrackedResourceUrl } from "@/lib/exam-resources/tracking";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 const levelLabels: Record<string, string> = {
   "entry-1": "Entry Level 1",
@@ -16,140 +21,54 @@ const levelLabels: Record<string, string> = {
   "fs-2": "Functional Skills Level 2",
 };
 
-type ExamMock = {
-  id: string;
-  title: string;
-  description: string | null;
-  cover_url: string | null;
-  file_url: string | null;
-  is_published: boolean;
-  is_featured: boolean;
-  exam_board: string | null;
-};
-
-type QuestionSet = {
-  id: string;
-  title: string;
-  description: string | null;
-  cover_url: string | null;
-  resource_url: string | null;
-  content: string | null;
-  is_published: boolean;
-  exam_board: string | null;
-};
-
-type ExamResourceLink = {
-  id: string;
-  title: string;
-  description: string | null;
-  link_url: string;
-  link_type: string | null;
-  is_published: boolean;
-  exam_board: string | null;
-};
-
 export default async function MathsLevelResourcesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ level: string }>;
-  searchParams?: { board?: string };
+  searchParams?: {
+    board?: string;
+    paperType?: string;
+    year?: string;
+    tag?: string;
+  };
 }) {
   const { level } = await params;
   const label = levelLabels[level] ?? "Level";
   const selectedBoard = getExamBoardBySlug("maths", level, searchParams?.board);
   const boardLabel = getExamBoardLabel(selectedBoard?.slug);
-  const boardQuery = selectedBoard ? `?board=${selectedBoard.slug}` : "";
-  const supabase = await createClient();
+  const paperType = searchParams?.paperType?.trim() || null;
+  const parsedYear = searchParams?.year ? Number.parseInt(searchParams.year, 10) : null;
+  const paperYear = typeof parsedYear === "number" && Number.isFinite(parsedYear) ? parsedYear : null;
+  const tag = searchParams?.tag?.trim().toLowerCase() || null;
+
+  const activeSearch = new URLSearchParams();
+  if (selectedBoard?.slug) activeSearch.set("board", selectedBoard.slug);
+  if (paperType) activeSearch.set("paperType", paperType);
+  if (paperYear) activeSearch.set("year", String(paperYear));
+  if (tag) activeSearch.set("tag", tag);
+  const activeQuery = activeSearch.toString();
+
+  const { isAdmin } = await getAuthContext();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: profile } = user
-    ? await supabase.from("profiles").select("role").eq("id", user.id).single()
-    : { data: null };
-  const isAdmin = profile?.role === "admin";
+    mocks,
+    sets,
+    links,
+    linksFallbackUsed,
+    linksLoadError,
+    filterOptions,
+  } = await loadLevelResources({
+    subject: "maths",
+    levelSlug: level,
+    isAdmin,
+    filters: {
+      boardSlug: selectedBoard?.slug ?? null,
+      paperType,
+      paperYear,
+      tag,
+    },
+  });
 
-  let mocksQuery = supabase
-    .from("exam_mocks")
-    .select(
-      "id, title, description, cover_url, file_url, is_published, is_featured, exam_board"
-    )
-    .eq("subject", "maths")
-    .eq("level_slug", level)
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false });
-  if (selectedBoard) {
-    mocksQuery = mocksQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
-  }
-  if (!isAdmin) {
-    mocksQuery = mocksQuery.eq("is_published", true);
-  }
-  const { data: mocksRaw } = (await mocksQuery) as { data: ExamMock[] | null };
-
-  let setsQuery = supabase
-    .from("question_sets")
-    .select(
-      "id, title, description, cover_url, resource_url, content, is_published, exam_board"
-    )
-    .eq("subject", "maths")
-    .eq("level_slug", level)
-    .order("created_at", { ascending: false });
-  if (selectedBoard) {
-    setsQuery = setsQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
-  }
-  if (!isAdmin) {
-    setsQuery = setsQuery.eq("is_published", true);
-  }
-  const { data: setsRaw } = (await setsQuery) as { data: QuestionSet[] | null };
-
-  let linksQuery = supabase
-    .from("exam_resource_links")
-    .select("id, title, description, link_url, link_type, is_published, exam_board")
-    .eq("subject", "maths")
-    .eq("level_slug", level)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-  if (selectedBoard) {
-    linksQuery = linksQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
-  }
-  if (!isAdmin) {
-    linksQuery = linksQuery.eq("is_published", true);
-  }
-  const { data: linksRaw, error: linksError } = (await linksQuery) as {
-    data: ExamResourceLink[] | null;
-    error: { message: string } | null;
-  };
-
-  let links = linksRaw ?? [];
-  let linksFallbackUsed = false;
-  let linksLoadError = linksError?.message ?? null;
-
-  if (!linksLoadError && selectedBoard && links.length === 0) {
-    let fallbackLinksQuery = supabase
-      .from("exam_resource_links")
-      .select("id, title, description, link_url, link_type, is_published, exam_board")
-      .eq("subject", "maths")
-      .eq("level_slug", level)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: false });
-    if (!isAdmin) {
-      fallbackLinksQuery = fallbackLinksQuery.eq("is_published", true);
-    }
-    const { data: fallbackLinksRaw, error: fallbackLinksError } =
-      (await fallbackLinksQuery) as {
-        data: ExamResourceLink[] | null;
-        error: { message: string } | null;
-      };
-    if (fallbackLinksError) {
-      linksLoadError = fallbackLinksError.message;
-    } else if ((fallbackLinksRaw ?? []).length > 0) {
-      links = fallbackLinksRaw ?? [];
-      linksFallbackUsed = true;
-    }
-  }
-
-  const mocks = mocksRaw ?? [];
-  const sets = setsRaw ?? [];
   const mockHealth = isAdmin
     ? {
         total: mocks.length,
@@ -190,6 +109,14 @@ export default async function MathsLevelResourcesPage({
         <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
           Exam board: {boardLabel}
         </div>
+        <ExamResourceFilters
+          basePath={basePath}
+          selectedBoard={selectedBoard?.slug ?? null}
+          paperType={paperType}
+          paperYear={paperYear}
+          tag={tag}
+          options={filterOptions}
+        />
         {isAdmin && (
           <section className="apple-card p-6 space-y-4">
             <div>
@@ -281,7 +208,7 @@ export default async function MathsLevelResourcesPage({
           </Link>
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white !text-white"
-            href={`${basePath}/resources${boardQuery}`}
+            href={activeQuery ? `${basePath}/resources?${activeQuery}` : `${basePath}/resources`}
           >
             Resources
           </Link>
@@ -303,6 +230,7 @@ export default async function MathsLevelResourcesPage({
           <p className="apple-subtle mt-1">
             Direct links to sample papers, mark schemes, and specs from awarding bodies.
           </p>
+          {isAdmin && <ExamLinkHealthRunner subject="maths" levelSlug={level} />}
           {linksFallbackUsed && (
             <p className="mt-2 text-xs text-[color:var(--muted-foreground)]">
               No board-specific links for {boardLabel} yet, so showing all boards for this
@@ -322,42 +250,95 @@ export default async function MathsLevelResourcesPage({
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
-            {links.map((link) => (
-              <article key={link.id} className="apple-card p-5 flex flex-col gap-3">
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-lg font-semibold">{link.title}</div>
-                    {link.link_type && (
-                      <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                        {link.link_type}
-                      </span>
+            {links.map((link) => {
+              const trackedLinkUrl = buildTrackedResourceUrl({
+                resourceType: "exam_resource_link",
+                resourceId: link.id,
+                eventType: "open",
+                subject: "maths",
+                levelSlug: level,
+                targetUrl: link.link_url,
+              });
+
+              return (
+                <article key={link.id} className="apple-card p-5 flex flex-col gap-3">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-lg font-semibold">{link.title}</div>
+                      {link.link_type && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {link.link_type}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {link.paper_type && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {getPaperTypeLabel(link.paper_type)}
+                        </span>
+                      )}
+                      {link.paper_year && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {link.paper_year}
+                        </span>
+                      )}
+                      {link.tags.map((tagItem) => (
+                        <span
+                          key={`${link.id}-${tagItem}`}
+                          className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] lowercase tracking-[0.08em] text-[color:var(--muted-foreground)]"
+                        >
+                          {tagItem}
+                        </span>
+                      ))}
+                      {isAdmin && (
+                        <span
+                          className={[
+                            "inline-flex rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-[0.2em]",
+                            link.health_status === "broken"
+                              ? "border-red-400 text-red-500"
+                              : link.health_status === "ok"
+                              ? "border-emerald-400 text-emerald-500"
+                              : "border-[color:var(--border)] text-[color:var(--muted-foreground)]",
+                          ].join(" ")}
+                        >
+                          {link.health_status ?? "unchecked"}
+                        </span>
+                      )}
+                    </div>
+                    {link.description && (
+                      <p className="text-sm text-[color:var(--muted-foreground)]">
+                        {link.description}
+                      </p>
+                    )}
+                    {isAdmin && link.stats && (
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                        Opens {link.stats.opens} · Downloads {link.stats.downloads}
+                      </div>
+                    )}
+                    {isAdmin && link.last_error && (
+                      <div className="text-[10px] text-red-500">{link.last_error}</div>
+                    )}
+                    <a
+                      className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                      href={trackedLinkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open link
+                    </a>
+                    {isAdmin && (
+                      <div className="pt-2">
+                        <AdminRowActions
+                          table="exam_resource_links"
+                          id={link.id}
+                          initialPublished={link.is_published}
+                        />
+                      </div>
                     )}
                   </div>
-                  {link.description && (
-                    <p className="text-sm text-[color:var(--muted-foreground)]">
-                      {link.description}
-                    </p>
-                  )}
-                  <a
-                    className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                    href={link.link_url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Open link
-                  </a>
-                  {isAdmin && (
-                    <div className="pt-2">
-                      <AdminRowActions
-                        table="exam_resource_links"
-                        id={link.id}
-                        initialPublished={link.is_published}
-                      />
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -379,74 +360,116 @@ export default async function MathsLevelResourcesPage({
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
-            {mocks.map((mock) => (
-              <article key={mock.id} className="apple-card p-5 flex flex-col gap-4">
-                <div className="h-40 w-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
-                  {mock.cover_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={mock.cover_url}
-                      alt={mock.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Exam Mock
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="text-lg font-semibold">{mock.title}</div>
-                    {mock.is_featured && (
-                      <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                        Featured
-                      </span>
+            {mocks.map((mock) => {
+              const trackedMockUrl = mock.file_url
+                ? buildTrackedResourceUrl({
+                    resourceType: "exam_mock",
+                    resourceId: mock.id,
+                    eventType: "download",
+                    subject: "maths",
+                    levelSlug: level,
+                    targetUrl: mock.file_url,
+                  })
+                : null;
+
+              return (
+                <article key={mock.id} className="apple-card p-5 flex flex-col gap-4">
+                  <div className="h-40 w-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                    {mock.cover_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={mock.cover_url}
+                        alt={mock.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-400">
+                        Exam Mock
+                      </div>
                     )}
                   </div>
-                  {mock.description && (
-                    <p className="text-sm text-[color:var(--muted-foreground)]">
-                      {mock.description}
-                    </p>
-                  )}
-                  {mock.file_url ? (
-                    <a
-                      className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                      href={mock.file_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open mock
-                    </a>
-                  ) : (
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                      {mock.is_published ? "File coming soon" : "Draft"}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="text-lg font-semibold">{mock.title}</div>
+                      {mock.is_featured && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          Featured
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {isAdmin && (
-                    <div className="pt-2">
-                      <AdminRowActions
-                        table="exam_mocks"
-                        id={mock.id}
-                        initialPublished={mock.is_published}
-                        supportsFeatured
-                        initialFeatured={mock.is_featured}
-                        cloneData={{
-                          subject: "maths",
-                          level_slug: level,
-                          title: `${mock.title} (copy)`,
-                          description: mock.description,
-                          cover_url: mock.cover_url,
-                          file_url: mock.file_url,
-                          is_published: false,
-                          is_featured: false,
-                        }}
-                      />
+                    <div className="flex flex-wrap items-center gap-2">
+                      {mock.paper_type && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {getPaperTypeLabel(mock.paper_type)}
+                        </span>
+                      )}
+                      {mock.paper_year && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {mock.paper_year}
+                        </span>
+                      )}
+                      {mock.tags.map((tagItem) => (
+                        <span
+                          key={`${mock.id}-${tagItem}`}
+                          className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] lowercase tracking-[0.08em] text-[color:var(--muted-foreground)]"
+                        >
+                          {tagItem}
+                        </span>
+                      ))}
                     </div>
-                  )}
-                </div>
-              </article>
-            ))}
+                    {mock.description && (
+                      <p className="text-sm text-[color:var(--muted-foreground)]">
+                        {mock.description}
+                      </p>
+                    )}
+                    {isAdmin && mock.stats && (
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                        Opens {mock.stats.opens} · Downloads {mock.stats.downloads}
+                      </div>
+                    )}
+                    {trackedMockUrl ? (
+                      <a
+                        className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                        href={trackedMockUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open mock
+                      </a>
+                    ) : (
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                        {mock.is_published ? "File coming soon" : "Draft"}
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <div className="pt-2">
+                        <AdminRowActions
+                          table="exam_mocks"
+                          id={mock.id}
+                          initialPublished={mock.is_published}
+                          supportsFeatured
+                          initialFeatured={mock.is_featured}
+                          cloneData={{
+                            subject: "maths",
+                            level_slug: level,
+                            exam_board: mock.exam_board,
+                            paper_type: mock.paper_type,
+                            paper_year: mock.paper_year,
+                            tags: mock.tags,
+                            title: `${mock.title} (copy)`,
+                            description: mock.description,
+                            cover_url: mock.cover_url,
+                            file_url: mock.file_url,
+                            is_published: false,
+                            is_featured: false,
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
@@ -468,74 +491,125 @@ export default async function MathsLevelResourcesPage({
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
-            {sets.map((set) => (
-              <article key={set.id} className="apple-card p-5 flex flex-col gap-4">
-                <div className="h-32 w-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
-                  {set.cover_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={set.cover_url}
-                      alt={set.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Question Set
+            {sets.map((set) => {
+              const questionSetPath = activeQuery
+                ? `${basePath}/resources/questions/${set.id}?${activeQuery}`
+                : `${basePath}/resources/questions/${set.id}`;
+
+              const trackedQuestionSetOpenUrl = buildTrackedResourceUrl({
+                resourceType: "question_set",
+                resourceId: set.id,
+                eventType: "open",
+                subject: "maths",
+                levelSlug: level,
+                targetUrl: questionSetPath,
+              });
+
+              const trackedQuestionSetDownloadUrl = set.resource_url
+                ? buildTrackedResourceUrl({
+                    resourceType: "question_set",
+                    resourceId: set.id,
+                    eventType: "download",
+                    subject: "maths",
+                    levelSlug: level,
+                    targetUrl: set.resource_url,
+                  })
+                : null;
+
+              return (
+                <article key={set.id} className="apple-card p-5 flex flex-col gap-4">
+                  <div className="h-32 w-full rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] overflow-hidden">
+                    {set.cover_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={set.cover_url}
+                        alt={set.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center text-xs uppercase tracking-[0.2em] text-slate-400">
+                        Question Set
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-lg font-semibold">{set.title}</div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {set.paper_type && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {getPaperTypeLabel(set.paper_type)}
+                        </span>
+                      )}
+                      {set.paper_year && (
+                        <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                          {set.paper_year}
+                        </span>
+                      )}
+                      {set.tags.map((tagItem) => (
+                        <span
+                          key={`${set.id}-${tagItem}`}
+                          className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] lowercase tracking-[0.08em] text-[color:var(--muted-foreground)]"
+                        >
+                          {tagItem}
+                        </span>
+                      ))}
                     </div>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <div className="text-lg font-semibold">{set.title}</div>
-                  {set.description && (
-                    <p className="text-sm text-[color:var(--muted-foreground)]">
-                      {set.description}
-                    </p>
-                  )}
-                  {set.content ? (
-                    <div className="flex flex-wrap gap-2">
-                      <Link
+                    {set.description && (
+                      <p className="text-sm text-[color:var(--muted-foreground)]">
+                        {set.description}
+                      </p>
+                    )}
+                    {isAdmin && set.stats && (
+                      <div className="text-[10px] uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                        Opens {set.stats.opens} · Downloads {set.stats.downloads}
+                      </div>
+                    )}
+                    {set.content ? (
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                          href={trackedQuestionSetOpenUrl}
+                        >
+                          Open question set
+                        </a>
+                        {trackedQuestionSetDownloadUrl && (
+                          <a
+                            className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface-muted)]"
+                            href={trackedQuestionSetDownloadUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Download PDF
+                          </a>
+                        )}
+                      </div>
+                    ) : trackedQuestionSetDownloadUrl ? (
+                      <a
                         className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                        href={`${basePath}/resources/questions/${set.id}${boardQuery}`}
+                        href={trackedQuestionSetDownloadUrl}
+                        target="_blank"
+                        rel="noreferrer"
                       >
                         Open question set
-                      </Link>
-                      {set.resource_url && (
-                        <a
-                          className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--muted-foreground)] hover:bg-[color:var(--surface-muted)]"
-                          href={set.resource_url}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Download PDF
-                        </a>
-                      )}
-                    </div>
-                  ) : set.resource_url ? (
-                    <a
-                      className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                      href={set.resource_url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open question set
-                    </a>
-                  ) : (
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-                      {set.is_published ? "Resource coming soon" : "Draft"}
-                    </div>
-                  )}
-                  {isAdmin && (
-                    <div className="pt-2">
-                      <AdminRowActions
-                        table="question_sets"
-                        id={set.id}
-                        initialPublished={set.is_published}
-                      />
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))}
+                      </a>
+                    ) : (
+                      <div className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                        {set.is_published ? "Resource coming soon" : "Draft"}
+                      </div>
+                    )}
+                    {isAdmin && (
+                      <div className="pt-2">
+                        <AdminRowActions
+                          table="question_sets"
+                          id={set.id}
+                          initialPublished={set.is_published}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
       </section>

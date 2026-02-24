@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { createClient } from "@/lib/supabase/server";
 import { WidgetBlock } from "@/components/widget-block";
+import { buildTrackedResourceUrl } from "@/lib/exam-resources/tracking";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +25,23 @@ export default async function MathsQuestionSetPage({
   searchParams,
 }: {
   params: Promise<{ level: string; setId: string }>;
-  searchParams?: { board?: string };
+  searchParams?: {
+    board?: string;
+    paperType?: string;
+    year?: string;
+    tag?: string;
+  };
 }) {
   const { level, setId } = await params;
-  const boardQuery = searchParams?.board ? `?board=${searchParams.board}` : "";
+  const activeSearch = new URLSearchParams();
+  if (searchParams?.board) activeSearch.set("board", searchParams.board);
+  if (searchParams?.paperType) activeSearch.set("paperType", searchParams.paperType);
+  if (searchParams?.year) activeSearch.set("year", searchParams.year);
+  if (searchParams?.tag) activeSearch.set("tag", searchParams.tag);
+  const activeQuery = activeSearch.toString();
+  const resourcesHref = activeQuery
+    ? `/maths/levels/${level}/resources?${activeQuery}`
+    : `/maths/levels/${level}/resources`;
   const supabase = await createClient();
 
   const { data: set } = await supabase
@@ -42,8 +56,19 @@ export default async function MathsQuestionSetPage({
     .maybeSingle<QuestionSet>();
 
   if (!set) {
-    redirect(`/maths/levels/${level}/resources${boardQuery}`);
+    redirect(resourcesHref);
   }
+
+  const trackedDownloadUrl = set.resource_url
+    ? buildTrackedResourceUrl({
+        resourceType: "question_set",
+        resourceId: set.id,
+        eventType: "download",
+        subject: "maths",
+        levelSlug: level,
+        targetUrl: set.resource_url,
+      })
+    : null;
 
   const content = set.content
     ? set.content.replace(/\\\\n/g, "\n\n").replace(/\\n/g, "\n\n")
@@ -54,14 +79,14 @@ export default async function MathsQuestionSetPage({
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <Link
           className="apple-subtle inline-flex"
-          href={`/maths/levels/${level}/resources${boardQuery}`}
+          href={resourcesHref}
         >
           ← Back to resources
         </Link>
-        {set.resource_url && (
+        {trackedDownloadUrl && (
           <a
             className="apple-subtle inline-flex"
-            href={set.resource_url}
+            href={trackedDownloadUrl}
             target="_blank"
             rel="noreferrer"
           >
