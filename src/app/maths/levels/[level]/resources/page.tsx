@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import ExamMockForm from "@/app/admin/questions/exam-mock-form";
 import QuestionSetForm from "@/app/admin/questions/question-set-form";
 import AdminRowActions from "@/components/admin-row-actions";
+import { getExamBoardBySlug, getExamBoardLabel } from "@/lib/exam-boards";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ type ExamMock = {
   file_url: string | null;
   is_published: boolean;
   is_featured: boolean;
+  exam_board: string | null;
 };
 
 type QuestionSet = {
@@ -32,15 +34,21 @@ type QuestionSet = {
   resource_url: string | null;
   content: string | null;
   is_published: boolean;
+  exam_board: string | null;
 };
 
 export default async function MathsLevelResourcesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ level: string }>;
+  searchParams?: { board?: string };
 }) {
   const { level } = await params;
   const label = levelLabels[level] ?? "Level";
+  const selectedBoard = getExamBoardBySlug("maths", level, searchParams?.board);
+  const boardLabel = getExamBoardLabel(selectedBoard?.slug);
+  const boardQuery = selectedBoard ? `?board=${selectedBoard.slug}` : "";
   const supabase = await createClient();
   const {
     data: { user },
@@ -52,11 +60,16 @@ export default async function MathsLevelResourcesPage({
 
   let mocksQuery = supabase
     .from("exam_mocks")
-    .select("id, title, description, cover_url, file_url, is_published, is_featured")
+    .select(
+      "id, title, description, cover_url, file_url, is_published, is_featured, exam_board"
+    )
     .eq("subject", "maths")
     .eq("level_slug", level)
     .order("is_featured", { ascending: false })
     .order("created_at", { ascending: false });
+  if (selectedBoard) {
+    mocksQuery = mocksQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
+  }
   if (!isAdmin) {
     mocksQuery = mocksQuery.eq("is_published", true);
   }
@@ -64,10 +77,15 @@ export default async function MathsLevelResourcesPage({
 
   let setsQuery = supabase
     .from("question_sets")
-    .select("id, title, description, cover_url, resource_url, content, is_published")
+    .select(
+      "id, title, description, cover_url, resource_url, content, is_published, exam_board"
+    )
     .eq("subject", "maths")
     .eq("level_slug", level)
     .order("created_at", { ascending: false });
+  if (selectedBoard) {
+    setsQuery = setsQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
+  }
   if (!isAdmin) {
     setsQuery = setsQuery.eq("is_published", true);
   }
@@ -112,6 +130,9 @@ export default async function MathsLevelResourcesPage({
         <p className="apple-subtle">
           Exam mocks and question packs matched to this level. All mocks are free for now.
         </p>
+        <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+          Exam board: {boardLabel}
+        </div>
         {isAdmin && (
           <section className="apple-card p-6 space-y-4">
             <div>
@@ -191,9 +212,15 @@ export default async function MathsLevelResourcesPage({
           </Link>
           <Link
             className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--accent)] bg-[color:var(--accent)] text-white hover:text-white !text-white"
-            href={`${basePath}/resources`}
+            href={`${basePath}/resources${boardQuery}`}
           >
             Resources
+          </Link>
+          <Link
+            className="rounded-full border px-4 py-2 text-sm transition border-[color:var(--border)] bg-[color:var(--surface)] text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+            href={`${basePath}/resources/boards`}
+          >
+            Change exam board
           </Link>
         </div>
       </div>
@@ -331,7 +358,7 @@ export default async function MathsLevelResourcesPage({
                     <div className="flex flex-wrap gap-2">
                       <Link
                         className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
-                        href={`${basePath}/resources/questions/${set.id}`}
+                        href={`${basePath}/resources/questions/${set.id}${boardQuery}`}
                       >
                         Open question set
                       </Link>

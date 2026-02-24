@@ -21,10 +21,13 @@ type QuestionSet = {
 
 export default async function EnglishQuestionSetPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ level: string; setId: string }>;
+  searchParams?: { board?: string };
 }) {
   const { level, setId } = await params;
+  const boardQuery = searchParams?.board ? `?board=${searchParams.board}` : "";
   const supabase = await createClient();
 
   const { data: set } = await supabase
@@ -39,7 +42,7 @@ export default async function EnglishQuestionSetPage({
     .maybeSingle<QuestionSet>();
 
   if (!set) {
-    redirect(`/english/levels/${level}/resources`);
+    redirect(`/english/levels/${level}/resources${boardQuery}`);
   }
 
   const content = set.content
@@ -51,7 +54,7 @@ export default async function EnglishQuestionSetPage({
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <Link
           className="apple-subtle inline-flex"
-          href={`/english/levels/${level}/resources`}
+          href={`/english/levels/${level}/resources${boardQuery}`}
         >
           ← Back to resources
         </Link>

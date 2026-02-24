@@ -415,6 +415,7 @@ create table if not exists public.exam_mocks (
   id uuid primary key default gen_random_uuid(),
   subject text not null,
   level_slug text not null,
+  exam_board text,
   title text not null,
   description text,
   cover_url text,
@@ -434,6 +435,9 @@ alter table public.exam_mocks
   add column if not exists is_featured boolean not null default false;
 
 alter table public.exam_mocks
+  add column if not exists exam_board text;
+
+alter table public.exam_mocks
   add column if not exists sort_order integer;
 
 alter table public.exam_mocks
@@ -446,6 +450,7 @@ create table if not exists public.question_sets (
   id uuid primary key default gen_random_uuid(),
   subject text not null,
   level_slug text not null,
+  exam_board text,
   title text not null,
   description text,
   cover_url text,
@@ -465,12 +470,21 @@ create index if not exists exam_mocks_subject_level_idx
 create index if not exists question_sets_subject_level_idx
   on public.question_sets (subject, level_slug);
 
+create index if not exists exam_mocks_subject_level_board_idx
+  on public.exam_mocks (subject, level_slug, exam_board);
+
+create index if not exists question_sets_subject_level_board_idx
+  on public.question_sets (subject, level_slug, exam_board);
+
 alter table public.exam_mocks enable row level security;
 alter table public.question_sets enable row level security;
 
 -- Optional content column for interactive sets
 alter table public.question_sets
   add column if not exists content text;
+
+alter table public.question_sets
+  add column if not exists exam_board text;
 
 alter table public.question_sets
   add column if not exists sort_order integer;

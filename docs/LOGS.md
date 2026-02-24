@@ -111,3 +111,9 @@ Template
 - Change summary: Added official Entry Level 1/2 Maths topic statements as tabbed categories and expanded Maths worksheet topic suggestions.
 - Impact: Entry Level 1/2 Maths now use the same tabbed topic layout and admins can match worksheet topics to the official statements.
 - Follow-ups: None.
+
+- Date: 2026-02-24
+- Version/Commit: pending
+- Change summary: Added exam board selection step for English/Maths resources, plus exam_board fields for mocks and question sets.
+- Impact: Learners choose a board before seeing resources; admins can tag resources by board for filtering.
+- Follow-ups: Run the updated `docs/exam-resources.sql` (or `docs/supabase-all.sql`) to add the exam_board columns and indexes.

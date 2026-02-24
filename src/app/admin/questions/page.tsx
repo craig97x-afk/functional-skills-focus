@@ -8,6 +8,7 @@ import ExamMockForm from "./exam-mock-form";
 import ExamMockRowActions from "./exam-mock-row-actions";
 import QuestionSetForm from "./question-set-form";
 import QuestionSetRowActions from "./question-set-row-actions";
+import { getExamBoardLabel } from "@/lib/exam-boards";
 
 type Topic = {
   id: string;
@@ -36,6 +37,7 @@ type ExamMockRow = {
   id: string;
   subject: string;
   level_slug: string;
+  exam_board: string | null;
   title: string;
   description: string | null;
   cover_url: string | null;
@@ -47,6 +49,7 @@ type QuestionSetRow = {
   id: string;
   subject: string;
   level_slug: string;
+  exam_board: string | null;
   title: string;
   description: string | null;
   cover_url: string | null;
@@ -78,12 +81,16 @@ export default async function AdminQuestionsPage({
 
   const { data: examMocks } = (await supabase
     .from("exam_mocks")
-    .select("id, subject, level_slug, title, description, cover_url, file_url, is_published")
+    .select(
+      "id, subject, level_slug, exam_board, title, description, cover_url, file_url, is_published"
+    )
     .order("created_at", { ascending: false })) as { data: ExamMockRow[] | null };
 
   const { data: questionSets } = (await supabase
     .from("question_sets")
-    .select("id, subject, level_slug, title, description, cover_url, resource_url, content, is_published")
+    .select(
+      "id, subject, level_slug, exam_board, title, description, cover_url, resource_url, content, is_published"
+    )
     .order("created_at", { ascending: false })) as { data: QuestionSetRow[] | null };
 
   let questionQuery = supabase
@@ -151,7 +158,7 @@ export default async function AdminQuestionsPage({
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      {mock.subject} · {mock.level_slug}
+                      {mock.subject} · {mock.level_slug} · {getExamBoardLabel(mock.exam_board)}
                     </div>
                     <div className="font-medium mt-1">{mock.title}</div>
                     {mock.description && (
@@ -220,7 +227,7 @@ export default async function AdminQuestionsPage({
                   </div>
                   <div>
                     <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      {set.subject} · {set.level_slug}
+                      {set.subject} · {set.level_slug} · {getExamBoardLabel(set.exam_board)}
                     </div>
                     <div className="font-medium mt-1">{set.title}</div>
                     {set.description && (

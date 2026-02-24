@@ -50,12 +50,12 @@ export default async function MathsResourcesLevelsPage() {
         {levels.map((level) => (
           <Link
             key={level.slug}
-            href={`/maths/levels/${level.slug}/resources`}
+            href={`/maths/levels/${level.slug}/resources/boards`}
             className="apple-card p-5 hover:shadow-md transition"
           >
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400">Level</div>
             <div className="text-lg font-semibold mt-2">{level.label}</div>
-            <div className="apple-subtle mt-2">Exam mocks and question banks</div>
+            <div className="apple-subtle mt-2">Choose exam board</div>
             <div className="mt-3 inline-flex rounded-full border px-3 py-1 text-xs text-[color:var(--muted-foreground)]">
               {level.status}
             </div>

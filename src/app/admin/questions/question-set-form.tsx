@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import LessonSectionBuilder from "../lessons/lesson-section-builder";
 import LessonWidgetBuilder from "../lessons/lesson-widget-builder";
+import { getExamBoardsForLevel } from "@/lib/exam-boards";
 
 const levelOptions = [
   { value: "entry-1", label: "Entry Level 1" },
@@ -27,6 +28,7 @@ export default function QuestionSetForm({
   const supabase = useMemo(() => createClient(), []);
   const [subject, setSubject] = useState(defaultSubject);
   const [levelSlug, setLevelSlug] = useState(defaultLevel);
+  const [examBoard, setExamBoard] = useState("all");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -39,6 +41,16 @@ export default function QuestionSetForm({
   const [unpublishAt, setUnpublishAt] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const availableBoards = useMemo(
+    () => getExamBoardsForLevel(subject, levelSlug),
+    [subject, levelSlug]
+  );
+
+  useEffect(() => {
+    if (examBoard === "all") return;
+    if (availableBoards.some((board) => board.slug === examBoard)) return;
+    setExamBoard(availableBoards[0]?.slug ?? "all");
+  }, [availableBoards, examBoard]);
 
   const toIsoValue = (value: string) => {
     if (!value) return null;
@@ -104,6 +116,7 @@ export default function QuestionSetForm({
     const { error } = await supabase.from("question_sets").insert({
       subject,
       level_slug: levelSlug,
+      exam_board: examBoard === "all" ? null : examBoard,
       title: title.trim(),
       description: description || null,
       cover_url: coverUrl,
@@ -121,7 +134,7 @@ export default function QuestionSetForm({
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-3">
         <label className="block">
           <span className="text-sm">Subject</span>
           <select
@@ -145,6 +158,21 @@ export default function QuestionSetForm({
             {levelOptions.map((level) => (
               <option key={level.value} value={level.value}>
                 {level.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="text-sm">Exam board</span>
+          <select
+            className="mt-1 w-full rounded-md border p-2"
+            value={examBoard}
+            onChange={(e) => setExamBoard(e.target.value)}
+          >
+            <option value="all">All boards (general)</option>
+            {availableBoards.map((board) => (
+              <option key={board.slug} value={board.slug}>
+                {board.name}
               </option>
             ))}
           </select>
