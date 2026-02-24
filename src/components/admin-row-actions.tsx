@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type TableName = "workbooks" | "exam_mocks" | "question_sets";
+type TableName = "workbooks" | "exam_mocks" | "question_sets" | "exam_resource_links";
 
 export default function AdminRowActions({
   table,

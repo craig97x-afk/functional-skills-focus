@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ExamMockForm from "@/app/admin/questions/exam-mock-form";
 import QuestionSetForm from "@/app/admin/questions/question-set-form";
+import ExamResourceLinkForm from "@/app/admin/questions/exam-resource-link-form";
 import AdminRowActions from "@/components/admin-row-actions";
 import { getExamBoardBySlug, getExamBoardLabel } from "@/lib/exam-boards";
 
@@ -33,6 +34,16 @@ type QuestionSet = {
   cover_url: string | null;
   resource_url: string | null;
   content: string | null;
+  is_published: boolean;
+  exam_board: string | null;
+};
+
+type ExamResourceLink = {
+  id: string;
+  title: string;
+  description: string | null;
+  link_url: string;
+  link_type: string | null;
   is_published: boolean;
   exam_board: string | null;
 };
@@ -91,6 +102,52 @@ export default async function MathsLevelResourcesPage({
   }
   const { data: setsRaw } = (await setsQuery) as { data: QuestionSet[] | null };
 
+  let linksQuery = supabase
+    .from("exam_resource_links")
+    .select("id, title, description, link_url, link_type, is_published, exam_board")
+    .eq("subject", "maths")
+    .eq("level_slug", level)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (selectedBoard) {
+    linksQuery = linksQuery.or(`exam_board.eq.${selectedBoard.slug},exam_board.is.null`);
+  }
+  if (!isAdmin) {
+    linksQuery = linksQuery.eq("is_published", true);
+  }
+  const { data: linksRaw, error: linksError } = (await linksQuery) as {
+    data: ExamResourceLink[] | null;
+    error: { message: string } | null;
+  };
+
+  let links = linksRaw ?? [];
+  let linksFallbackUsed = false;
+  let linksLoadError = linksError?.message ?? null;
+
+  if (!linksLoadError && selectedBoard && links.length === 0) {
+    let fallbackLinksQuery = supabase
+      .from("exam_resource_links")
+      .select("id, title, description, link_url, link_type, is_published, exam_board")
+      .eq("subject", "maths")
+      .eq("level_slug", level)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (!isAdmin) {
+      fallbackLinksQuery = fallbackLinksQuery.eq("is_published", true);
+    }
+    const { data: fallbackLinksRaw, error: fallbackLinksError } =
+      (await fallbackLinksQuery) as {
+        data: ExamResourceLink[] | null;
+        error: { message: string } | null;
+      };
+    if (fallbackLinksError) {
+      linksLoadError = fallbackLinksError.message;
+    } else if ((fallbackLinksRaw ?? []).length > 0) {
+      links = fallbackLinksRaw ?? [];
+      linksFallbackUsed = true;
+    }
+  }
+
   const mocks = mocksRaw ?? [];
   const sets = setsRaw ?? [];
   const mockHealth = isAdmin
@@ -141,10 +198,10 @@ export default async function MathsLevelResourcesPage({
               </div>
               <h2 className="text-xl font-semibold mt-2">Add resources</h2>
               <p className="apple-subtle mt-2">
-                Upload new exam mocks and question sets for this level.
+                Upload new exam mocks, question sets, or add external sample links.
               </p>
             </div>
-            <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-3">
               <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
                 <summary className="cursor-pointer text-sm font-semibold">
                   Add exam mock
@@ -163,6 +220,18 @@ export default async function MathsLevelResourcesPage({
                 </summary>
                 <div className="mt-4">
                   <QuestionSetForm
+                    defaultSubject="maths"
+                    defaultLevel={level}
+                    lockSubjectLevel
+                  />
+                </div>
+              </details>
+              <details className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Add external link
+                </summary>
+                <div className="mt-4">
+                  <ExamResourceLinkForm
                     defaultSubject="maths"
                     defaultLevel={level}
                     lockSubjectLevel
@@ -224,6 +293,74 @@ export default async function MathsLevelResourcesPage({
           </Link>
         </div>
       </div>
+
+      <section className="space-y-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.24em] text-slate-500">
+            Official links
+          </div>
+          <h2 className="text-2xl font-semibold mt-2">External sample links</h2>
+          <p className="apple-subtle mt-1">
+            Direct links to sample papers, mark schemes, and specs from awarding bodies.
+          </p>
+          {linksFallbackUsed && (
+            <p className="mt-2 text-xs text-[color:var(--muted-foreground)]">
+              No board-specific links for {boardLabel} yet, so showing all boards for this
+              level.
+            </p>
+          )}
+          {isAdmin && linksLoadError && (
+            <p className="mt-2 text-xs text-red-500">
+              Could not load external links: {linksLoadError}
+            </p>
+          )}
+        </div>
+
+        {links.length === 0 ? (
+          <div className="apple-card p-6 text-sm text-[color:var(--muted-foreground)]">
+            No external sample links yet for this level.
+          </div>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {links.map((link) => (
+              <article key={link.id} className="apple-card p-5 flex flex-col gap-3">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="text-lg font-semibold">{link.title}</div>
+                    {link.link_type && (
+                      <span className="inline-flex rounded-full border border-[color:var(--border)] px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
+                        {link.link_type}
+                      </span>
+                    )}
+                  </div>
+                  {link.description && (
+                    <p className="text-sm text-[color:var(--muted-foreground)]">
+                      {link.description}
+                    </p>
+                  )}
+                  <a
+                    className="inline-flex rounded-full border px-4 py-2 text-xs text-[color:var(--foreground)] hover:bg-[color:var(--surface-muted)]"
+                    href={link.link_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open link
+                  </a>
+                  {isAdmin && (
+                    <div className="pt-2">
+                      <AdminRowActions
+                        table="exam_resource_links"
+                        id={link.id}
+                        initialPublished={link.is_published}
+                      />
+                    </div>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
