@@ -10,7 +10,7 @@ import QuestionSetForm from "./question-set-form";
 import QuestionSetRowActions from "./question-set-row-actions";
 import ExamResourceLinkForm from "./exam-resource-link-form";
 import AdminRowActions from "@/components/admin-row-actions";
-import { getExamBoardLabel } from "@/lib/exam-boards";
+import { examBoards, getExamBoardLabel } from "@/lib/exam-boards";
 import { getPaperTypeLabel } from "@/lib/exam-resources/metadata";
 
 type Topic = {
@@ -104,6 +104,10 @@ export default async function AdminQuestionsPage({
   const status = searchParams?.status ?? "all";
   const typeFilter = searchParams?.type ?? "all";
   const topicFilter = searchParams?.topic ?? "all";
+  const boardScopeClause = [
+    "exam_board.is.null",
+    ...examBoards.map((board) => `exam_board.eq.${board.slug}`),
+  ].join(",");
 
   const { data: topics } = (await supabase
     .from("topics")
@@ -119,6 +123,7 @@ export default async function AdminQuestionsPage({
     .select(
       "id, subject, level_slug, exam_board, title, description, cover_url, file_url, paper_type, paper_year, tags, is_published"
     )
+    .or(boardScopeClause)
     .order("created_at", { ascending: false })) as { data: ExamMockRow[] | null };
 
   const { data: questionSets } = (await supabase
@@ -126,6 +131,7 @@ export default async function AdminQuestionsPage({
     .select(
       "id, subject, level_slug, exam_board, title, description, cover_url, resource_url, content, paper_type, paper_year, tags, is_published"
     )
+    .or(boardScopeClause)
     .order("created_at", { ascending: false })) as { data: QuestionSetRow[] | null };
 
   const { data: examResourceLinks } = (await supabase
@@ -133,6 +139,7 @@ export default async function AdminQuestionsPage({
     .select(
       "id, subject, level_slug, exam_board, title, description, link_url, link_type, paper_type, paper_year, tags, health_status, last_checked_at, last_status_code, last_error, is_published"
     )
+    .or(boardScopeClause)
     .order("created_at", { ascending: false })) as { data: ExamResourceLinkRow[] | null };
 
   const { data: resourceStats } = (await supabase

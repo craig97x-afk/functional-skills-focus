@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { examBoards } from "@/lib/exam-boards";
 
 export type ResourceFilters = {
   boardSlug?: string | null;
@@ -83,6 +84,18 @@ export type LevelResourcesResult = {
 type ResourceType = "exam_mock" | "question_set" | "exam_resource_link";
 
 const sanitizeTag = (value?: string | null) => value?.trim().toLowerCase() || null;
+const allowedBoardSlugs = examBoards.map((board) => board.slug);
+
+const buildBoardScopeClause = (selectedBoard?: string | null) => {
+  if (selectedBoard) {
+    return `exam_board.eq.${selectedBoard},exam_board.is.null`;
+  }
+
+  return [
+    "exam_board.is.null",
+    ...allowedBoardSlugs.map((slug) => `exam_board.eq.${slug}`),
+  ].join(",");
+};
 
 type MetadataFilterQuery = {
   eq: (column: string, value: unknown) => unknown;
@@ -194,6 +207,7 @@ async function loadLevelResourcesInternal(
   filters: ResourceFilters
 ): Promise<LevelResourcesResult> {
   const boardSlug = filters.boardSlug ?? null;
+  const boardScopeClause = buildBoardScopeClause(boardSlug);
 
   let mocksQuery = supabase
     .from("exam_mocks")
@@ -204,10 +218,8 @@ async function loadLevelResourcesInternal(
     .eq("level_slug", levelSlug)
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false });
-  if (boardSlug) {
-    mocksQuery = mocksQuery.or(`exam_board.eq.${boardSlug},exam_board.is.null`);
-  }
+    .order("created_at", { ascending: false })
+    .or(boardScopeClause);
   if (!isAdmin) {
     mocksQuery = mocksQuery.eq("is_published", true);
   }
@@ -221,10 +233,8 @@ async function loadLevelResourcesInternal(
     .eq("subject", subject)
     .eq("level_slug", levelSlug)
     .order("sort_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false });
-  if (boardSlug) {
-    setsQuery = setsQuery.or(`exam_board.eq.${boardSlug},exam_board.is.null`);
-  }
+    .order("created_at", { ascending: false })
+    .or(boardScopeClause);
   if (!isAdmin) {
     setsQuery = setsQuery.eq("is_published", true);
   }
@@ -238,10 +248,8 @@ async function loadLevelResourcesInternal(
     .eq("subject", subject)
     .eq("level_slug", levelSlug)
     .order("sort_order", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: false });
-  if (boardSlug) {
-    linksQuery = linksQuery.or(`exam_board.eq.${boardSlug},exam_board.is.null`);
-  }
+    .order("created_at", { ascending: false })
+    .or(boardScopeClause);
   if (!isAdmin) {
     linksQuery = linksQuery.eq("is_published", true);
   }
@@ -257,15 +265,16 @@ async function loadLevelResourcesInternal(
   let linksLoadError = linksRes.error?.message ?? null;
 
   if (!linksLoadError && boardSlug && linksRaw.length === 0) {
-    let fallbackLinksQuery = supabase
-      .from("exam_resource_links")
-      .select(
-        "id, title, description, link_url, link_type, is_published, exam_board, paper_type, paper_year, tags, health_status, last_checked_at, last_status_code, last_error"
-      )
-      .eq("subject", subject)
-      .eq("level_slug", levelSlug)
-      .order("sort_order", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: false });
+      let fallbackLinksQuery = supabase
+        .from("exam_resource_links")
+        .select(
+          "id, title, description, link_url, link_type, is_published, exam_board, paper_type, paper_year, tags, health_status, last_checked_at, last_status_code, last_error"
+        )
+        .eq("subject", subject)
+        .eq("level_slug", levelSlug)
+        .order("sort_order", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .or(buildBoardScopeClause(null));
 
     if (!isAdmin) {
       fallbackLinksQuery = fallbackLinksQuery.eq("is_published", true);
